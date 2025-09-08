@@ -39,12 +39,20 @@ const Hero = () => {
             </Button>
             
             <Button 
+              asChild
               variant="secondary"
               size="lg"
               className="bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 text-white transition-all duration-300 shadow-glow"
             >
-              <Download className="mr-2 h-4 w-4" />
-              Download CV
+              <a
+                href="https://docs.google.com/document/d/e/2PACX-1vQGBobpjjNtOqHW558n10R9GB-bW_BCIWkI5QWF2HFu-ZsF2VCOPcfCOjVbSA6ume3fuL5X6waqKaZT/pub"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Download CV (PDF)"
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Download CV
+              </a>
             </Button>
           </div>
           
