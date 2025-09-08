@@ -19,8 +19,8 @@ const Projects = () => {
       description: "Developed Python-based nutrition model simulating beef cattle growth, reproduction, and nutrient balances using NRC standards at Texas A&M University.",
       image: "/api/placeholder/400/250",
       technologies: ["Python", "NumPy", "Data Analysis", "Machine Learning"],
-      liveUrl: "#",
-      githubUrl: "#",
+      liveUrl: "https://aggiecollaborate.tamu.edu",
+      githubUrl: "https://github.com/CNM-University-of-Guelph/NASEM-Model-Python/blob/main/README.qmd",
       featured: true
     },
     {
@@ -75,6 +75,21 @@ const Projects = () => {
                           Website
                         </a>
                       </Button>
+                    ) : project.title === "AI Livestock Modeling Research" ? (
+                      <>
+                        <Button asChild variant="secondary" size="sm" className="flex-1">
+                          <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" aria-label={`${project.title} website`}>
+                            <ExternalLink className="w-4 h-4 mr-2" />
+                            Website
+                          </a>
+                        </Button>
+                        <Button asChild variant="outline" size="sm" className="flex-1">
+                          <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" aria-label={`${project.title} code on GitHub`}>
+                            <Github className="w-4 h-4 mr-2" />
+                            Code
+                          </a>
+                        </Button>
+                      </>
                     ) : (
                       <>
                         <Button asChild variant="secondary" size="sm" className="flex-1">
