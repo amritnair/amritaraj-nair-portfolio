@@ -37,8 +37,8 @@ const Projects = () => {
       description: "Research on RoboDuck tool for automated fuzzing and vulnerability detection in open source repositories, analyzing LLM security vulnerabilities.",
       image: "/api/placeholder/400/250", 
       technologies: ["Python", "Cybersecurity", "LLM Research", "Vulnerability Analysis"],
-      liveUrl: "#",
-      githubUrl: "#",
+      liveUrl: "https://theori.io/blog/aixcc-and-roboduck-63447",
+      githubUrl: "https://github.com/theori-io/aixcc-afc-archive/",
       featured: false
     }
   ];
@@ -97,6 +97,21 @@ const Projects = () => {
                           Website
                         </a>
                       </Button>
+                    ) : project.title === "Cybersecurity Research" ? (
+                      <>
+                        <Button asChild variant="secondary" size="sm" className="flex-1">
+                          <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" aria-label={`${project.title} website`}>
+                            <ExternalLink className="w-4 h-4 mr-2" />
+                            Website
+                          </a>
+                        </Button>
+                        <Button asChild variant="outline" size="sm" className="flex-1">
+                          <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" aria-label={`${project.title} code on GitHub`}>
+                            <Github className="w-4 h-4 mr-2" />
+                            Code
+                          </a>
+                        </Button>
+                      </>
                     ) : (
                       <>
                         <Button asChild variant="secondary" size="sm" className="flex-1">
