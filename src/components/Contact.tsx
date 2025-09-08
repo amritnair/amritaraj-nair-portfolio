@@ -10,19 +10,19 @@ const Contact = () => {
     {
       icon: Mail,
       title: "Email",
-      value: "alex@alexchen.dev",
-      action: "mailto:alex@alexchen.dev"
+      value: "amritnair23@gmail.com",
+      action: "mailto:amritnair23@gmail.com"
     },
     {
       icon: Phone,
       title: "Phone", 
-      value: "+1 (555) 123-4567",
-      action: "tel:+15551234567"
+      value: "214-316-6196",
+      action: "tel:+12143166196"
     },
     {
       icon: MapPin,
       title: "Location",
-      value: "San Francisco, CA",
+      value: "Flower Mound, Texas",
       action: "#"
     }
   ];
