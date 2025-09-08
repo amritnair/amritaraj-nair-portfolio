@@ -19,6 +19,21 @@
 
   <body>
     <div id="root"></div>
+    <script>
+      (function() {
+        try {
+          var redirectPath = sessionStorage.getItem('gh:redirect');
+          if (redirectPath && redirectPath.startsWith('/')) {
+            sessionStorage.removeItem('gh:redirect');
+            var base = '/amritaraj-nair-portfolio';
+            var normalized = redirectPath.replace(new RegExp('^' + base), '');
+            if (normalized && normalized !== '/') {
+              window.history.replaceState(null, '', base + normalized);
+            }
+          }
+        } catch (e) {}
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
