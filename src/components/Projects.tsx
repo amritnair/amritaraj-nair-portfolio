@@ -28,7 +28,7 @@ const Projects = () => {
       description: "Build and Circuit Lead for award-winning robotics team. Winner of Amarillo District 2024, NTX Plano 2024, and multiple engineering awards.",
       image: "/api/placeholder/400/250",
       technologies: ["Robotics", "Circuit Design", "Java", "Engineering"],
-      liveUrl: "#",
+      liveUrl: "https://www.fmhsrobotics.com",
       githubUrl: "#",
       featured: false
     },
@@ -90,6 +90,13 @@ const Projects = () => {
                           </a>
                         </Button>
                       </>
+                    ) : project.title === "FRC Robotics Team 4192" ? (
+                      <Button asChild variant="secondary" size="sm" className="flex-1">
+                        <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" aria-label={`${project.title} website`}>
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                          Website
+                        </a>
+                      </Button>
                     ) : (
                       <>
                         <Button asChild variant="secondary" size="sm" className="flex-1">
