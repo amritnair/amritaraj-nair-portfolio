@@ -26,7 +26,7 @@ const Projects = () => {
     {
       title: "FRC Robotics Team 4192",
       description: "Build and Circuit Lead for award-winning robotics team. Winner of Amarillo District 2024, NTX Plano 2024, and multiple engineering awards.",
-      image: "/api/placeholder/400/250",
+      image: "https://images.unsplash.com/photo-1527689368864-3a821dbccc34?auto=format&fit=crop&w=1200&q=80",
       technologies: ["Robotics", "Circuit Design", "Java", "Engineering"],
       liveUrl: "https://www.fmhsrobotics.com",
       githubUrl: "#",
