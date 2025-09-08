@@ -8,7 +8,7 @@ const Projects = () => {
     {
       title: "The Sunlight Initiative",
       description: "Co-founded 501(c)(3) nonprofit with 15+ chapters nationwide, raising over $5000 for various charities and collecting 15,000+ books for underprivileged schools in the DFW area.",
-      image: "https://share.google/images/WXthYRSJXx7YlmrSN",
+      image: "https://images.unsplash.com/photo-1513475382585-d06e58bcb0ea?auto=format&fit=crop&w=1200&q=80",
       technologies: ["Non-Profit Management", "Social Media", "Community Outreach", "Event Planning"],
       liveUrl: "https://sunlightinitiative.com",
       githubUrl: "#",
@@ -26,7 +26,7 @@ const Projects = () => {
     {
       title: "FRC Robotics Team 4192",
       description: "Build and Circuit Lead for award-winning robotics team. Winner of Amarillo District 2024, NTX Plano 2024, and multiple engineering awards.",
-      image: "https://images.unsplash.com/photo-1581093588401-16ec7a1b6b9f?auto=format&fit=crop&w=1200&q=80",
+      image: "https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?auto=format&fit=crop&w=1200&q=80",
       technologies: ["Robotics", "Circuit Design", "Java", "Engineering"],
       liveUrl: "https://www.fmhsrobotics.com",
       githubUrl: "#",
