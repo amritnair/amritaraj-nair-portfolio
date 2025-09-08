@@ -8,9 +8,9 @@ const Projects = () => {
     {
       title: "The Sunlight Initiative",
       description: "Co-founded 501(c)(3) nonprofit with 15+ chapters nationwide, raising over $5000 for various charities and collecting 15,000+ books for underprivileged schools in the DFW area.",
-      image: "/api/placeholder/400/250",
+      image: "https://share.google/images/WXthYRSJXx7YlmrSN",
       technologies: ["Non-Profit Management", "Social Media", "Community Outreach", "Event Planning"],
-      liveUrl: "https://thesunlightinitiative.com",
+      liveUrl: "https://sunlightinitiative.com",
       githubUrl: "#",
       featured: true
     },
@@ -68,14 +68,29 @@ const Projects = () => {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <div className="absolute bottom-4 left-4 right-4 flex gap-2">
-                    <Button variant="secondary" size="sm" className="flex-1">
-                      <ExternalLink className="w-4 h-4 mr-2" />
-                      Live Demo
-                    </Button>
-                    <Button variant="outline" size="sm" className="flex-1">
-                      <Github className="w-4 h-4 mr-2" />
-                      Code
-                    </Button>
+                    {project.title === "The Sunlight Initiative" ? (
+                      <Button asChild variant="secondary" size="sm" className="flex-1">
+                        <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" aria-label={`${project.title} website`}>
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                          Website
+                        </a>
+                      </Button>
+                    ) : (
+                      <>
+                        <Button asChild variant="secondary" size="sm" className="flex-1">
+                          <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" aria-label={`${project.title} live demo`}>
+                            <ExternalLink className="w-4 h-4 mr-2" />
+                            Live Demo
+                          </a>
+                        </Button>
+                        <Button asChild variant="outline" size="sm" className="flex-1">
+                          <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" aria-label={`${project.title} code on GitHub`}>
+                            <Github className="w-4 h-4 mr-2" />
+                            Code
+                          </a>
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
