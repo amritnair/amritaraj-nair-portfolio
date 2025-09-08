@@ -45,7 +45,7 @@ const Hero = () => {
               className="bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 text-white transition-all duration-300 shadow-glow"
             >
               <a
-                href="https://docs.google.com/document/d/e/2PACX-1vQGBobpjjNtOqHW558n10R9GB-bW_BCIWkI5QWF2HFu-ZsF2VCOPcfCOjVbSA6ume3fuL5X6waqKaZT/pub"
+                href="https://drive.google.com/file/d/1r2YjhtXrTjIWfZbac8DUPAJDp1DG_HHl/view?usp=share_link"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Download CV (PDF)"
