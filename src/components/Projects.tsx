@@ -8,7 +8,7 @@ const Projects = () => {
     {
       title: "The Sunlight Initiative",
       description: "Co-founded 501(c)(3) nonprofit with 15+ chapters nationwide, raising over $5000 for various charities and collecting 15,000+ books for underprivileged schools in the DFW area.",
-      image: "https://images.unsplash.com/photo-1513475382585-d06e58bcb0ea?auto=format&fit=crop&w=1200&q=80",
+      image: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=1200&q=80",
       technologies: ["Non-Profit Management", "Social Media", "Community Outreach", "Event Planning"],
       liveUrl: "https://sunlightinitiative.com",
       githubUrl: "#",
@@ -17,7 +17,7 @@ const Projects = () => {
     {
       title: "AI Livestock Modeling Research", 
       description: "Developed Python-based nutrition model simulating beef cattle growth, reproduction, and nutrient balances using NRC standards at Texas A&M University.",
-      image: "https://images.unsplash.com/photo-1516690553959-71a414d6b8be?auto=format&fit=crop&w=1200&q=80",
+      image: "https://images.unsplash.com/photo-1518779578993-ec3579fee39f?auto=format&fit=crop&w=1200&q=80",
       technologies: ["Python", "NumPy", "Data Analysis", "Machine Learning"],
       liveUrl: "https://aggiecollaborate.tamu.edu",
       githubUrl: "https://github.com/CNM-University-of-Guelph/NASEM-Model-Python/blob/main/README.qmd",
@@ -26,7 +26,7 @@ const Projects = () => {
     {
       title: "FRC Robotics Team 4192",
       description: "Build and Circuit Lead for award-winning robotics team. Winner of Amarillo District 2024, NTX Plano 2024, and multiple engineering awards.",
-      image: "https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?auto=format&fit=crop&w=1200&q=80",
+      image: "https://images.unsplash.com/photo-1581091012184-7c54bff2d05b?auto=format&fit=crop&w=1200&q=80",
       technologies: ["Robotics", "Circuit Design", "Java", "Engineering"],
       liveUrl: "https://www.fmhsrobotics.com",
       githubUrl: "#",
