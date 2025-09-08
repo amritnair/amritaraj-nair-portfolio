@@ -44,7 +44,7 @@ const Navigation = () => {
               onClick={() => scrollToSection("#")}
               className="text-xl font-bold hover:text-accent transition-colors"
             >
-              Alex Chen
+              Amritaraj Nair
             </button>
 
             {/* Desktop Navigation */}

@@ -6,37 +6,37 @@ import { ExternalLink, Github } from "lucide-react";
 const Projects = () => {
   const projects = [
     {
-      title: "E-Commerce Platform",
-      description: "Full-stack e-commerce solution with React, Node.js, and Stripe integration. Features include product management, user authentication, and real-time inventory tracking.",
+      title: "The Sunlight Initiative",
+      description: "Co-founded 501(c)(3) nonprofit with 15+ chapters nationwide, raising over $5000 for various charities and collecting 15,000+ books for underprivileged schools in the DFW area.",
       image: "/api/placeholder/400/250",
-      technologies: ["React", "Node.js", "PostgreSQL", "Stripe"],
+      technologies: ["Non-Profit Management", "Social Media", "Community Outreach", "Event Planning"],
+      liveUrl: "https://thesunlightinitiative.com",
+      githubUrl: "#",
+      featured: true
+    },
+    {
+      title: "AI Livestock Modeling Research", 
+      description: "Developed Python-based nutrition model simulating beef cattle growth, reproduction, and nutrient balances using NRC standards at Texas A&M University.",
+      image: "/api/placeholder/400/250",
+      technologies: ["Python", "NumPy", "Data Analysis", "Machine Learning"],
       liveUrl: "#",
       githubUrl: "#",
       featured: true
     },
     {
-      title: "Task Management App", 
-      description: "Collaborative project management tool with real-time updates, drag-and-drop functionality, and team collaboration features.",
+      title: "FRC Robotics Team 4192",
+      description: "Build and Circuit Lead for award-winning robotics team. Winner of Amarillo District 2024, NTX Plano 2024, and multiple engineering awards.",
       image: "/api/placeholder/400/250",
-      technologies: ["Vue.js", "Firebase", "Tailwind CSS"],
-      liveUrl: "#",
-      githubUrl: "#",
-      featured: true
-    },
-    {
-      title: "Weather Dashboard",
-      description: "Beautiful weather application with location-based forecasts, interactive maps, and customizable widgets for weather tracking.",
-      image: "/api/placeholder/400/250",
-      technologies: ["React", "OpenWeather API", "Chart.js"],
+      technologies: ["Robotics", "Circuit Design", "Java", "Engineering"],
       liveUrl: "#",
       githubUrl: "#",
       featured: false
     },
     {
-      title: "Portfolio Website",
-      description: "Responsive portfolio website built with modern web technologies, featuring smooth animations and optimized performance.",
+      title: "Cybersecurity Research",
+      description: "Research on RoboDuck tool for automated fuzzing and vulnerability detection in open source repositories, analyzing LLM security vulnerabilities.",
       image: "/api/placeholder/400/250", 
-      technologies: ["React", "Tailwind CSS", "Framer Motion"],
+      technologies: ["Python", "Cybersecurity", "LLM Research", "Vulnerability Analysis"],
       liveUrl: "#",
       githubUrl: "#",
       featured: false
@@ -49,8 +49,7 @@ const Projects = () => {
         <div className="text-center mb-16 animate-fade-in">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">Featured Projects</h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            A collection of my recent work that showcases my skills in full-stack development, 
-            UI/UX design, and problem-solving.
+            A showcase of my work in research, robotics, nonprofit leadership, and community impact initiatives.
           </p>
         </div>
 

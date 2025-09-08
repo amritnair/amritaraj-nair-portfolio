@@ -13,17 +13,17 @@ const Hero = () => {
       <div className="container mx-auto px-6 relative z-10">
         <div className="text-center text-white animate-fade-in">
           <h1 className="text-5xl md:text-7xl font-bold mb-6 animate-slide-up">
-            Hi, I'm <span className="text-gradient">Alex Chen</span>
+            Hi, I'm <span className="text-gradient">Amritaraj Nair</span>
           </h1>
           
           <p className="text-xl md:text-2xl mb-8 text-white/90 max-w-3xl mx-auto animate-fade-in" 
              style={{ animationDelay: '0.2s' }}>
-            Full-Stack Developer & UI/UX Designer
+            Computer Science Student & Research Assistant
           </p>
           
           <p className="text-lg mb-12 text-white/80 max-w-2xl mx-auto animate-fade-in"
              style={{ animationDelay: '0.4s' }}>
-            I create beautiful, functional web applications that solve real-world problems and deliver exceptional user experiences.
+            Texas A&M Class of 2029 | CS Honors | National Merit Scholar | Passionate about AI research, robotics, and creating impactful solutions for communities.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in"

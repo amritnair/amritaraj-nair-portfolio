@@ -4,25 +4,25 @@ import { Code, Palette, Zap } from "lucide-react";
 
 const About = () => {
   const skills = [
-    "React", "TypeScript", "Node.js", "Python", "PostgreSQL", 
-    "Tailwind CSS", "Figma", "AWS", "Docker", "GraphQL"
+    "Python", "Java", "C++", "HTML", "CSS", "JavaScript", 
+    "NumPy", "SymPy", "XCode", "Android Studio", "APIs", "Git"
   ];
 
   const experiences = [
     {
       icon: Code,
-      title: "Full-Stack Development",
-      description: "5+ years building scalable web applications with modern frameworks and technologies."
+      title: "AI & Cybersecurity Research",
+      description: "Developing Python-based AI models for livestock systems and researching LLM security vulnerabilities at Texas A&M."
     },
     {
       icon: Palette,
-      title: "UI/UX Design",
-      description: "Creating intuitive, beautiful interfaces that users love to interact with."
+      title: "Robotics & Engineering",
+      description: "Build and Circuit Lead for FRC Team 4192, winner of multiple district championships and awards."
     },
     {
       icon: Zap,
-      title: "Performance Optimization",
-      description: "Optimizing applications for speed, accessibility, and search engine visibility."
+      title: "Community Impact",
+      description: "Co-Founder of The Sunlight Initiative, raising $5000+ and establishing 15+ chapters nationwide to help underprivileged communities."
     }
   ];
 
@@ -40,14 +40,14 @@ const About = () => {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6 animate-fade-in">
             <p className="text-lg leading-relaxed">
-              With over 5 years in the tech industry, I've had the privilege of working with startups 
-              and established companies to bring their digital visions to life. My approach combines 
-              clean, efficient code with user-centered design principles.
+              As a Computer Science Honors student at Texas A&M (Class of 2029) and National Merit Scholar, 
+              I'm passionate about leveraging technology to create meaningful impact. My experience spans 
+              AI research, robotics engineering, and nonprofit leadership.
             </p>
             
             <p className="text-lg leading-relaxed">
-              When I'm not coding, you'll find me exploring new technologies, contributing to open source, 
-              or mentoring aspiring developers in my community.
+              When I'm not researching AI models or building robots, you'll find me playing tabla, 
+              tutoring students, or organizing community service initiatives through my nonprofit work.
             </p>
 
             <div className="space-y-4">
