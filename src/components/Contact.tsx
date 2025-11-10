@@ -21,9 +21,24 @@ const Contact = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // If Supabase is not configured, open email client instead
+    if (!supabase) {
+      const subject = encodeURIComponent(formData.subject);
+      const body = encodeURIComponent(
+        `Hi Amritaraj,\n\nMy name is ${formData.firstName} ${formData.lastName}.\n\n${formData.message}\n\nBest regards,\n${formData.firstName} ${formData.lastName}\n${formData.email}`
+      );
+      window.location.href = `mailto:amritnair23@gmail.com?subject=${subject}&body=${body}`;
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
+      if (!supabase) {
+        throw new Error("Supabase not configured");
+      }
+      
       const { error } = await supabase.functions.invoke('send-contact-email', {
         body: formData
       });
