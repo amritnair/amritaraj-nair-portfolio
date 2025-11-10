@@ -10,7 +10,7 @@ const Projects = () => {
       description: "Co-founded 501(c)(3) nonprofit with 15+ chapters nationwide, raising over $5000 for various charities and collecting 15,000+ books for underprivileged schools in the DFW area.",
       image: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=1200&q=80",
       technologies: ["Non-Profit Management", "Social Media", "Community Outreach", "Event Planning"],
-      liveUrl: "https://sunlightinitiative.com",
+      liveUrl: "https://www.instagram.com/sunlightinitiative/",
       githubUrl: "#",
       featured: true
     },
