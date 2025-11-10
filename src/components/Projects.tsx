@@ -17,7 +17,7 @@ const Projects = () => {
     {
       title: "AI Livestock Modeling Research", 
       description: "Developed Python-based nutrition model simulating beef cattle growth, reproduction, and nutrient balances using NRC standards at Texas A&M University.",
-      image: "/images/tamu-logo.png",
+      image: "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1200&q=80",
       technologies: ["Python", "NumPy", "Data Analysis", "Machine Learning"],
       liveUrl: "https://aggiecollaborate.tamu.edu",
       githubUrl: "https://github.com/CNM-University-of-Guelph/NASEM-Model-Python/blob/main/README.qmd",
