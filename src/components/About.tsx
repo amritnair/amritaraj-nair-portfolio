@@ -46,7 +46,7 @@ const About = () => {
             </p>
             
             <p className="text-lg leading-relaxed">
-              When I'm not researching AI models or building robots, you'll find me playing tabla, 
+              When I'm not researching AI models or building robots, you'll find me playing basketball, 
               tutoring students, or organizing community service initiatives through my nonprofit work.
             </p>
 
