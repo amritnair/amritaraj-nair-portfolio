@@ -54,6 +54,22 @@ const Hero = () => {
                 Download CV
               </a>
             </Button>
+            
+            <Button 
+              asChild
+              variant="secondary"
+              size="lg"
+              className="bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 text-white transition-all duration-300 shadow-glow"
+            >
+              <a
+                href="/Amritaraj_Nair_Resume.pdf"
+                download
+                aria-label="Download Resume (PDF)"
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Download my Resume
+              </a>
+            </Button>
           </div>
           
           <div className="flex justify-center gap-6 mt-12 animate-fade-in"
