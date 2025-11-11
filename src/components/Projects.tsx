@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ExternalLink, Github } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Projects = () => {
   const projects = [
@@ -163,9 +164,11 @@ const Projects = () => {
         </div>
 
         <div className="text-center mt-12 animate-fade-in" style={{ animationDelay: '0.5s' }}>
-          <Button variant="outline" size="lg" className="hover:bg-accent hover:text-accent-foreground">
-            View All Projects
-            <ExternalLink className="ml-2 h-4 w-4" />
+          <Button asChild variant="outline" size="lg" className="hover:bg-accent hover:text-accent-foreground">
+            <Link to="/projects">
+              View All Projects
+              <ExternalLink className="ml-2 h-4 w-4" />
+            </Link>
           </Button>
         </div>
       </div>
