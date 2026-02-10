@@ -3,15 +3,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, Github, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import frcRobotImage from "@/assets/frc-robot.jpg";
 import { PROJECTS } from "@/data/projects";
 import { useInView } from "@/hooks/use-in-view";
 
 const Projects = () => {
   const { ref, isInView } = useInView();
-  const featured = PROJECTS.filter((p) => p.featured).map((p) =>
-    p.title === "FRC Robotics Team 4192" ? { ...p, image: frcRobotImage } : p
-  );
+  const featured = PROJECTS.filter((p) => p.featured);
 
   return (
     <section id="projects" ref={ref} className="py-32 relative">

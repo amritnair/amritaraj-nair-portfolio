@@ -42,7 +42,7 @@ const Hero = () => {
             className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-10 leading-relaxed"
           >
             CS Honors @ Texas A&M · National Merit Scholar · Building AI systems, 
-            robots, and software that makes an impact.
+            and software that makes an impact.
           </motion.p>
 
           <motion.div

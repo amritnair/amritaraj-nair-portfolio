@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
-import { Code2, Cpu, Users, GraduationCap } from "lucide-react";
+import { Code2, GraduationCap } from "lucide-react";
 import { useInView } from "@/hooks/use-in-view";
 
 const About = () => {
@@ -14,7 +14,6 @@ const About = () => {
   const highlights = [
     { icon: GraduationCap, label: "CS Honors", detail: "Texas A&M '29" },
     { icon: Code2, label: "AI Research", detail: "NRC Models" },
-    { icon: Cpu, label: "Robotics", detail: "FRC Lead" },
   ];
 
   return (
@@ -48,7 +47,7 @@ const About = () => {
               </p>
               <p className="text-muted-foreground text-lg leading-relaxed">
                 From developing Python-based AI models for livestock nutrition at Texas A&M
-                to leading circuit design on an award-winning FRC robotics team, I bring 
+                to building full-stack and AI-powered applications, I bring 
                 engineering rigor to every project I touch.
               </p>
 

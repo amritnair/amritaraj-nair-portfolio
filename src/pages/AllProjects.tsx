@@ -4,13 +4,10 @@ import { Button } from "@/components/ui/button";
 import { ExternalLink, Github, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { PROJECTS } from "@/data/projects";
-import frcRobotImage from "@/assets/frc-robot.jpg";
 import Navigation from "@/components/Navigation";
 
 const AllProjects = () => {
-  const projects = PROJECTS.map((p) =>
-    p.title === "FRC Robotics Team 4192" ? { ...p, image: frcRobotImage } : p
-  );
+  const projects = PROJECTS;
   const featured = projects.filter((p) => p.featured);
   const other = projects.filter((p) => !p.featured);
 
