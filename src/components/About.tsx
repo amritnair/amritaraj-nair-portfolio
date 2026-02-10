@@ -15,7 +15,6 @@ const About = () => {
     { icon: GraduationCap, label: "CS Honors", detail: "Texas A&M '29" },
     { icon: Code2, label: "AI Research", detail: "NRC Models" },
     { icon: Cpu, label: "Robotics", detail: "FRC Lead" },
-    { icon: Users, label: "501(c)(3)", detail: "15+ Chapters" },
   ];
 
   return (

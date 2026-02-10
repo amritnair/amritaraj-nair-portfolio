@@ -1,14 +1,5 @@
 export const PROJECTS = [
   {
-    title: "The Sunlight Initiative",
-    description: "Co-founded 501(c)(3) nonprofit with 15+ chapters nationwide, raising over $5000 for various charities and collecting 15,000+ books for underprivileged schools in the DFW area.",
-    image: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=1200&q=80",
-    technologies: ["Non-Profit Management", "Social Media", "Community Outreach", "Event Planning"],
-    liveUrl: "https://www.instagram.com/sunlightinitiative/",
-    githubUrl: "#",
-    featured: true
-  },
-  {
     title: "AI Livestock Modeling Research",
     description: "Developed Python-based nutrition model simulating beef cattle growth, reproduction, and nutrient balances using NRC standards at Texas A&M University.",
     image: "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1200&q=80",
