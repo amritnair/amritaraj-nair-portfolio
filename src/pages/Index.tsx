@@ -6,17 +6,17 @@ import Contact from "@/components/Contact";
 
 const Index = () => {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <Navigation />
       <Hero />
       <About />
       <Projects />
       <Contact />
-      
-      <footer className="bg-primary text-primary-foreground py-10 border-t border-white/10">
+
+      <footer className="border-t border-border/50 py-8">
         <div className="container mx-auto px-6 text-center">
-          <p className="text-sm opacity-90">
-            © 2025 Amritaraj Nair. Built with React, TypeScript & Tailwind CSS
+          <p className="text-xs text-muted-foreground mono">
+            © 2025 Amritaraj Nair · Built with React & TypeScript
           </p>
         </div>
       </footer>

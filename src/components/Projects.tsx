@@ -1,7 +1,7 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Github } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ExternalLink, Github, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import frcRobotImage from "@/assets/frc-robot.jpg";
 import { PROJECTS } from "@/data/projects";
@@ -9,96 +9,107 @@ import { useInView } from "@/hooks/use-in-view";
 
 const Projects = () => {
   const { ref, isInView } = useInView();
-  const projects = PROJECTS.map((p) =>
+  const featured = PROJECTS.filter((p) => p.featured).map((p) =>
     p.title === "FRC Robotics Team 4192" ? { ...p, image: frcRobotImage } : p
   );
 
   return (
-    <section
-      id="projects"
-      ref={ref}
-      className={`py-24 bg-muted/30 ${isInView ? "in-view" : ""}`}
-    >
+    <section id="projects" ref={ref} className="py-32 relative">
       <div className="container mx-auto px-6">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 animate-on-scroll">Featured Projects</h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto animate-on-scroll stagger-1">
-            A showcase of my work in research, robotics, nonprofit leadership, and community impact initiatives.
-          </p>
-        </div>
+        <div className="max-w-5xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6 }}
+          >
+            <p className="mono text-primary text-sm tracking-widest uppercase mb-4">Work</p>
+            <h2 className="text-4xl md:text-5xl font-bold mb-12 tracking-tight">
+              Featured <span className="text-gradient">Projects</span>
+            </h2>
+          </motion.div>
 
-        <div className="grid md:grid-cols-2 gap-8">
-          {projects.map((project, index) => (
-            <Card
-              key={project.title}
-              className={`group overflow-hidden shadow-card hover:shadow-hover transition-all duration-500 animate-on-scroll rounded-2xl border border-border/50 hover:border-accent/20 hover:-translate-y-2 ${
-                project.featured ? "md:col-span-2 lg:col-span-1" : ""
-              }`}
-              style={{ animationDelay: `${index * 0.08}s` }}
-            >
-              <div className="relative overflow-hidden">
-                <img
-                  src={project.image}
-                  alt={project.title}
-                  className="w-full h-48 object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="absolute bottom-4 left-4 right-4 flex gap-2">
-                    <Button asChild variant="secondary" size="sm" className="flex-1">
-                      <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" aria-label={`${project.title} website`}>
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                        Website
+          <div className="space-y-6">
+            {featured.map((project, index) => (
+              <motion.div
+                key={project.title}
+                initial={{ opacity: 0, y: 30 }}
+                animate={isInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.5, delay: 0.1 * (index + 1) }}
+                className="group relative rounded-2xl border border-border/50 bg-card overflow-hidden hover:border-primary/20 hover:shadow-hover transition-all duration-500"
+              >
+                <div className="grid md:grid-cols-5 gap-0">
+                  <div className="md:col-span-2 overflow-hidden">
+                    <img
+                      src={project.image}
+                      alt={project.title}
+                      className="w-full h-48 md:h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                  </div>
+                  <div className="md:col-span-3 p-6 md:p-8 flex flex-col justify-between">
+                    <div>
+                      <h3 className="text-xl font-bold mb-3 group-hover:text-primary transition-colors">
+                        {project.title}
+                      </h3>
+                      <p className="text-muted-foreground leading-relaxed mb-4 text-sm">
+                        {project.description}
+                      </p>
+                      <div className="flex flex-wrap gap-1.5 mb-6">
+                        {project.technologies.map((tech) => (
+                          <Badge
+                            key={tech}
+                            variant="outline"
+                            className="text-[10px] border-border/50 text-muted-foreground rounded-full"
+                          >
+                            {tech}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex gap-3">
+                      <a
+                        href={project.liveUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 transition-colors"
+                      >
+                        <ExternalLink className="h-3.5 w-3.5" />
+                        Live
                       </a>
-                    </Button>
-                    {project.githubUrl && project.githubUrl !== "#" && (
-                      <Button asChild variant="outline" size="sm" className="flex-1">
-                        <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" aria-label={`${project.title} code on GitHub`}>
-                          <Github className="w-4 h-4 mr-2" />
-                          Code
+                      {project.githubUrl && project.githubUrl !== "#" && (
+                        <a
+                          href={project.githubUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          <Github className="h-3.5 w-3.5" />
+                          Source
                         </a>
-                      </Button>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
+            ))}
+          </div>
 
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <CardTitle className="text-xl group-hover:text-accent transition-colors">
-                    {project.title}
-                  </CardTitle>
-                  {project.featured && (
-                    <Badge variant="secondary" className="bg-accent/10 text-accent border-accent/20">
-                      Featured
-                    </Badge>
-                  )}
-                </div>
-              </CardHeader>
-
-              <CardContent className="space-y-4">
-                <p className="text-muted-foreground leading-relaxed">
-                  {project.description}
-                </p>
-                
-                <div className="flex flex-wrap gap-2">
-                  {project.technologies.map((tech) => (
-                    <Badge key={tech} variant="outline" className="text-xs">
-                      {tech}
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        <div className="text-center mt-12 animate-on-scroll stagger-4">
-          <Button asChild variant="outline" size="lg" className="hover:bg-accent hover:text-accent-foreground transition-all duration-300 hover:scale-105 rounded-full px-8">
-            <Link to="/projects">
-              View All Projects
-              <ExternalLink className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="mt-12"
+          >
+            <Button
+              asChild
+              variant="outline"
+              className="rounded-full px-6 border-border hover:border-primary/50 hover:bg-primary/5 transition-all duration-300"
+            >
+              <Link to="/projects">
+                All Projects
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </motion.div>
         </div>
       </div>
     </section>
