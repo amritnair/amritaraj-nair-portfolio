@@ -42,6 +42,24 @@ const Projects = () => {
       liveUrl: "https://theori.io/blog/aixcc-and-roboduck-63447",
       githubUrl: "https://github.com/theori-io/aixcc-afc-archive/",
       featured: false
+    },
+    {
+      title: "ClinicalHours",
+      description: "Web platform for tracking and managing clinical hours, helping healthcare students and professionals meet certification requirements.",
+      image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=80",
+      technologies: ["Web App", "Healthcare", "Tracking"],
+      liveUrl: "https://clinicalhours.org",
+      githubUrl: "#",
+      featured: false
+    },
+    {
+      title: "Harbor",
+      description: "Disaster preparedness and response platform to help communities plan for and recover from emergencies.",
+      image: "https://images.unsplash.com/photo-1540962351504-03099e0a754b?auto=format&fit=crop&w=1200&q=80",
+      technologies: ["Web App", "Disaster Response", "Community"],
+      liveUrl: "https://harbordisaster.xyz",
+      githubUrl: "#",
+      featured: false
     }
   ];
 
@@ -70,65 +88,19 @@ const Projects = () => {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <div className="absolute bottom-4 left-4 right-4 flex gap-2">
-                    {project.title === "The Sunlight Initiative" ? (
-                      <Button asChild variant="secondary" size="sm" className="flex-1">
-                        <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" aria-label={`${project.title} website`}>
-                          <ExternalLink className="w-4 h-4 mr-2" />
-                          Website
+                    <Button asChild variant="secondary" size="sm" className="flex-1">
+                      <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" aria-label={`${project.title} website`}>
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        Website
+                      </a>
+                    </Button>
+                    {project.githubUrl && project.githubUrl !== "#" && (
+                      <Button asChild variant="outline" size="sm" className="flex-1">
+                        <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" aria-label={`${project.title} code on GitHub`}>
+                          <Github className="w-4 h-4 mr-2" />
+                          Code
                         </a>
                       </Button>
-                    ) : project.title === "AI Livestock Modeling Research" ? (
-                      <>
-                        <Button asChild variant="secondary" size="sm" className="flex-1">
-                          <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" aria-label={`${project.title} website`}>
-                            <ExternalLink className="w-4 h-4 mr-2" />
-                            Website
-                          </a>
-                        </Button>
-                        <Button asChild variant="outline" size="sm" className="flex-1">
-                          <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" aria-label={`${project.title} code on GitHub`}>
-                            <Github className="w-4 h-4 mr-2" />
-                            Code
-                          </a>
-                        </Button>
-                      </>
-                    ) : project.title === "FRC Robotics Team 4192" ? (
-                      <Button asChild variant="secondary" size="sm" className="flex-1">
-                        <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" aria-label={`${project.title} website`}>
-                          <ExternalLink className="w-4 h-4 mr-2" />
-                          Website
-                        </a>
-                      </Button>
-                    ) : project.title === "Cybersecurity Research" ? (
-                      <>
-                        <Button asChild variant="secondary" size="sm" className="flex-1">
-                          <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" aria-label={`${project.title} website`}>
-                            <ExternalLink className="w-4 h-4 mr-2" />
-                            Website
-                          </a>
-                        </Button>
-                        <Button asChild variant="outline" size="sm" className="flex-1">
-                          <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" aria-label={`${project.title} code on GitHub`}>
-                            <Github className="w-4 h-4 mr-2" />
-                            Code
-                          </a>
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <Button asChild variant="secondary" size="sm" className="flex-1">
-                          <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" aria-label={`${project.title} live demo`}>
-                            <ExternalLink className="w-4 h-4 mr-2" />
-                            Live Demo
-                          </a>
-                        </Button>
-                        <Button asChild variant="outline" size="sm" className="flex-1">
-                          <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" aria-label={`${project.title} code on GitHub`}>
-                            <Github className="w-4 h-4 mr-2" />
-                            Code
-                          </a>
-                        </Button>
-                      </>
                     )}
                   </div>
                 </div>
