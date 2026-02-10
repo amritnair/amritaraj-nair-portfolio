@@ -7,6 +7,7 @@ import { Mail, Phone, MapPin, Send } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useInView } from "@/hooks/use-in-view";
 
 const Contact = () => {
   const { toast } = useToast();
@@ -96,20 +97,25 @@ const Contact = () => {
     }
   ];
 
+  const { ref, isInView } = useInView();
+
   return (
-    <section id="contact" className="py-20 bg-gradient-to-b from-background to-muted/30">
+    <section
+      id="contact"
+      ref={ref}
+      className={`py-24 bg-gradient-to-b from-background to-muted/30 ${isInView ? "in-view" : ""}`}
+    >
       <div className="container mx-auto px-6">
-        <div className="text-center mb-16 animate-fade-in">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">Get In Touch</h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Have a project in mind or just want to chat? I'd love to hear from you. 
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 animate-on-scroll">Get In Touch</h2>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto animate-on-scroll stagger-1">
+            Have a project in mind or just want to chat? I'd love to hear from you.
             Let's discuss how we can work together to bring your ideas to life.
           </p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
-          {/* Contact Form */}
-          <Card className="shadow-card hover:shadow-hover transition-smooth animate-fade-in">
+          <Card className="shadow-card hover:shadow-hover transition-all duration-300 animate-on-scroll stagger-1 rounded-2xl border border-border/50 hover:border-accent/20">
             <CardHeader>
               <CardTitle className="text-2xl">Send a Message</CardTitle>
             </CardHeader>
@@ -185,8 +191,7 @@ const Contact = () => {
             </CardContent>
           </Card>
 
-          {/* Contact Information */}
-          <div className="space-y-8 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+          <div className="space-y-8 animate-on-scroll stagger-2">
             <div>
               <h3 className="text-2xl font-bold mb-6">Let's Connect</h3>
               <p className="text-muted-foreground text-lg leading-relaxed mb-8">
@@ -197,8 +202,8 @@ const Contact = () => {
             </div>
 
             <div className="space-y-4">
-              {contactInfo.map((info, index) => (
-                <Card key={info.title} className="group cursor-pointer hover:shadow-card transition-smooth">
+              {contactInfo.map((info) => (
+                <Card key={info.title} className="group cursor-pointer hover:shadow-card transition-all duration-300 rounded-2xl border border-border/50 hover:border-accent/20 hover:-translate-y-0.5">
                   <CardContent className="flex items-center gap-4 p-6">
                     <div className="p-3 rounded-lg bg-accent/10 group-hover:bg-accent/20 transition-colors">
                       <info.icon className="h-5 w-5 text-accent" />
@@ -214,7 +219,7 @@ const Contact = () => {
               ))}
             </div>
 
-            <Card className="bg-gradient-to-br from-accent/5 to-accent/10 border-accent/20">
+            <Card className="bg-gradient-to-br from-accent/5 to-accent/10 border-accent/20 rounded-2xl">
               <CardContent className="p-6">
                 <h4 className="font-semibold text-lg mb-2">Quick Response</h4>
                 <p className="text-muted-foreground">

@@ -13,11 +13,10 @@ const Index = () => {
       <Projects />
       <Contact />
       
-      {/* Footer */}
-      <footer className="bg-primary text-primary-foreground py-8">
+      <footer className="bg-primary text-primary-foreground py-10 border-t border-white/10">
         <div className="container mx-auto px-6 text-center">
-          <p className="text-sm opacity-80">
-            © 2024 Amritaraj Nair. Built with React, TypeScript & Tailwind CSS
+          <p className="text-sm opacity-90">
+            © 2025 Amritaraj Nair. Built with React, TypeScript & Tailwind CSS
           </p>
         </div>
       </footer>

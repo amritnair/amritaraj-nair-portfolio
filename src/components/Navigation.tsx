@@ -32,36 +32,36 @@ const Navigation = () => {
 
   return (
     <>
-      <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-        isScrolled 
-          ? 'bg-background/95 backdrop-blur-sm shadow-card border-b' 
-          : 'bg-transparent'
-      }`}>
+      <nav
+        className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+          isScrolled
+            ? "bg-background/90 backdrop-blur-md shadow-lg border-b border-border/50"
+            : "bg-transparent"
+        }`}
+      >
         <div className="container mx-auto px-6">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
+          <div className="flex items-center justify-between h-16 md:h-18">
             <button
               onClick={() => scrollToSection("#")}
-              className="text-xl font-bold hover:text-accent transition-colors"
+              className="text-xl font-bold tracking-tight hover:text-accent transition-colors duration-300"
             >
               Amritaraj Nair
             </button>
 
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-8">
+            <div className="hidden md:flex items-center gap-1">
               {navItems.map((item) => (
                 <button
                   key={item.name}
                   onClick={() => scrollToSection(item.href)}
-                  className="text-foreground/80 hover:text-accent transition-colors font-medium"
+                  className="px-4 py-2 text-foreground/80 hover:text-accent rounded-full hover:bg-muted/80 transition-all duration-300 font-medium"
                 >
                   {item.name}
                 </button>
               ))}
-              <Button 
-                onClick={() => scrollToSection("#contact")} 
+              <Button
+                onClick={() => scrollToSection("#contact")}
                 size="sm"
-                className="bg-accent hover:bg-accent/90 text-accent-foreground shadow-glow"
+                className="ml-2 rounded-full bg-accent hover:bg-accent/90 text-accent-foreground shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300"
               >
                 Hire Me
               </Button>
@@ -84,7 +84,7 @@ const Navigation = () => {
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-40 md:hidden">
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)} />
-          <div className="fixed top-16 left-0 right-0 bg-background border-b shadow-card">
+          <div className="fixed top-16 left-0 right-0 bg-background/95 backdrop-blur-md border-b shadow-lg">
             <div className="container mx-auto px-6 py-6 space-y-4">
               {navItems.map((item) => (
                 <button
