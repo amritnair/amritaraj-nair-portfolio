@@ -11,7 +11,7 @@ export const PROJECTS = [
   {
     title: "ClinicalHours",
     description: "Web platform for tracking and managing clinical hours, helping healthcare students and professionals meet certification requirements.",
-    image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=80",
+    image: "/amritaraj-nair-portfolio/images/clinicalhours-thumbnail.png",
     technologies: ["Web App", "Healthcare", "Tracking"],
     liveUrl: "https://clinicalhours.org",
     githubUrl: "#",
