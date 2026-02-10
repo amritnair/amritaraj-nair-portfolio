@@ -20,7 +20,7 @@ export const PROJECTS = [
   {
     title: "Harbor",
     description: "Disaster preparedness and response platform to help communities plan for and recover from emergencies. Won 1st Place in the 2026 TidalTAMU Google Gemini Track.",
-    image: "https://images.unsplash.com/photo-1540962351504-03099e0a754b?auto=format&fit=crop&w=1200&q=80",
+    image: "/amritaraj-nair-portfolio/images/harbor-thumbnail.png",
     technologies: ["Web App", "Disaster Response", "Community"],
     liveUrl: "https://harbordisaster.xyz",
     githubUrl: "#",
