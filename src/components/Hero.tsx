@@ -9,9 +9,19 @@ const Hero = () => {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden grid-bg noise">
-      {/* Glow orbs */}
-      <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-primary/10 blur-[120px]" />
-      <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-primary/5 blur-[100px]" />
+      {/* Rotating planet — pure CSS animation */}
+      <div className="hero-planet-wrapper" aria-hidden="true">
+        <div className="hero-planet-glow" />
+        <img
+          src="/amritaraj-nair-portfolio/images/planet.png"
+          alt=""
+          className="hero-planet-img"
+          draggable={false}
+        />
+      </div>
+
+      {/* Vignette overlay for depth */}
+      <div className="hero-vignette" />
 
       <div className="container mx-auto px-6 relative z-10">
         <div className="max-w-4xl mx-auto">
