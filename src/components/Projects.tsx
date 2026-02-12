@@ -4,20 +4,22 @@ import { Button } from "@/components/ui/button";
 import { ExternalLink, Github, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { PROJECTS } from "@/data/projects";
-import { useInView } from "@/hooks/use-in-view";
+
+const vp = { once: false, amount: 0.25 };
+const ease = [0.25, 0.1, 0.25, 1];
 
 const Projects = () => {
-  const { ref, isInView } = useInView();
   const featured = PROJECTS.filter((p) => p.featured);
 
   return (
-    <section id="projects" ref={ref} className="py-32 relative">
+    <section id="projects" className="py-32 relative">
       <div className="container mx-auto px-6">
         <div className="max-w-5xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease }}
+            viewport={vp}
           >
             <p className="mono text-primary text-sm tracking-widest uppercase mb-4">Work</p>
             <h2 className="text-4xl md:text-5xl font-bold mb-12 tracking-tight">
@@ -26,12 +28,13 @@ const Projects = () => {
           </motion.div>
 
           <div className="space-y-6">
-            {featured.map((project, index) => (
+            {featured.map((project) => (
               <motion.div
                 key={project.title}
-                initial={{ opacity: 0, y: 30 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.5, delay: 0.1 * (index + 1) }}
+                initial={{ opacity: 0, y: 35 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.55, ease }}
+                viewport={{ once: true, amount: 0.2 }}
                 className="group relative rounded-2xl border border-border/50 bg-card overflow-hidden hover:border-primary/20 hover:shadow-hover transition-all duration-500"
               >
                 <div className="grid md:grid-cols-5 gap-0">
@@ -91,10 +94,11 @@ const Projects = () => {
           </div>
 
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.5, delay: 0.5 }}
             className="mt-12"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease }}
+            viewport={vp}
           >
             <Button
               asChild
