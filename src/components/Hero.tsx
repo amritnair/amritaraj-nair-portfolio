@@ -1,6 +1,7 @@
 import { motion, useInView } from "framer-motion";
 import { useEffect, useState, useRef } from "react";
-import { ArrowDown, Download, Github, Linkedin } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ArrowDown, FileText, Github, Linkedin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Globe3D from "@/components/Globe3D";
 
@@ -145,6 +146,8 @@ const BlurFadeIn = ({
 /*  Hero component                                                    */
 /* ------------------------------------------------------------------ */
 const Hero = () => {
+  const navigate = useNavigate();
+
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   };
@@ -195,15 +198,13 @@ const Hero = () => {
               View Projects
             </Button>
             <Button
-              asChild
               variant="outline"
               size="lg"
+              onClick={() => navigate("/resume")}
               className="rounded-full px-8 border-border hover:border-primary/50 hover:bg-primary/5 transition-all duration-300"
             >
-              <a href="/Amritaraj_Nair_Resume.pdf" download>
-                <Download className="mr-2 h-4 w-4" />
-                Resume
-              </a>
+              <FileText className="mr-2 h-4 w-4" />
+              Resume
             </Button>
           </BlurFadeIn>
 
