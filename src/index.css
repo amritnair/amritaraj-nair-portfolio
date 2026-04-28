@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,52 +6,44 @@
 
 @layer base {
   :root {
-    --background: 0 0% 0%;
-    --foreground: 0 0% 100%;
+    --background: 36 33% 97%;
+    --foreground: 20 15% 10%;
 
-    --card: 0 0% 8%;
-    --card-foreground: 0 0% 98%;
+    --card: 34 28% 93%;
+    --card-foreground: 20 15% 10%;
 
-    --popover: 0 0% 8%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 34 28% 93%;
+    --popover-foreground: 20 15% 10%;
 
-    --primary: 210 100% 60%;
+    --primary: 24 72% 53%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 10%;
-    --secondary-foreground: 0 0% 95%;
+    --secondary: 33 25% 88%;
+    --secondary-foreground: 20 15% 20%;
 
-    --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 70%;
+    --muted: 33 22% 90%;
+    --muted-foreground: 22 16% 46%;
 
-    --accent: 210 100% 60%;
+    --accent: 24 72% 53%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 210 30% 18%;
-    --input: 210 30% 18%;
-    --ring: 210 100% 60%;
+    --border: 32 20% 84%;
+    --input: 32 20% 84%;
+    --ring: 24 72% 53%;
 
     --radius: 0.75rem;
 
-    --gradient-hero: linear-gradient(135deg, hsl(210 100% 60%) 0%, hsl(210 100% 50%) 100%);
-    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 0%), hsl(0 0% 5%));
-    --gradient-card: linear-gradient(145deg, hsl(0 0% 8%), hsl(210 20% 8%));
-
-    --shadow-card: 0 4px 24px hsl(0 0% 0% / 0.5);
-    --shadow-hover: 0 8px 40px hsl(210 100% 60% / 0.25);
-    --shadow-glow: 0 0 60px hsl(210 100% 60% / 0.35);
-
-    --sidebar-background: 0 0% 8%;
-    --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 210 100% 60%;
+    --sidebar-background: 34 28% 93%;
+    --sidebar-foreground: 20 15% 10%;
+    --sidebar-primary: 24 72% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 12%;
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 210 30% 18%;
-    --sidebar-ring: 210 100% 60%;
+    --sidebar-accent: 33 22% 90%;
+    --sidebar-accent-foreground: 20 15% 10%;
+    --sidebar-border: 32 20% 84%;
+    --sidebar-ring: 24 72% 53%;
   }
 }
 
@@ -62,44 +54,24 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
   }
 
   ::selection {
-    background: hsl(210 100% 60% / 0.35);
-    color: hsl(0 0% 100%);
+    background: hsl(24 72% 53% / 0.25);
+    color: hsl(20 15% 10%);
   }
 }
 
 @layer components {
-  .hero-gradient {
-    background: var(--gradient-hero);
-  }
-
-  .card-gradient {
-    background: var(--gradient-card);
-  }
-
-  .shadow-card {
-    box-shadow: var(--shadow-card);
-  }
-
-  .shadow-hover {
-    box-shadow: var(--shadow-hover);
-  }
-
-  .shadow-glow {
-    box-shadow: var(--shadow-glow);
-  }
-
   .glass {
-    background: hsl(0 0% 8% / 0.7);
+    background: hsl(36 33% 97% / 0.85);
     backdrop-filter: blur(20px);
-    border: 1px solid hsl(210 50% 50% / 0.15);
+    border: 1px solid hsl(32 20% 84% / 0.8);
   }
 
   .text-gradient {
-    background: linear-gradient(135deg, hsl(210 100% 65%), hsl(200 100% 75%));
+    background: linear-gradient(135deg, hsl(24 72% 48%), hsl(32 85% 60%));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -108,14 +80,21 @@
   .mono {
     font-family: 'JetBrains Mono', monospace;
   }
+
+  .shadow-card {
+    box-shadow: 0 2px 16px hsl(20 20% 10% / 0.08), 0 1px 4px hsl(20 20% 10% / 0.05);
+  }
+
+  .shadow-hover {
+    box-shadow: 0 8px 32px hsl(24 72% 53% / 0.18), 0 2px 8px hsl(20 20% 10% / 0.06);
+  }
+
+  .shadow-glow {
+    box-shadow: 0 0 40px hsl(24 72% 53% / 0.25);
+  }
 }
 
-/* ===== Animated grid background (breathing pulse) ===== */
-@keyframes grid-pulse {
-  0%, 100% { opacity: 0.03; }
-  50%      { opacity: 0.06; }
-}
-
+/* ===== Animated subtle dot grid ===== */
 .grid-bg {
   position: relative;
 }
@@ -124,51 +103,27 @@
   content: "";
   position: fixed;
   inset: 0;
-  background-image:
-    linear-gradient(hsl(0 0% 100% / 1) 1px, transparent 1px),
-    linear-gradient(90deg, hsl(0 0% 100% / 1) 1px, transparent 1px);
-  background-size: 60px 60px;
-  opacity: 0.04;
-  animation: grid-pulse 8s ease-in-out infinite;
+  background-image: radial-gradient(circle, hsl(20 15% 10% / 0.07) 1px, transparent 1px);
+  background-size: 28px 28px;
   pointer-events: none;
   z-index: 0;
 }
 
-/* ===== Cursor glow (follows mouse) ===== */
-.cursor-glow {
-  position: fixed;
-  width: 350px;
-  height: 350px;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 1;
-  opacity: 0;
-  transform: translate(-50%, -50%);
-  background: radial-gradient(
-    circle,
-    hsl(210 100% 60% / 0.12) 0%,
-    hsl(210 100% 60% / 0.05) 40%,
-    transparent 70%
-  );
-  transition: opacity 0.4s ease, left 0.05s linear, top 0.05s linear;
-  will-change: left, top;
-}
-
-/* ===== Floating orbs (parallax blurred circles) ===== */
+/* ===== Floating orbs ===== */
 .floating-orb {
   position: absolute;
   border-radius: 50%;
   pointer-events: none;
   z-index: 0;
   will-change: transform;
-  filter: blur(120px);
+  filter: blur(100px);
 }
 
 .floating-orb-1 {
   width: 500px;
   height: 500px;
-  background: hsl(210 100% 50% / 0.10);
-  top: 25%;
+  background: hsl(24 72% 53% / 0.08);
+  top: 10%;
   left: -8%;
   animation: orb-float-1 20s ease-in-out infinite;
 }
@@ -176,28 +131,19 @@
 .floating-orb-2 {
   width: 400px;
   height: 400px;
-  background: hsl(210 100% 50% / 0.08);
-  top: 55%;
+  background: hsl(33 85% 65% / 0.07);
+  top: 50%;
   right: -6%;
   animation: orb-float-2 25s ease-in-out infinite;
 }
 
 .floating-orb-3 {
-  width: 450px;
-  height: 450px;
-  background: hsl(200 100% 50% / 0.09);
-  top: 80%;
-  left: 15%;
-  animation: orb-float-3 22s ease-in-out infinite;
-}
-
-.floating-orb-4 {
   width: 350px;
   height: 350px;
-  background: hsl(220 100% 50% / 0.08);
-  top: 10%;
-  right: 10%;
-  animation: orb-float-4 18s ease-in-out infinite;
+  background: hsl(40 90% 65% / 0.06);
+  top: 75%;
+  left: 20%;
+  animation: orb-float-3 22s ease-in-out infinite;
 }
 
 @keyframes orb-float-1 {
@@ -212,102 +158,39 @@
   0%, 100% { transform: translateY(0) translateX(0); }
   50%      { transform: translateY(-35px) translateX(-15px); }
 }
-@keyframes orb-float-4 {
-  0%, 100% { transform: translateY(0) translateX(0); }
-  50%      { transform: translateY(25px) translateX(15px); }
-}
 
-/* ===== Section glow dividers ===== */
-.section-glow {
-  position: relative;
-}
-
-.section-glow::before {
-  content: "";
-  position: absolute;
-  top: -80px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 70%;
-  height: 160px;
-  background: radial-gradient(
-    ellipse at 50% 50%,
-    hsl(210 100% 60% / 0.15) 0%,
-    hsl(210 100% 50% / 0.08) 50%,
-    transparent 80%
-  );
+/* ===== Cursor glow ===== */
+.cursor-glow {
+  position: fixed;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
   pointer-events: none;
-  z-index: 0;
-}
-
-/* Noise texture */
-.noise::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  opacity: 0.02;
-  pointer-events: none;
-}
-
-/* ===== 3D Globe (Three.js) ===== */
-
-/* Container for the Three.js canvas */
-.globe-3d {
-  position: absolute;
-  top: 50%;
-  left: 50%;
+  z-index: 1;
+  opacity: 0;
   transform: translate(-50%, -50%);
-  width:  min(85vw, 620px);
-  height: min(85vw, 620px);
-  z-index: 0;
-  pointer-events: none;
+  background: radial-gradient(
+    circle,
+    hsl(24 72% 53% / 0.07) 0%,
+    hsl(24 72% 53% / 0.03) 40%,
+    transparent 70%
+  );
+  transition: opacity 0.4s ease, left 0.05s linear, top 0.05s linear;
+  will-change: left, top;
 }
 
-.globe-3d canvas {
-  display: block;
-}
-
-/* Full-bleed red ambient glow — seamlessly fills hero behind & around globe */
+/* ===== Hero section warm glow ===== */
 .hero-glow {
   position: absolute;
   inset: 0;
   z-index: 0;
   pointer-events: none;
   background: radial-gradient(
-    circle at 50% 50%,
-    hsl(0 65% 28% / 0.45) 0%,
-    hsl(0 55% 24% / 0.32) 20%,
-    hsl(0 50% 20% / 0.22) 40%,
-    hsl(0 45% 16% / 0.12) 60%,
-    hsl(0 40% 14% / 0.06) 80%,
-    transparent 100%
+    ellipse 80% 60% at 50% 40%,
+    hsl(24 72% 53% / 0.06) 0%,
+    hsl(33 85% 65% / 0.04) 40%,
+    transparent 70%
   );
-}
-
-/* Soft vignette — just darkens the very edges, doesn't fight the red */
-.hero-vignette {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background: radial-gradient(
-    ellipse 80% 80% at 50% 50%,
-    transparent 45%,
-    hsl(0 50% 14% / 0.2) 70%,
-    hsl(0 50% 14% / 0.45) 100%
-  );
-}
-
-/* Scroll reveal */
-.reveal {
-  opacity: 0;
-  transform: translateY(30px);
-  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.reveal.visible {
-  opacity: 1;
-  transform: translateY(0);
 }
 
 /* Scrollbar */
@@ -315,12 +198,12 @@
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: hsl(0 0% 0%);
+  background: hsl(36 33% 94%);
 }
 ::-webkit-scrollbar-thumb {
-  background: hsl(210 100% 60% / 0.4);
+  background: hsl(24 72% 53% / 0.4);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(210 100% 60% / 0.6);
+  background: hsl(24 72% 53% / 0.65);
 }

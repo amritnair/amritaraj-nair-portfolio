@@ -34,7 +34,9 @@ const Navigation = () => {
     <>
       <nav
         className={`fixed top-0 w-full z-50 transition-all duration-500 ${
-          isScrolled ? "glass shadow-lg" : "bg-transparent"
+          isScrolled
+            ? "glass shadow-sm border-b border-border/60"
+            : "bg-transparent"
         }`}
       >
         <div className="container mx-auto px-6">
@@ -44,14 +46,14 @@ const Navigation = () => {
                 onClick={() => scrollToSection("#")}
                 className="mono text-sm font-semibold tracking-wider text-primary hover:text-primary/80 transition-colors"
               >
-                AN<span className="text-foreground">.</span>
+                AN<span className="text-foreground/40">.</span>
               </button>
             ) : (
               <Link
                 to="/"
                 className="mono text-sm font-semibold tracking-wider text-primary hover:text-primary/80 transition-colors"
               >
-                AN<span className="text-foreground">.</span>
+                AN<span className="text-foreground/40">.</span>
               </Link>
             )}
 
@@ -61,15 +63,19 @@ const Navigation = () => {
                   <button
                     key={item.name}
                     onClick={() => scrollToSection(item.href)}
-                    className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors duration-300"
+                    className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200"
                   >
                     {item.name}
                   </button>
                 ))}
               <Button
-                onClick={() => (isHome ? scrollToSection("#contact") : (window.location.href = "/#contact"))}
+                onClick={() =>
+                  isHome
+                    ? scrollToSection("#contact")
+                    : (window.location.href = "/#contact")
+                }
                 size="sm"
-                className="ml-3 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-xs px-5"
+                className="ml-3 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-xs px-5 shadow-sm"
               >
                 Get in Touch
               </Button>
@@ -78,7 +84,7 @@ const Navigation = () => {
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden text-foreground"
+              className="md:hidden text-foreground hover:bg-muted"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
               {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -89,8 +95,11 @@ const Navigation = () => {
 
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-40 md:hidden">
-          <div className="fixed inset-0 bg-background/95 backdrop-blur-xl" onClick={() => setIsMobileMenuOpen(false)} />
-          <div className="fixed top-16 left-0 right-0 p-6 space-y-2 z-50">
+          <div
+            className="fixed inset-0 bg-background/90 backdrop-blur-xl"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+          <div className="fixed top-16 left-0 right-0 p-6 space-y-2 z-50 bg-background border-b border-border">
             {isHome &&
               navItems.map((item) => (
                 <button
@@ -103,7 +112,9 @@ const Navigation = () => {
               ))}
             <Button
               onClick={() => {
-                isHome ? scrollToSection("#contact") : (window.location.href = "/#contact");
+                isHome
+                  ? scrollToSection("#contact")
+                  : (window.location.href = "/#contact");
               }}
               className="w-full mt-4 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full"
             >

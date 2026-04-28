@@ -66,7 +66,7 @@ const BackgroundEffects = () => {
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(210, 100%, 65%, ${p.opacity})`;
+        ctx.fillStyle = `hsla(24, 72%, 53%, ${p.opacity * 0.5})`;
         ctx.fill();
       }
     };

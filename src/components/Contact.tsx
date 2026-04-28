@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 const vp = { once: false, amount: 0.3 };
-const ease = [0.25, 0.1, 0.25, 1];
+const ease = [0.25, 0.1, 0.25, 1] as const;
 
 const Contact = () => {
   const { toast } = useToast();
@@ -38,7 +38,7 @@ const Contact = () => {
       if (error) throw error;
       toast({ title: "Message sent!", description: "I'll get back to you soon." });
       setFormData({ firstName: "", lastName: "", email: "", subject: "", message: "" });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error:", error);
       toast({ title: "Error", description: "Failed to send. Try emailing directly.", variant: "destructive" });
     } finally {
@@ -66,8 +66,8 @@ const Contact = () => {
             transition={{ duration: 0.6, ease }}
             viewport={vp}
           >
-            <p className="mono text-primary text-sm tracking-widest uppercase mb-4">Contact</p>
-            <h2 className="text-4xl md:text-5xl font-bold mb-12 tracking-tight">
+            <p className="mono text-primary text-xs tracking-widest uppercase mb-4">Contact</p>
+            <h2 className="text-4xl md:text-5xl font-semibold mb-12 tracking-tight text-foreground">
               Let's <span className="text-gradient">connect</span>
             </h2>
           </motion.div>
@@ -82,14 +82,14 @@ const Contact = () => {
                 viewport={vp}
               >
                 <div className="space-y-2">
-                  <Label htmlFor="firstName" className="text-sm text-muted-foreground">First Name</Label>
+                  <Label htmlFor="firstName" className="text-xs text-muted-foreground mono uppercase tracking-widest">First Name</Label>
                   <Input id="firstName" value={formData.firstName} onChange={handleChange} required
-                    className="bg-card border-border/50 focus:border-primary/50 rounded-xl" placeholder="John" />
+                    className="bg-background border-border focus:border-primary/50 rounded-xl" placeholder="John" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="lastName" className="text-sm text-muted-foreground">Last Name</Label>
+                  <Label htmlFor="lastName" className="text-xs text-muted-foreground mono uppercase tracking-widest">Last Name</Label>
                   <Input id="lastName" value={formData.lastName} onChange={handleChange} required
-                    className="bg-card border-border/50 focus:border-primary/50 rounded-xl" placeholder="Doe" />
+                    className="bg-background border-border focus:border-primary/50 rounded-xl" placeholder="Doe" />
                 </div>
               </motion.div>
 
@@ -100,9 +100,9 @@ const Contact = () => {
                 transition={{ duration: 0.5, ease }}
                 viewport={vp}
               >
-                <Label htmlFor="email" className="text-sm text-muted-foreground">Email</Label>
+                <Label htmlFor="email" className="text-xs text-muted-foreground mono uppercase tracking-widest">Email</Label>
                 <Input id="email" type="email" value={formData.email} onChange={handleChange} required
-                  className="bg-card border-border/50 focus:border-primary/50 rounded-xl" placeholder="john@example.com" />
+                  className="bg-background border-border focus:border-primary/50 rounded-xl" placeholder="john@example.com" />
               </motion.div>
 
               <motion.div
@@ -112,9 +112,9 @@ const Contact = () => {
                 transition={{ duration: 0.5, ease }}
                 viewport={vp}
               >
-                <Label htmlFor="subject" className="text-sm text-muted-foreground">Subject</Label>
+                <Label htmlFor="subject" className="text-xs text-muted-foreground mono uppercase tracking-widest">Subject</Label>
                 <Input id="subject" value={formData.subject} onChange={handleChange} required
-                  className="bg-card border-border/50 focus:border-primary/50 rounded-xl" placeholder="Project Collaboration" />
+                  className="bg-background border-border focus:border-primary/50 rounded-xl" placeholder="Project Collaboration" />
               </motion.div>
 
               <motion.div
@@ -124,9 +124,9 @@ const Contact = () => {
                 transition={{ duration: 0.5, ease }}
                 viewport={vp}
               >
-                <Label htmlFor="message" className="text-sm text-muted-foreground">Message</Label>
+                <Label htmlFor="message" className="text-xs text-muted-foreground mono uppercase tracking-widest">Message</Label>
                 <Textarea id="message" value={formData.message} onChange={handleChange} required
-                  className="bg-card border-border/50 focus:border-primary/50 rounded-xl min-h-32" placeholder="Tell me about your project..." />
+                  className="bg-background border-border focus:border-primary/50 rounded-xl min-h-32 resize-none" placeholder="Tell me about your project..." />
               </motion.div>
 
               <motion.div
@@ -138,7 +138,7 @@ const Contact = () => {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-full shadow-glow hover:shadow-[0_0_80px_hsl(0_85%_55%/0.25)] transition-all duration-500"
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-full shadow-glow transition-all duration-300"
                 >
                   <Send className="mr-2 h-4 w-4" />
                   {isSubmitting ? "Sending..." : "Send Message"}
@@ -146,7 +146,7 @@ const Contact = () => {
               </motion.div>
             </form>
 
-            <div className="space-y-6">
+            <div className="space-y-8">
               <motion.p
                 className="text-muted-foreground text-lg leading-relaxed"
                 initial={{ opacity: 0, y: 25 }}
@@ -154,22 +154,22 @@ const Contact = () => {
                 transition={{ duration: 0.5, ease }}
                 viewport={vp}
               >
-                I'm always open to discussing new projects, research opportunities, 
+                I'm always open to discussing new projects, research opportunities,
                 or ways to create impact through technology.
               </motion.p>
 
-              <div className="space-y-3 pt-4">
+              <div className="space-y-3">
                 {links.map((link, i) => (
                   <motion.a
                     key={link.label}
                     href={link.href}
                     initial={{ opacity: 0, x: 20 }}
                     whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.45, delay: i * 0.06, ease }}
+                    transition={{ duration: 0.45, delay: i * 0.07, ease }}
                     viewport={vp}
-                    className="flex items-center gap-4 p-4 rounded-xl border border-border/50 hover:border-primary/20 hover:bg-card transition-all duration-300 group"
+                    className="flex items-center gap-4 p-4 rounded-xl border border-border bg-card hover:border-primary/30 hover:shadow-card transition-all duration-200 group"
                   >
-                    <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/15 transition-colors">
+                    <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 transition-colors shrink-0">
                       <link.icon className="h-4 w-4 text-primary" />
                     </div>
                     <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors flex-1">
