@@ -6,44 +6,45 @@
 
 @layer base {
   :root {
-    --background: 35 28% 95%;
-    --foreground: 20 20% 10%;
+    --background: 220 22% 97%;
+    --foreground: 220 20% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 20 20% 10%;
+    --card-foreground: 220 20% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 20 20% 10%;
+    --popover-foreground: 220 20% 10%;
 
-    --primary: 22 95% 50%;
+    /* Mavs royal blue */
+    --primary: 214 88% 48%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 35 20% 90%;
-    --secondary-foreground: 20 20% 10%;
+    --secondary: 220 18% 91%;
+    --secondary-foreground: 220 20% 10%;
 
-    --muted: 35 18% 91%;
-    --muted-foreground: 25 10% 48%;
+    --muted: 220 16% 92%;
+    --muted-foreground: 220 10% 46%;
 
-    --accent: 22 95% 50%;
+    --accent: 214 88% 48%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 30 15% 86%;
-    --input: 30 15% 86%;
-    --ring: 22 95% 50%;
+    --border: 220 14% 87%;
+    --input: 220 14% 87%;
+    --ring: 214 88% 48%;
 
     --radius: 1rem;
 
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 20 20% 10%;
-    --sidebar-primary: 22 95% 50%;
+    --sidebar-foreground: 220 20% 10%;
+    --sidebar-primary: 214 88% 48%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 35 18% 91%;
-    --sidebar-accent-foreground: 20 20% 10%;
-    --sidebar-border: 30 15% 86%;
-    --sidebar-ring: 22 95% 50%;
+    --sidebar-accent: 220 16% 92%;
+    --sidebar-accent-foreground: 220 20% 10%;
+    --sidebar-border: 220 14% 87%;
+    --sidebar-ring: 214 88% 48%;
   }
 }
 
@@ -61,8 +62,8 @@
   }
 
   ::selection {
-    background: hsl(22 95% 50% / 0.2);
-    color: hsl(20 20% 10%);
+    background: hsl(214 88% 48% / 0.18);
+    color: hsl(220 20% 10%);
   }
 }
 
@@ -76,39 +77,39 @@
     font-optical-sizing: auto;
   }
 
-  /* Orange → amber gradient */
+  /* Blue → cyan gradient (Arrival sky) */
   .text-gradient {
-    background: linear-gradient(135deg, hsl(22 95% 48%), hsl(38 100% 52%));
+    background: linear-gradient(135deg, hsl(214 88% 48%), hsl(188 90% 48%));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
   .glass {
-    background: hsl(35 28% 95% / 0.88);
+    background: hsl(220 22% 97% / 0.88);
     backdrop-filter: blur(20px);
-    border: 1px solid hsl(30 15% 86%);
+    border: 1px solid hsl(220 14% 87%);
   }
 
   .card-glow {
     transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
   }
   .card-glow:hover {
-    box-shadow: 0 6px 28px hsl(22 95% 50% / 0.12), 0 2px 8px hsl(0 0% 0% / 0.05);
-    border-color: hsl(22 95% 50% / 0.3) !important;
+    box-shadow: 0 6px 28px hsl(214 88% 48% / 0.14), 0 2px 8px hsl(0 0% 0% / 0.05);
+    border-color: hsl(214 88% 48% / 0.35) !important;
     transform: translateY(-2px);
   }
 
   .btn-primary {
-    background: hsl(22 95% 50%);
-    box-shadow: 0 2px 16px hsl(22 95% 50% / 0.4), 0 1px 4px hsl(0 0% 0% / 0.08);
+    background: hsl(214 88% 48%);
+    box-shadow: 0 2px 16px hsl(214 88% 48% / 0.45), 0 1px 4px hsl(0 0% 0% / 0.08);
     transition: all 0.2s ease;
     color: #fff;
     border: none;
   }
   .btn-primary:hover {
-    background: hsl(22 95% 45%);
-    box-shadow: 0 4px 24px hsl(22 95% 50% / 0.55), 0 2px 8px hsl(0 0% 0% / 0.1);
+    background: hsl(214 88% 42%);
+    box-shadow: 0 4px 24px hsl(214 88% 48% / 0.6), 0 2px 8px hsl(0 0% 0% / 0.1);
   }
 
   .section-num {
@@ -116,7 +117,7 @@
     font-size: 0.68rem;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: hsl(22 95% 50%);
+    color: hsl(214 88% 48%);
   }
 }
 
@@ -125,42 +126,45 @@
   content: "";
   position: fixed;
   inset: 0;
-  background-image: radial-gradient(circle, hsl(25 20% 60% / 0.35) 1px, transparent 1px);
+  background-image: radial-gradient(circle, hsl(214 40% 70% / 0.3) 1px, transparent 1px);
   background-size: 28px 28px;
   pointer-events: none;
   z-index: 0;
 }
 
-/* ===== Decorative blobs (hero) ===== */
+/* ===== Decorative blobs ===== */
+/* Mavs blue — top right */
 .blob-orange {
   position: absolute;
-  width: 580px; height: 580px;
+  width: 600px; height: 600px;
   border-radius: 50%;
-  background: hsl(22 95% 60%);
+  background: hsl(214 88% 58%);
   filter: blur(130px);
-  opacity: 0.26;
+  opacity: 0.28;
   top: -15%; right: -10%;
   pointer-events: none;
   animation: blob-drift-1 18s ease-in-out infinite;
 }
+/* Violet / Arrival purple — bottom left */
 .blob-teal {
   position: absolute;
-  width: 460px; height: 460px;
+  width: 480px; height: 480px;
   border-radius: 50%;
-  background: hsl(175 70% 48%);
+  background: hsl(268 75% 62%);
   filter: blur(120px);
-  opacity: 0.18;
+  opacity: 0.22;
   bottom: -10%; left: -8%;
   pointer-events: none;
   animation: blob-drift-2 24s ease-in-out infinite;
 }
+/* Amber / Shot Sensei warmth — center */
 .blob-yellow {
   position: absolute;
-  width: 360px; height: 360px;
+  width: 380px; height: 380px;
   border-radius: 50%;
-  background: hsl(45 100% 60%);
+  background: hsl(38 95% 60%);
   filter: blur(110px);
-  opacity: 0.16;
+  opacity: 0.18;
   top: 40%; left: 30%;
   pointer-events: none;
   animation: blob-drift-3 20s ease-in-out infinite;
@@ -185,11 +189,11 @@
 .scroll-progress {
   position: fixed;
   top: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, hsl(22 95% 50%), hsl(38 100% 52%));
+  height: 3px;
+  background: linear-gradient(90deg, hsl(214 88% 48%), hsl(188 90% 52%), hsl(268 75% 62%));
   transform-origin: 0%;
   z-index: 100;
-  box-shadow: 0 0 10px hsl(22 95% 50% / 0.5);
+  box-shadow: 0 0 12px hsl(214 88% 48% / 0.6);
 }
 
 /* ===== Marquee ===== */
@@ -213,7 +217,7 @@
   z-index: 2;
   opacity: 0;
   transform: translate(-50%, -50%);
-  background: radial-gradient(circle, hsl(22 95% 55% / 0.08) 0%, transparent 65%);
+  background: radial-gradient(circle, hsl(214 88% 55% / 0.08) 0%, transparent 65%);
   transition: opacity 0.5s ease;
   will-change: left, top;
 }
@@ -230,12 +234,12 @@
 }
 
 /* ===== Section color tints ===== */
-.section-sage  { background: hsl(150 30% 92%); }
-.section-blue  { background: hsl(210 45% 93%); }
-.section-peach { background: hsl(22 55% 94%); }
+.section-sage  { background: hsl(214 30% 93%); }
+.section-blue  { background: hsl(268 28% 93%); }
+.section-peach { background: hsl(38 45% 93%); }
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: hsl(35 28% 93%); }
-::-webkit-scrollbar-thumb { background: hsl(22 95% 50% / 0.4); border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: hsl(22 95% 50% / 0.65); }
+::-webkit-scrollbar-track { background: hsl(220 22% 95%); }
+::-webkit-scrollbar-thumb { background: hsl(214 88% 48% / 0.4); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(214 88% 48% / 0.65); }

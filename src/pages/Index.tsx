@@ -36,7 +36,7 @@ const Marquee = () => {
         {doubled.map((item, i) => (
           <span key={i} className="mono text-[11px] text-muted-foreground whitespace-nowrap px-8 flex items-center gap-6">
             {item}
-            <span className="text-orange-300 text-xs">·</span>
+            <span className="text-blue-300 text-xs">·</span>
           </span>
         ))}
       </div>

@@ -102,8 +102,8 @@ const Contact = () => {
             <motion.div initial={{ opacity: 0, x: 24 }} whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.1, ease }} viewport={vp}
               className="lg:col-span-2 flex flex-col gap-5">
-              <div className="rounded-2xl border border-orange-200 bg-orange-50 p-6 shadow-sm">
-                <p className="font-semibold text-orange-700 mb-2 display">Looking to connect</p>
+              <div className="rounded-2xl border border-blue-200 bg-blue-50 p-6 shadow-sm">
+                <p className="font-semibold text-blue-700 mb-2 display">Looking to connect</p>
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   I'm actively looking for internships, research collaborations, and
                   interesting projects. If you're building something cool — let's talk.

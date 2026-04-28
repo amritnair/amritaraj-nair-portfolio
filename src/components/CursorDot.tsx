@@ -53,7 +53,7 @@ const CursorDot = () => {
         animate={{
           scale: hovered ? 2.5 : 1,
           opacity: visible ? 1 : 0,
-          backgroundColor: hovered ? "hsl(22 95% 50% / 0.12)" : "transparent",
+          backgroundColor: hovered ? "hsl(214 88% 48% / 0.12)" : "transparent",
         }}
         transition={{ scale: { type: "spring", stiffness: 200, damping: 24 }, opacity: { duration: 0.2 }, backgroundColor: { duration: 0.2 } }}
         className="fixed top-0 left-0 z-[9998] w-8 h-8 rounded-full border border-primary/40 pointer-events-none"

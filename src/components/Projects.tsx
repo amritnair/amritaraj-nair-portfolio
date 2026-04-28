@@ -83,7 +83,7 @@ const TiltCard = ({ project, index, onClick }: { project: Project; index: number
                 onClick={(e) => e.stopPropagation()}
                 className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/90 backdrop-blur-sm text-xs font-semibold text-foreground shadow-lg hover:bg-white transition-colors"
               >
-                <Play className="h-3.5 w-3.5 fill-current text-orange-500" />
+                <Play className="h-3.5 w-3.5 fill-current text-blue-500" />
                 Watch Demo
               </a>
             </div>

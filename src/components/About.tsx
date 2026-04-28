@@ -6,10 +6,10 @@ const vp = { once: true, amount: 0.15 };
 const ease = [0.22, 1, 0.36, 1] as const;
 
 const stats = [
-  { value: "2",   label: "Research\nPositions", color: "text-orange-500" },
-  { value: "3+",  label: "Hackathons\nWon",      color: "text-teal-600"  },
+  { value: "2",   label: "Research\nPositions", color: "text-blue-600"   },
+  { value: "3+",  label: "Hackathons\nWon",      color: "text-violet-600" },
   { value: "$70K",label: "Fund\nManaged",         color: "text-amber-600" },
-  { value: "10+", label: "Projects\nShipped",     color: "text-orange-400"},
+  { value: "10+", label: "Projects\nShipped",     color: "text-sky-600"   },
 ];
 
 const skills = [
@@ -18,7 +18,7 @@ const skills = [
   { name: "TypeScript",      color: "bg-sky-100 text-sky-800 border-sky-200"       },
   { name: "React",           color: "bg-cyan-100 text-cyan-800 border-cyan-200"    },
   { name: "FastAPI",         color: "bg-teal-100 text-teal-800 border-teal-200"    },
-  { name: "Java",            color: "bg-orange-100 text-orange-800 border-orange-200"},
+  { name: "Java",            color: "bg-amber-100 text-amber-800 border-amber-200"  },
   { name: "Machine Learning",color: "bg-violet-100 text-violet-800 border-violet-200"},
   { name: "OpenCV",          color: "bg-red-100 text-red-800 border-red-200"       },
   { name: "Supabase",        color: "bg-emerald-100 text-emerald-800 border-emerald-200"},
@@ -33,9 +33,9 @@ const facts = [
     icon: MapPin,
     label: "Flower Mound, TX",
     detail: "Born and raised in Flower Mound, Texas — a suburb of Dallas where I developed my love for the Mavs and Texas sunsets.",
-    color: "bg-orange-50 border-orange-200 text-orange-700",
-    detailBg: "bg-orange-50",
-    iconColor: "text-orange-500",
+    color: "bg-blue-50 border-blue-200 text-blue-700",
+    detailBg: "bg-blue-50",
+    iconColor: "text-blue-500",
   },
   {
     id: "school",
@@ -51,9 +51,9 @@ const facts = [
     icon: Trophy,
     label: "Basketball",
     detail: "Die-hard basketball fan. I bleed Mavs blue — Luka is special but LeBron is the GOAT. No debate.",
-    color: "bg-red-50 border-red-200 text-red-700",
-    detailBg: "bg-red-50",
-    iconColor: "text-red-500",
+    color: "bg-blue-50 border-blue-300 text-blue-800",
+    detailBg: "bg-blue-50",
+    iconColor: "text-blue-600",
   },
   {
     id: "dog",
@@ -154,7 +154,7 @@ const About = () => {
               <motion.div
                 whileHover={{ scale: 1.04 }}
                 transition={{ type: "spring", stiffness: 280, damping: 22 }}
-                className="w-36 h-36 rounded-2xl overflow-hidden ring-4 ring-orange-200 shadow-lg"
+                className="w-36 h-36 rounded-2xl overflow-hidden ring-4 ring-blue-200 shadow-lg"
               >
                 <img
                   src="/amritaraj-nair-portfolio/images/headshot.png"
@@ -167,7 +167,7 @@ const About = () => {
                 <p className="text-xs mono text-muted-foreground mt-1 tracking-wide">Amrit for short</p>
               </div>
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <MapPin className="h-3.5 w-3.5 text-orange-400" />
+                <MapPin className="h-3.5 w-3.5 text-blue-400" />
                 <span>Flower Mound, TX</span>
               </div>
             </motion.div>
@@ -237,8 +237,8 @@ const About = () => {
 
           {/* Currently building + tech stack */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card delay={0.35} className="bg-orange-50 border-orange-100">
-              <p className="text-xs mono text-orange-600 uppercase tracking-widest mb-4">Currently building</p>
+            <Card delay={0.35} className="bg-blue-50 border-blue-100">
+              <p className="text-xs mono text-blue-600 uppercase tracking-widest mb-4">Currently building</p>
               <div className="space-y-4">
                 {[
                   { name: "AlphaForge",    sub: "Robinhood + Scratch for quants" },
@@ -246,7 +246,7 @@ const About = () => {
                   { name: "ClinicalHours", sub: "AI receptionist for clinics"     },
                 ].map((item) => (
                   <div key={item.name} className="flex items-start gap-3">
-                    <div className="w-1.5 h-1.5 rounded-full bg-orange-400 mt-1.5 shrink-0" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 shrink-0" />
                     <div>
                       <p className="font-semibold text-sm text-foreground">{item.name}</p>
                       <p className="text-xs text-muted-foreground">{item.sub}</p>
