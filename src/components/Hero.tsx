@@ -112,7 +112,7 @@ const Hero = () => {
             transition={{ duration: 0.7, delay: 0.55 }}
             className="text-lg text-muted-foreground max-w-lg mx-auto mb-10 leading-relaxed"
           >
-            I build AI systems, quant tools, and products that win hackathons —
+            CS + Math at Texas A&amp;M. I build AI systems, quant tools, and products that win hackathons —
             from a Cornell-backed startup to a computer vision app pitched to Pear&nbsp;VC.
           </motion.p>
 
