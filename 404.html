@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Redirecting...</title>
+    <script>
+      (function() {
+        var l = window.location;
+        try {
+          sessionStorage.setItem('gh:redirect', l.pathname + l.search + l.hash);
+        } catch (e) {}
+        // Redirect to the app base
+        l.replace('/amritaraj-nair-portfolio/');
+      })();
+    </script>
+    <noscript>
+      <meta http-equiv="refresh" content="0; url=/amritaraj-nair-portfolio/" />
+    </noscript>
+  </head>
+  <body></body>
+  </html>
+
+
