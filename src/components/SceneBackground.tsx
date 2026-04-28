@@ -197,6 +197,196 @@ export const FloatingSymbols = () => (
   </div>
 );
 
+/* ── Ambient globe + market widgets ──────────────────────────────── */
+export const MarketAtmosphere = () => {
+  const float = {
+    y: [0, -18, 0],
+    rotate: [0, 1.5, 0],
+  };
+  const slowFloat = {
+    y: [0, 22, 0],
+    x: [0, -10, 0],
+    rotate: [0, -2, 0],
+  };
+
+  return (
+    <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
+      <motion.div
+        className="absolute -left-20 top-[18%] hidden lg:block opacity-45"
+        animate={slowFloat}
+        transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+      >
+        <GlobeCanvas size={190} color="hsl(188 90% 46%)" opacity={0.5} />
+      </motion.div>
+
+      <motion.div
+        className="absolute right-[8%] top-[58%] hidden xl:block opacity-35"
+        animate={float}
+        transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 1.2 }}
+      >
+        <GlobeCanvas size={150} color="hsl(268 75% 58%)" opacity={0.48} />
+      </motion.div>
+
+      <motion.div
+        className="absolute left-[8%] top-[54%] hidden lg:block market-widget market-widget-blue"
+        animate={{ x: [0, 12, 0], y: [0, -14, 0] }}
+        transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
+      >
+        <div className="market-widget-label">
+          <span>AFG</span>
+          <strong>+12.4%</strong>
+        </div>
+        <StockChart width={230} height={92} color="hsl(152 65% 45%)" />
+      </motion.div>
+
+      <motion.div
+        className="absolute right-[5%] top-[24%] hidden lg:block market-widget market-widget-violet"
+        animate={{ x: [0, -14, 0], y: [0, 16, 0] }}
+        transition={{ duration: 19, repeat: Infinity, ease: "easeInOut", delay: 0.7 }}
+      >
+        <div className="market-widget-label">
+          <span>VISION</span>
+          <strong>LIVE</strong>
+        </div>
+        <CandlestickChart width={210} height={108} opacity={0.72} />
+      </motion.div>
+
+      <motion.div
+        className="absolute left-[64%] bottom-[12%] hidden xl:block market-tape"
+        animate={{ y: [0, -10, 0] }}
+        transition={{ duration: 11, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
+      >
+        {["ML +3.8", "CV +7.1", "AI +9.6", "QNT +5.4"].map((item) => (
+          <span key={item}>{item}</span>
+        ))}
+      </motion.div>
+
+      <motion.div
+        className="absolute left-[22%] top-[12%] hidden xl:block market-tape market-tape-warm"
+        animate={{ y: [0, 12, 0], x: [0, 8, 0] }}
+        transition={{ duration: 14, repeat: Infinity, ease: "easeInOut", delay: 1.6 }}
+      >
+        {["BACKTEST", "SIGNAL", "EDGE", "ALPHA"].map((item) => (
+          <span key={item}>{item}</span>
+        ))}
+      </motion.div>
+    </div>
+  );
+};
+
+/* ── Ambient coding widgets ──────────────────────────────────────── */
+const codePanels = [
+  {
+    className: "left-[4%] top-[72%] hidden xl:block",
+    title: "strategy.ts",
+    accent: "cyan",
+    lines: ["const edge = await model.score(data);", "if (edge > 0.72) deploy(strategy);", "portfolio.rebalance({ risk: 0.18 });"],
+  },
+  {
+    className: "right-[9%] top-[74%] hidden xl:block",
+    title: "vision.py",
+    accent: "violet",
+    lines: ["frame = camera.read()", "pose = yolo.track(frame)", "coach.speak(feedback)"],
+  },
+  {
+    className: "left-[58%] top-[7%] hidden 2xl:block",
+    title: "agent.log",
+    accent: "amber",
+    lines: ["gmail.scan(inbox)", "clinics = mapbox.nearby(zip)", "scheduler.follow_up()"],
+  },
+];
+
+const codeTokens = [
+  "useEffect()", "async", "return", "git push", "npm run build", "<Canvas />", "FastAPI", "supabase.from()", "YOLOv8", "OpenAI", "vectorize()", "backtest()",
+];
+
+export const CodeAtmosphere = () => (
+  <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
+    {codePanels.map((panel, i) => (
+      <motion.div
+        key={panel.title}
+        className={`code-window ${panel.accent === "violet" ? "code-window-violet" : panel.accent === "amber" ? "code-window-amber" : ""} ${panel.className}`}
+        animate={{
+          y: [0, i % 2 === 0 ? -14 : 16, 0],
+          x: [0, i % 2 === 0 ? 8 : -10, 0],
+          rotate: [0, i % 2 === 0 ? 0.7 : -0.8, 0],
+        }}
+        transition={{ duration: 15 + i * 3, repeat: Infinity, ease: "easeInOut", delay: i * 0.8 }}
+      >
+        <div className="code-window-bar">
+          <span />
+          <span />
+          <span />
+          <strong>{panel.title}</strong>
+        </div>
+        <div className="code-window-body">
+          {panel.lines.map((line, lineIndex) => (
+            <motion.p
+              key={line}
+              initial={{ width: "0%" }}
+              animate={{ width: ["0%", "100%", "100%", "0%"] }}
+              transition={{
+                duration: 7.5,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: lineIndex * 0.45 + i,
+                times: [0, 0.34, 0.76, 1],
+              }}
+            >
+              <span>{String(lineIndex + 1).padStart(2, "0")}</span>{line}
+            </motion.p>
+          ))}
+        </div>
+      </motion.div>
+    ))}
+
+    <div className="code-rain code-rain-left hidden lg:block">
+      {["0101", "const", "await", "tsx", "api", "node", "main", "diff"].map((item, i) => (
+        <span key={`${item}-${i}`}>{item}</span>
+      ))}
+    </div>
+    <div className="code-rain code-rain-right hidden lg:block">
+      {["repo", "lint", "json", "hook", "type", "ship", "test", "prod"].map((item, i) => (
+        <span key={`${item}-${i}`}>{item}</span>
+      ))}
+    </div>
+
+    {codeTokens.map((token, i) => (
+      <motion.span
+        key={token}
+        className="code-token hidden md:block"
+        style={{
+          left: `${8 + ((i * 17) % 84)}%`,
+          top: `${10 + ((i * 23) % 78)}%`,
+        }}
+        animate={{
+          y: [0, -18 - (i % 4) * 4, 0],
+          opacity: [0, 0.32, 0.32, 0],
+          scale: [0.95, 1, 1, 0.95],
+        }}
+        transition={{
+          duration: 12 + (i % 5) * 2,
+          repeat: Infinity,
+          ease: "easeInOut",
+          delay: (i * 0.8) % 8,
+        }}
+      >
+        {token}
+      </motion.span>
+    ))}
+
+    <motion.div
+      className="commit-stack hidden xl:flex"
+      animate={{ y: [0, -12, 0] }}
+      transition={{ duration: 13, repeat: Infinity, ease: "easeInOut" }}
+    >
+      {["+ auth", "+ cv", "+ quant"].map((item) => (
+        <span key={item}>{item}</span>
+      ))}
+    </motion.div>
+  </div>
+);
+
 /* ── Candlestick mini chart (decorative) ──────────────────────────── */
 const candles = [
   { o: 60, c: 72, h: 78, l: 55, green: true },

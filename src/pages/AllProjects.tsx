@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { PROJECTS } from "@/data/projects";
 import Navigation from "@/components/Navigation";
 import BackgroundEffects from "@/components/BackgroundEffects";
+import { CodeAtmosphere, MarketAtmosphere } from "@/components/SceneBackground";
 
 const AllProjects = () => {
   const projects = PROJECTS;
@@ -64,6 +65,8 @@ const AllProjects = () => {
   return (
     <div className="min-h-screen bg-background relative overflow-hidden noise dot-grid aurora-stage">
       <BackgroundEffects />
+      <MarketAtmosphere />
+      <CodeAtmosphere />
       <Navigation />
       <div className="container mx-auto px-6 pt-24 pb-20 relative z-10">
         <div className="max-w-5xl mx-auto">

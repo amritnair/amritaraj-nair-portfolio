@@ -5,7 +5,7 @@ import Projects from "@/components/Projects";
 import Contact from "@/components/Contact";
 import BackgroundEffects from "@/components/BackgroundEffects";
 import CursorDot from "@/components/CursorDot";
-import { FloatingSymbols } from "@/components/SceneBackground";
+import { CodeAtmosphere, FloatingSymbols, MarketAtmosphere } from "@/components/SceneBackground";
 import { motion, useScroll, useSpring } from "framer-motion";
 
 const ScrollProgress = () => {
@@ -49,6 +49,8 @@ const Index = () => (
   <div className="min-h-screen bg-background relative overflow-hidden noise dot-grid aurora-stage">
     <CursorDot />
     <FloatingSymbols />
+    <MarketAtmosphere />
+    <CodeAtmosphere />
     <ScrollProgress />
     <BackgroundEffects />
     <Navigation />
