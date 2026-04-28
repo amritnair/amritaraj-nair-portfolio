@@ -196,6 +196,30 @@
   33% { transform: translate(-30px, 20px) scale(1.05); }
   66% { transform: translate(20px, -40px) scale(0.93); }
 }
+/* Pink — mid left */
+.blob-pink {
+  position: absolute;
+  width: 340px; height: 340px;
+  border-radius: 50%;
+  background: hsl(320 80% 60%);
+  filter: blur(110px);
+  opacity: 0.16;
+  top: 25%; left: -5%;
+  pointer-events: none;
+  animation: blob-drift-2 22s ease-in-out infinite reverse;
+}
+/* Lime / teal — bottom right */
+.blob-lime {
+  position: absolute;
+  width: 300px; height: 300px;
+  border-radius: 50%;
+  background: hsl(175 70% 48%);
+  filter: blur(100px);
+  opacity: 0.15;
+  bottom: 15%; right: 5%;
+  pointer-events: none;
+  animation: blob-drift-1 26s ease-in-out infinite reverse;
+}
 
 /* ===== Scroll progress ===== */
 .scroll-progress {

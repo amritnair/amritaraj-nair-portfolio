@@ -5,6 +5,7 @@ import Projects from "@/components/Projects";
 import Contact from "@/components/Contact";
 import BackgroundEffects from "@/components/BackgroundEffects";
 import CursorDot from "@/components/CursorDot";
+import { FloatingSymbols } from "@/components/SceneBackground";
 import { motion, useScroll, useSpring } from "framer-motion";
 
 const ScrollProgress = () => {
@@ -47,6 +48,7 @@ const Marquee = () => {
 const Index = () => (
   <div className="min-h-screen bg-background relative overflow-hidden noise dot-grid">
     <CursorDot />
+    <FloatingSymbols />
     <ScrollProgress />
     <BackgroundEffects />
     <Navigation />
