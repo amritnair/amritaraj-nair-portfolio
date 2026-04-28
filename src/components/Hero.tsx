@@ -203,7 +203,7 @@ const Hero = () => {
             </Magnetic>
             <Magnetic>
               <Button variant="outline" size="lg" onClick={() => navigate("/resume")}
-                className="px-8 bg-white/60 backdrop-blur-sm border-border hover:border-primary/50 hover:bg-white transition-all duration-200 font-mono">
+                className="px-8 bg-cyan-50/70 backdrop-blur-sm border-border hover:border-primary/50 hover:bg-white/90 transition-all duration-200 font-mono">
                 <FileText className="mr-2 h-4 w-4" />
                 Resume
               </Button>
@@ -221,7 +221,7 @@ const Hero = () => {
               { href: "https://www.linkedin.com/in/amritaraj-nair-227063313", icon: Linkedin, label: "LinkedIn" },
             ].map(({ href, icon: Icon, label }) => (
               <a key={label} href={href} target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2 border border-border bg-white/60 backdrop-blur-sm text-xs mono text-muted-foreground hover:text-foreground hover:border-primary/50 hover:bg-white transition-all duration-200">
+                className="inline-flex items-center gap-2 px-4 py-2 border border-border bg-blue-50/70 backdrop-blur-sm text-xs mono text-muted-foreground hover:text-foreground hover:border-primary/50 hover:bg-white/90 transition-all duration-200">
                 <Icon className="h-4 w-4" />
                 {label}
                 <ArrowUpRight className="h-3 w-3 opacity-40" />

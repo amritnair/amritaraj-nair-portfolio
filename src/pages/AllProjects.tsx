@@ -5,6 +5,7 @@ import { ExternalLink, Github, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { PROJECTS } from "@/data/projects";
 import Navigation from "@/components/Navigation";
+import BackgroundEffects from "@/components/BackgroundEffects";
 
 const AllProjects = () => {
   const projects = PROJECTS;
@@ -16,7 +17,7 @@ const AllProjects = () => {
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.05 * index }}
-      className="group rounded-2xl border border-border/50 bg-card overflow-hidden hover:border-primary/20 hover:shadow-hover transition-all duration-500"
+      className="group rounded-2xl border border-border/70 bg-card/95 backdrop-blur-sm overflow-hidden hover:border-primary/25 hover:shadow-hover transition-all duration-500"
     >
       <div className="overflow-hidden">
         <img
@@ -61,9 +62,10 @@ const AllProjects = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative overflow-hidden noise dot-grid aurora-stage">
+      <BackgroundEffects />
       <Navigation />
-      <div className="container mx-auto px-6 pt-24 pb-20">
+      <div className="container mx-auto px-6 pt-24 pb-20 relative z-10">
         <div className="max-w-5xl mx-auto">
           <Button asChild variant="ghost" size="sm" className="mb-8 text-muted-foreground hover:text-foreground">
             <Link to="/"><ArrowLeft className="w-4 h-4 mr-2" />Back</Link>

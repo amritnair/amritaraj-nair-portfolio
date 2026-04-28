@@ -53,7 +53,7 @@ const TiltCard = ({ project, index, onClick }: { project: Project; index: number
         onMouseMove={onMove}
         onMouseLeave={onLeave}
         onClick={onClick}
-        className="group relative border border-border bg-card overflow-hidden card-glow cursor-pointer select-none"
+        className="group relative border border-border bg-card/95 overflow-hidden card-glow cursor-pointer select-none backdrop-blur-sm"
       >
         {/* Gradient accent bar */}
         <div className={`h-1 w-full ${m.accentBar}`} />
@@ -81,7 +81,7 @@ const TiltCard = ({ project, index, onClick }: { project: Project; index: number
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className="flex items-center gap-2 px-4 py-2 bg-white/90 backdrop-blur-sm text-xs font-mono font-semibold text-foreground shadow-lg hover:bg-white transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-cyan-50/95 backdrop-blur-sm text-xs font-mono font-semibold text-foreground shadow-lg hover:bg-white transition-colors"
               >
                 <Play className="h-3.5 w-3.5 fill-current text-blue-500" />
                 Watch Demo
@@ -135,7 +135,7 @@ const Projects = () => {
 
   return (
     <>
-      <section id="projects" className="py-32 relative z-10">
+      <section id="projects" className="py-32 relative z-10 section-peach">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="max-w-5xl mx-auto">
             <motion.div

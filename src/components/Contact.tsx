@@ -70,28 +70,28 @@ const Contact = () => {
                 <div className="space-y-2">
                   <Label htmlFor="firstName" className="text-[10px] mono text-muted-foreground uppercase tracking-[0.2em]">First</Label>
                   <Input id="firstName" value={formData.firstName} onChange={handleChange} required
-                    className="bg-white border-border focus:border-primary/50 rounded-none font-mono" placeholder="John" />
+                    className="bg-blue-50/80 border-border focus:border-primary/50 rounded-none font-mono" placeholder="John" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lastName" className="text-[10px] mono text-muted-foreground uppercase tracking-[0.2em]">Last</Label>
                   <Input id="lastName" value={formData.lastName} onChange={handleChange} required
-                    className="bg-white border-border focus:border-primary/50 rounded-none font-mono" placeholder="Doe" />
+                    className="bg-blue-50/80 border-border focus:border-primary/50 rounded-none font-mono" placeholder="Doe" />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-[10px] mono text-muted-foreground uppercase tracking-[0.2em]">Email</Label>
                 <Input id="email" type="email" value={formData.email} onChange={handleChange} required
-                  className="bg-white border-border focus:border-primary/50 rounded-none font-mono" placeholder="john@example.com" />
+                  className="bg-blue-50/80 border-border focus:border-primary/50 rounded-none font-mono" placeholder="john@example.com" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="subject" className="text-[10px] mono text-muted-foreground uppercase tracking-[0.2em]">Subject</Label>
                 <Input id="subject" value={formData.subject} onChange={handleChange} required
-                  className="bg-white border-border focus:border-primary/50 rounded-none font-mono" placeholder="Project Collaboration" />
+                  className="bg-blue-50/80 border-border focus:border-primary/50 rounded-none font-mono" placeholder="Project Collaboration" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="message" className="text-[10px] mono text-muted-foreground uppercase tracking-[0.2em]">Message</Label>
                 <Textarea id="message" value={formData.message} onChange={handleChange} required
-                  className="bg-white border-border focus:border-primary/50 rounded-none min-h-32 resize-none font-mono" placeholder="Tell me about your project or idea..." />
+                  className="bg-blue-50/80 border-border focus:border-primary/50 rounded-none min-h-32 resize-none font-mono" placeholder="Tell me about your project or idea..." />
               </div>
               <Button type="submit" disabled={isSubmitting}
                 className="w-full btn-primary font-mono font-semibold border-0 text-white">
@@ -115,7 +115,7 @@ const Contact = () => {
                   <motion.a key={link.label} href={link.href}
                     initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: 0.2 + i * 0.07, ease }} viewport={vp}
-                    className={`flex items-center gap-4 p-4 border border-border border-l-4 ${link.accent} bg-card hover:border-primary/25 transition-all duration-200 group card-glow`}>
+                    className={`flex items-center gap-4 p-4 border border-border border-l-4 ${link.accent} bg-card/95 backdrop-blur-sm hover:border-primary/25 transition-all duration-200 group card-glow`}>
                     <link.icon className={`h-4 w-4 ${link.color} shrink-0`} />
                     <span className="text-sm mono text-muted-foreground group-hover:text-foreground transition-colors flex-1 truncate">
                       {link.label}

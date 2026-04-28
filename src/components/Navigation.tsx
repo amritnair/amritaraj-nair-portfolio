@@ -35,7 +35,7 @@ const Navigation = () => {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-          isScrolled ? "bg-white/90 backdrop-blur-xl border-b border-border shadow-sm" : "bg-transparent"
+          isScrolled ? "bg-blue-50/90 backdrop-blur-xl border-b border-border shadow-sm" : "bg-transparent"
         }`}
       >
         <div className="container mx-auto px-6">
@@ -56,7 +56,7 @@ const Navigation = () => {
             <div className="hidden md:flex items-center gap-1">
               {isHome && navItems.map((item) => (
                 <button key={item.name} onClick={() => scrollToSection(item.href)}
-                  className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 rounded-lg hover:bg-black/5">
+                  className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 rounded-lg hover:bg-cyan-100/70">
                   {item.name}
                 </button>
               ))}
@@ -69,7 +69,7 @@ const Navigation = () => {
             </div>
 
             <button
-              className="md:hidden p-2 rounded-lg hover:bg-black/5 transition-colors text-foreground"
+              className="md:hidden p-2 rounded-lg hover:bg-cyan-100/70 transition-colors text-foreground"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
               {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -89,7 +89,7 @@ const Navigation = () => {
             <motion.div
               initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }}
               transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-              className="fixed top-16 left-0 right-0 z-50 p-6 space-y-2 md:hidden bg-white border-b border-border shadow-lg"
+              className="fixed top-16 left-0 right-0 z-50 p-6 space-y-2 md:hidden bg-blue-50 border-b border-border shadow-lg"
             >
               {isHome && navItems.map((item) => (
                 <button key={item.name} onClick={() => scrollToSection(item.href)}

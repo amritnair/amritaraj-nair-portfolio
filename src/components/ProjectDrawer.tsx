@@ -61,7 +61,7 @@ const ProjectDrawer = ({ project, onClose }: Props) => {
             className="fixed bottom-0 left-0 right-0 z-50 max-h-[90vh] overflow-y-auto bg-card shadow-2xl border-t border-border"
           >
             {/* Drag handle */}
-            <div className="sticky top-0 bg-card/95 backdrop-blur-sm pt-5 pb-4 px-6 z-10 border-b border-border">
+            <div className="sticky top-0 bg-blue-50/95 backdrop-blur-sm pt-5 pb-4 px-6 z-10 border-b border-border">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="display text-2xl font-black text-foreground">{project.title}</h2>

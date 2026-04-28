@@ -84,7 +84,7 @@ const Card = ({ children, className = "", delay = 0 }: { children: React.ReactNo
     whileInView={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.5, delay, ease }}
     viewport={vp}
-    className={`border border-border bg-card card-glow p-7 ${className}`}
+    className={`border border-border bg-card/95 backdrop-blur-sm card-glow p-7 ${className}`}
   >
     {children}
   </motion.div>
@@ -125,7 +125,7 @@ const About = () => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.05, ease }}
               viewport={vp}
-              className="bg-card flex flex-col items-center justify-center p-8 gap-5"
+              className="bg-card/95 backdrop-blur-sm flex flex-col items-center justify-center p-8 gap-5"
             >
               <motion.div
                 whileHover={{ scale: 1.03 }}
@@ -218,7 +218,7 @@ const About = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.45, delay: 0.1 + i * 0.05, ease }}
                 viewport={vp}
-                className="bg-card p-7"
+                className="bg-card/95 backdrop-blur-sm p-7"
               >
                 <motion.p
                   initial={{ opacity: 0, scale: 0.6 }}
@@ -242,7 +242,7 @@ const About = () => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2, ease }}
               viewport={vp}
-              className="bg-card p-7 border-l-4 border-l-primary"
+              className="bg-card/95 backdrop-blur-sm p-7 border-l-4 border-l-primary"
             >
               <p className="text-[10px] mono text-blue-600 uppercase tracking-[0.22em] mb-5">Currently building</p>
               <div className="space-y-5">
@@ -264,7 +264,7 @@ const About = () => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.25, ease }}
               viewport={vp}
-              className="bg-card p-7 md:col-span-2"
+              className="bg-card/95 backdrop-blur-sm p-7 md:col-span-2"
             >
               <p className="text-[10px] mono text-muted-foreground uppercase tracking-[0.22em] mb-5">Tech Stack</p>
               <div className="flex flex-wrap gap-2">

@@ -30,14 +30,14 @@ const items = [
 const Marquee = () => {
   const doubled = [...items, ...items];
   return (
-    <div className="relative z-10 py-5 border-y border-border overflow-hidden bg-white/60">
+    <div className="relative z-10 py-5 border-y border-border overflow-hidden bg-cyan-50/70 backdrop-blur-sm">
       <div className="absolute left-0 inset-y-0 w-16 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
       <div className="absolute right-0 inset-y-0 w-16 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
       <div className="marquee-track">
         {doubled.map((item, i) => (
           <span key={i} className="mono text-[11px] text-muted-foreground whitespace-nowrap px-8 flex items-center gap-6">
             {item}
-            <span className="text-blue-300 text-xs">·</span>
+            <span className="text-cyan-500 text-xs">·</span>
           </span>
         ))}
       </div>
@@ -46,7 +46,7 @@ const Marquee = () => {
 };
 
 const Index = () => (
-  <div className="min-h-screen bg-background relative overflow-hidden noise dot-grid">
+  <div className="min-h-screen bg-background relative overflow-hidden noise dot-grid aurora-stage">
     <CursorDot />
     <FloatingSymbols />
     <ScrollProgress />
@@ -58,7 +58,7 @@ const Index = () => (
     <Projects />
     <Contact />
 
-    <footer className="relative z-10 border-t border-border py-10 bg-white/50">
+    <footer className="relative z-10 border-t border-border py-10 bg-blue-50/70 backdrop-blur-sm">
       <div className="container mx-auto px-4 sm:px-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="mono text-xs text-muted-foreground">© 2025 Amritaraj Nair</p>
