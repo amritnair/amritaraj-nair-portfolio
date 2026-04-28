@@ -1,69 +1,135 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowDown, FileText, Github, Linkedin, ArrowUpRight } from "lucide-react";
-// lucide-react deprecation hints for Github/Linkedin are cosmetic only — icons still render correctly
+import { ArrowDown, FileText, Github, Linkedin, ArrowUpRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const BlurFadeIn = ({
-  children,
-  delay = 0,
-  className = "",
-}: {
-  children: React.ReactNode;
-  delay?: number;
-  className?: string;
-}) => (
-  <motion.div
-    initial={{ opacity: 0, y: 24, filter: "blur(8px)" }}
-    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-    transition={{ duration: 0.7, delay, ease: [0.25, 0.1, 0.25, 1] }}
-    className={className}
-  >
-    {children}
-  </motion.div>
-);
+const roles = [
+  "Software Engineer",
+  "AI Researcher",
+  "Quant Developer",
+  "Hackathon Winner",
+  "Full-Stack Builder",
+];
+
+const badges = [
+  { emoji: "🏆", text: "Hook'em Hacks 2026", sub: "Startup Ready Award", color: "from-yellow-500/20 to-orange-500/10", border: "border-yellow-500/25", delay: 0 },
+  { emoji: "🔬", text: "TAMU Researcher", sub: "AI & Cybersecurity", color: "from-violet-500/20 to-purple-500/10", border: "border-violet-500/25", delay: 0.15 },
+  { emoji: "📈", text: "$70K Quant Fund", sub: "Scholars of Finance", color: "from-emerald-500/20 to-teal-500/10", border: "border-emerald-500/25", delay: 0.3 },
+  { emoji: "🎓", text: "National Merit Scholar", sub: "President's Endowed", color: "from-cyan-500/20 to-blue-500/10", border: "border-cyan-500/25", delay: 0.45 },
+];
 
 const Hero = () => {
   const navigate = useNavigate();
+  const [roleIdx, setRoleIdx] = useState(0);
 
-  const scrollTo = (id: string) => {
+  useEffect(() => {
+    const id = setInterval(() => setRoleIdx((i) => (i + 1) % roles.length), 2800);
+    return () => clearInterval(id);
+  }, []);
+
+  const scrollTo = (id: string) =>
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-  };
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Warm background orbs */}
-      <div className="floating-orb floating-orb-1" />
-      <div className="floating-orb floating-orb-2" />
-      <div className="hero-glow" />
+      {/* Floating achievement badges */}
+      <div className="absolute inset-0 pointer-events-none hidden lg:block">
+        {badges.map((b, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 1.2 + b.delay, duration: 0.5 }}
+            className="absolute"
+            style={{
+              top: i < 2 ? `${22 + i * 22}%` : `${52 + (i - 2) * 20}%`,
+              left: i % 2 === 0 ? "4%" : undefined,
+              right: i % 2 === 1 ? "4%" : undefined,
+            }}
+          >
+            <motion.div
+              animate={{ y: [0, -8, 0] }}
+              transition={{ duration: 4 + i * 0.7, repeat: Infinity, ease: "easeInOut", delay: i * 0.5 }}
+              className={`flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border bg-gradient-to-br ${b.color} ${b.border} backdrop-blur-sm`}
+            >
+              <span className="text-xl">{b.emoji}</span>
+              <div>
+                <p className="text-xs font-semibold text-foreground leading-tight">{b.text}</p>
+                <p className="text-[10px] text-muted-foreground">{b.sub}</p>
+              </div>
+            </motion.div>
+          </motion.div>
+        ))}
+      </div>
 
+      {/* Center content */}
       <div className="container mx-auto px-6 relative z-10">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-3xl mx-auto text-center">
 
-          <BlurFadeIn delay={0.1}>
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-card text-xs mono text-muted-foreground mb-8">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block" />
-              Open to opportunities · CS Honors @ Texas A&M
-            </div>
-          </BlurFadeIn>
+          {/* Status chip */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-violet-500/25 bg-violet-500/10 text-xs mono text-violet-300 mb-8"
+          >
+            <Sparkles className="h-3 w-3" />
+            Open to internships &amp; research — CS Honors @ Texas A&amp;M
+          </motion.div>
 
-          <BlurFadeIn delay={0.25}>
-            <h1 className="text-5xl sm:text-6xl md:text-8xl font-semibold tracking-tight leading-[0.92] mb-6 text-foreground">
-              Amritaraj<br />
-              <span className="text-gradient">Nair</span>
-            </h1>
-          </BlurFadeIn>
+          {/* Name */}
+          <div className="overflow-hidden mb-4">
+            <motion.h1
+              initial={{ y: 80, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.25 }}
+              className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-black tracking-tight leading-[0.88]"
+            >
+              <span className="text-gradient">Amritaraj</span>
+              <br />
+              <span className="text-foreground">Nair</span>
+            </motion.h1>
+          </div>
 
-          <BlurFadeIn delay={0.45} className="text-lg md:text-xl text-muted-foreground max-w-xl mb-10 leading-relaxed">
-            Software engineer &amp; researcher building AI systems, quant tools,
-            and products that win hackathons and create real impact.
-          </BlurFadeIn>
+          {/* Animated role */}
+          <div className="h-8 flex items-center justify-center mb-8 overflow-hidden">
+            <AnimatePresence mode="wait">
+              <motion.p
+                key={roleIdx}
+                initial={{ y: 24, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -24, opacity: 0 }}
+                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                className="mono text-sm tracking-widest text-muted-foreground uppercase"
+              >
+                {roles[roleIdx]}
+              </motion.p>
+            </AnimatePresence>
+          </div>
 
-          <BlurFadeIn delay={0.6} className="flex flex-wrap gap-3 items-center mb-10">
+          {/* Description */}
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.6 }}
+            className="text-lg text-muted-foreground max-w-xl mx-auto mb-10 leading-relaxed"
+          >
+            I build AI systems, quant tools, and products that win hackathons —
+            from Cornell-backed startups to award-winning computer vision apps.
+          </motion.p>
+
+          {/* CTAs */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.75 }}
+            className="flex flex-wrap gap-3 justify-center mb-10"
+          >
             <Button
               onClick={() => scrollTo("projects")}
               size="lg"
-              className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-8 shadow-glow transition-all duration-300"
+              className="btn-gradient rounded-full px-8 text-white border-0 font-semibold"
             >
               View Projects
             </Button>
@@ -71,49 +137,57 @@ const Hero = () => {
               variant="outline"
               size="lg"
               onClick={() => navigate("/resume")}
-              className="rounded-full px-8 border-border hover:border-primary/40 hover:bg-primary/5 transition-all duration-300"
+              className="rounded-full px-8 border-border hover:border-violet-500/40 hover:bg-violet-500/5 transition-all duration-300"
             >
               <FileText className="mr-2 h-4 w-4" />
               Resume
             </Button>
-          </BlurFadeIn>
+          </motion.div>
 
-          <BlurFadeIn delay={0.75} className="flex gap-3">
+          {/* Socials */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.9 }}
+            className="flex gap-3 justify-center"
+          >
             <a
               href="https://github.com/amritnair?tab=repositories"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border text-sm text-muted-foreground hover:text-foreground hover:border-primary/40 hover:bg-card transition-all duration-300"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border text-sm text-muted-foreground hover:text-foreground hover:border-violet-500/40 hover:bg-violet-500/5 transition-all duration-300"
             >
               <Github className="h-4 w-4" />
               GitHub
-              <ArrowUpRight className="h-3 w-3" />
+              <ArrowUpRight className="h-3 w-3 opacity-50" />
             </a>
             <a
               href="https://www.linkedin.com/in/amritaraj-nair-227063313"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border text-sm text-muted-foreground hover:text-foreground hover:border-primary/40 hover:bg-card transition-all duration-300"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border text-sm text-muted-foreground hover:text-foreground hover:border-violet-500/40 hover:bg-violet-500/5 transition-all duration-300"
             >
               <Linkedin className="h-4 w-4" />
               LinkedIn
-              <ArrowUpRight className="h-3 w-3" />
+              <ArrowUpRight className="h-3 w-3 opacity-50" />
             </a>
-          </BlurFadeIn>
+          </motion.div>
         </div>
       </div>
 
+      {/* Scroll indicator */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 1.5, duration: 1 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2"
+        transition={{ delay: 1.8, duration: 1 }}
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
       >
+        <span className="text-[10px] mono text-muted-foreground uppercase tracking-widest">Scroll</span>
         <motion.div
           animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
         >
-          <ArrowDown className="h-5 w-5 text-muted-foreground" />
+          <ArrowDown className="h-4 w-4 text-muted-foreground" />
         </motion.div>
       </motion.div>
     </section>

@@ -1,107 +1,145 @@
 import { motion } from "framer-motion";
-import { Badge } from "@/components/ui/badge";
-import { Code2, GraduationCap, TrendingUp, Users } from "lucide-react";
 
-const vp = { once: false, amount: 0.3 };
-const ease = [0.25, 0.1, 0.25, 1] as const;
+const vp = { once: true, amount: 0.2 };
+const ease = [0.22, 1, 0.36, 1] as const;
+
+const stats = [
+  { value: "2", label: "Research\nPositions", color: "text-violet-400" },
+  { value: "3+", label: "Hackathons\nWon", color: "text-cyan-400" },
+  { value: "$70K", label: "Fund\nManaged", color: "text-emerald-400" },
+  { value: "∞", label: "Problems\nSolved", color: "text-pink-400" },
+];
+
+const skills = [
+  { name: "Python", color: "bg-blue-500/15 text-blue-300 border-blue-500/20" },
+  { name: "C++", color: "bg-violet-500/15 text-violet-300 border-violet-500/20" },
+  { name: "TypeScript", color: "bg-cyan-500/15 text-cyan-300 border-cyan-500/20" },
+  { name: "React", color: "bg-sky-500/15 text-sky-300 border-sky-500/20" },
+  { name: "FastAPI", color: "bg-emerald-500/15 text-emerald-300 border-emerald-500/20" },
+  { name: "Java", color: "bg-orange-500/15 text-orange-300 border-orange-500/20" },
+  { name: "Machine Learning", color: "bg-pink-500/15 text-pink-300 border-pink-500/20" },
+  { name: "OpenCV", color: "bg-red-500/15 text-red-300 border-red-500/20" },
+  { name: "Supabase", color: "bg-teal-500/15 text-teal-300 border-teal-500/20" },
+  { name: "Docker", color: "bg-blue-500/15 text-blue-300 border-blue-500/20" },
+  { name: "AWS", color: "bg-yellow-500/15 text-yellow-300 border-yellow-500/20" },
+  { name: "SQL", color: "bg-violet-500/15 text-violet-300 border-violet-500/20" },
+];
+
+const Card = ({ children, className = "", delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 30 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.6, delay, ease }}
+    viewport={vp}
+    className={`rounded-2xl border border-border bg-card card-glow p-6 ${className}`}
+  >
+    {children}
+  </motion.div>
+);
 
 const About = () => {
-  const skills = [
-    "Python", "Java", "C++", "TypeScript", "React", "JavaScript",
-    "NumPy", "Git", "Linux", "APIs", "Machine Learning", "Circuit Design"
-  ];
-
-  const highlights = [
-    { icon: GraduationCap, label: "CS Honors", detail: "Texas A&M '29" },
-    { icon: Code2, label: "AI Research", detail: "NRC Models" },
-    { icon: TrendingUp, label: "Quant Engineer", detail: "Scholars of Finance · Maroon Fund" },
-    { icon: Users, label: "Aggies in Tech", detail: "Member & Contributor" },
-  ];
-
   return (
-    <section id="about" className="py-32 relative">
+    <section id="about" className="py-32 relative z-10">
       <div className="container mx-auto px-6">
         <div className="max-w-5xl mx-auto">
+
+          {/* Section header */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease }}
             viewport={vp}
+            className="mb-14"
           >
-            <p className="mono text-primary text-xs tracking-widest uppercase mb-4">About</p>
-            <h2 className="text-4xl md:text-5xl font-semibold mb-10 tracking-tight text-foreground">
-              Building at the intersection of
-              <br />
-              <span className="text-gradient">code &amp; community</span>
+            <p className="section-num mb-3">01 — About</p>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight">
+              The person behind<br />
+              <span className="text-gradient">the code</span>
             </h2>
           </motion.div>
 
-          <div className="grid lg:grid-cols-5 gap-14">
-            <div className="lg:col-span-3 space-y-5">
-              <motion.p
-                className="text-muted-foreground text-lg leading-relaxed"
-                initial={{ opacity: 0, y: 25 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease }}
-                viewport={vp}
-              >
-                I'm a Computer Science Honors student at Texas A&M, National Merit Scholar,
-                and President's Endowed Scholar. Proficient in C++ and systems-level programming,
-                I focus on AI research, cybersecurity, and building tools that create real-world impact.
-              </motion.p>
-              <motion.p
-                className="text-muted-foreground text-lg leading-relaxed"
-                initial={{ opacity: 0, y: 25 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.05, ease }}
-                viewport={vp}
-              >
-                From developing Python-based AI models for livestock nutrition at Texas A&M
-                to building full-stack applications, I bring engineering rigor to every project.
-                I'm passionate about multidisciplinary work — especially at the intersection of
-                finance and mathematics.
-              </motion.p>
+          {/* Bento grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-              <motion.div
-                className="pt-4"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease }}
-                viewport={vp}
-              >
-                <p className="text-xs text-muted-foreground mb-3 mono uppercase tracking-widest">Tech Stack</p>
-                <div className="flex flex-wrap gap-2">
-                  {skills.map((skill) => (
-                    <Badge
-                      key={skill}
-                      variant="outline"
-                      className="border-border text-muted-foreground hover:border-primary/40 hover:text-foreground hover:bg-primary/5 transition-all duration-200 rounded-full px-3 py-1 text-xs"
-                    >
-                      {skill}
-                    </Badge>
-                  ))}
-                </div>
-              </motion.div>
-            </div>
+            {/* Bio — spans 2 cols */}
+            <Card delay={0.05} className="md:col-span-2">
+              <p className="text-xs mono text-muted-foreground uppercase tracking-widest mb-4">Bio</p>
+              <p className="text-foreground leading-relaxed mb-4">
+                CS Honors student at Texas A&M, National Merit Scholar &amp; President's Endowed Scholar.
+                I build AI systems, quant tools, and full-stack products — from a Cornell-backed legal
+                tech startup to an award-winning pickleball AI that caught the attention of Pear VC.
+              </p>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                Proficient in C++ and systems programming, I research AI at TAMU across two concurrent
+                projects: agent-based livestock modeling and LLM-powered cybersecurity. I'm driven by
+                the intersection of math, finance, and software — and I build fast.
+              </p>
+            </Card>
 
-            <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {highlights.map((item, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 25 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: i * 0.08, ease }}
-                  viewport={vp}
-                  className="p-5 rounded-2xl border border-border bg-card hover:border-primary/30 hover:shadow-hover transition-all duration-300 group"
-                >
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center mb-3 group-hover:bg-primary/15 transition-colors">
-                    <item.icon className="h-4 w-4 text-primary" />
+            {/* Currently building */}
+            <Card delay={0.1} className="bg-gradient-to-br from-violet-500/10 to-purple-500/5 border-violet-500/20">
+              <p className="text-xs mono text-violet-400 uppercase tracking-widest mb-4">Currently building</p>
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">⚡</span>
+                  <div>
+                    <p className="font-semibold text-sm">AlphaForge</p>
+                    <p className="text-xs text-muted-foreground">Robinhood + Scratch for quants</p>
                   </div>
-                  <p className="font-medium text-sm text-foreground">{item.label}</p>
-                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{item.detail}</p>
-                </motion.div>
-              ))}
-            </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">🏓</span>
+                  <div>
+                    <p className="font-semibold text-sm">Shot Sensei</p>
+                    <p className="text-xs text-muted-foreground">AI pickleball coach & game</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">🏥</span>
+                  <div>
+                    <p className="font-semibold text-sm">ClinicalHours</p>
+                    <p className="text-xs text-muted-foreground">AI receptionist for clinics</p>
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            {/* Stats */}
+            {stats.map((s, i) => (
+              <Card key={i} delay={0.15 + i * 0.05}>
+                <motion.p
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: 0.3 + i * 0.06, ease: [0.22, 1, 0.36, 1] }}
+                  viewport={vp}
+                  className={`text-4xl font-black mb-1 ${s.color}`}
+                >
+                  {s.value}
+                </motion.p>
+                <p className="text-xs text-muted-foreground whitespace-pre-line">{s.label}</p>
+              </Card>
+            ))}
+
+            {/* Skills — full width */}
+            <Card delay={0.3} className="md:col-span-3">
+              <p className="text-xs mono text-muted-foreground uppercase tracking-widest mb-4">Tech Stack</p>
+              <div className="flex flex-wrap gap-2">
+                {skills.map((s, i) => (
+                  <motion.span
+                    key={s.name}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.35, delay: 0.35 + i * 0.04, ease: [0.22, 1, 0.36, 1] }}
+                    viewport={vp}
+                    whileHover={{ scale: 1.08 }}
+                    className={`px-3 py-1.5 rounded-full border text-xs font-medium cursor-default ${s.color}`}
+                  >
+                    {s.name}
+                  </motion.span>
+                ))}
+              </div>
+            </Card>
+
           </div>
         </div>
       </div>

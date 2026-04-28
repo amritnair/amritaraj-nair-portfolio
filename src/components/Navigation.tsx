@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useLocation, Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
 
 const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -16,113 +17,116 @@ const Navigation = () => {
   ];
 
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 50);
+    const handleScroll = () => setIsScrolled(window.scrollY > 60);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const scrollToSection = (href: string) => {
-    if (href === "#") {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    } else {
-      document.getElementById(href.substring(1))?.scrollIntoView({ behavior: "smooth" });
-    }
+    if (href === "#") window.scrollTo({ top: 0, behavior: "smooth" });
+    else document.getElementById(href.substring(1))?.scrollIntoView({ behavior: "smooth" });
     setIsMobileMenuOpen(false);
   };
 
   return (
     <>
-      <nav
+      <motion.nav
+        initial={{ y: -80, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         className={`fixed top-0 w-full z-50 transition-all duration-500 ${
           isScrolled
-            ? "glass shadow-sm border-b border-border/60"
+            ? "bg-background/80 backdrop-blur-xl border-b border-border/50 shadow-lg shadow-black/20"
             : "bg-transparent"
         }`}
       >
         <div className="container mx-auto px-6">
           <div className="flex items-center justify-between h-16">
+
+            {/* Logo */}
             {isHome ? (
               <button
                 onClick={() => scrollToSection("#")}
-                className="mono text-sm font-semibold tracking-wider text-primary hover:text-primary/80 transition-colors"
+                className="mono text-sm font-bold tracking-wider hover:text-violet-400 transition-colors duration-300"
               >
-                AN<span className="text-foreground/40">.</span>
+                <span className="text-gradient">AN</span>
+                <span className="text-muted-foreground/40">.</span>
               </button>
             ) : (
-              <Link
-                to="/"
-                className="mono text-sm font-semibold tracking-wider text-primary hover:text-primary/80 transition-colors"
-              >
-                AN<span className="text-foreground/40">.</span>
+              <Link to="/" className="mono text-sm font-bold tracking-wider hover:text-violet-400 transition-colors duration-300">
+                <span className="text-gradient">AN</span>
+                <span className="text-muted-foreground/40">.</span>
               </Link>
             )}
 
+            {/* Desktop nav */}
             <div className="hidden md:flex items-center gap-1">
-              {isHome &&
-                navItems.map((item) => (
-                  <button
-                    key={item.name}
-                    onClick={() => scrollToSection(item.href)}
-                    className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200"
-                  >
-                    {item.name}
-                  </button>
-                ))}
+              {isHome && navItems.map((item) => (
+                <button
+                  key={item.name}
+                  onClick={() => scrollToSection(item.href)}
+                  className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 rounded-lg hover:bg-white/5"
+                >
+                  {item.name}
+                </button>
+              ))}
               <Button
-                onClick={() =>
-                  isHome
-                    ? scrollToSection("#contact")
-                    : (window.location.href = "/#contact")
-                }
+                onClick={() => isHome ? scrollToSection("#contact") : (window.location.href = "/#contact")}
                 size="sm"
-                className="ml-3 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-xs px-5 shadow-sm"
+                className="ml-2 btn-gradient rounded-full text-white border-0 text-xs px-5 font-semibold"
               >
                 Get in Touch
               </Button>
             </div>
 
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden text-foreground hover:bg-muted"
+            {/* Mobile toggle */}
+            <button
+              className="md:hidden p-2 rounded-lg hover:bg-white/5 transition-colors text-foreground"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
               {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </Button>
+            </button>
           </div>
         </div>
-      </nav>
+      </motion.nav>
 
-      {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-40 md:hidden">
-          <div
-            className="fixed inset-0 bg-background/90 backdrop-blur-xl"
-            onClick={() => setIsMobileMenuOpen(false)}
-          />
-          <div className="fixed top-16 left-0 right-0 p-6 space-y-2 z-50 bg-background border-b border-border">
-            {isHome &&
-              navItems.map((item) => (
+      {/* Mobile menu */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-40 bg-background/95 backdrop-blur-xl md:hidden"
+              onClick={() => setIsMobileMenuOpen(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+              className="fixed top-16 left-0 right-0 z-50 p-6 space-y-2 md:hidden"
+            >
+              {isHome && navItems.map((item) => (
                 <button
                   key={item.name}
                   onClick={() => scrollToSection(item.href)}
-                  className="block w-full text-left text-lg font-medium py-3 text-foreground hover:text-primary transition-colors border-b border-border/50"
+                  className="block w-full text-left text-lg font-medium py-3 text-foreground hover:text-violet-400 transition-colors border-b border-border/30"
                 >
                   {item.name}
                 </button>
               ))}
-            <Button
-              onClick={() => {
-                isHome
-                  ? scrollToSection("#contact")
-                  : (window.location.href = "/#contact");
-              }}
-              className="w-full mt-4 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full"
-            >
-              Get in Touch
-            </Button>
-          </div>
-        </div>
-      )}
+              <Button
+                onClick={() => { isHome ? scrollToSection("#contact") : (window.location.href = "/#contact"); }}
+                className="w-full mt-4 btn-gradient rounded-full text-white border-0 font-semibold"
+              >
+                Get in Touch
+              </Button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </>
   );
 };
