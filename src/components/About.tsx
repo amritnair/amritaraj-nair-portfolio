@@ -59,18 +59,31 @@ const About = () => (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
           <Card delay={0.05} className="md:col-span-2">
-            <p className="text-xs mono text-muted-foreground uppercase tracking-widest mb-4">Bio</p>
-            <p className="text-foreground leading-relaxed mb-4">
-              CS Honors student at Texas A&amp;M, National Merit Scholar &amp; President's
-              Endowed Scholar. I build AI systems, quant tools, and full-stack products —
-              from a Cornell-backed legal tech startup to an award-winning pickleball AI
-              that caught the attention of Pear VC.
-            </p>
-            <p className="text-muted-foreground text-sm leading-relaxed">
-              Proficient in C++ and systems programming, I research AI at TAMU across two
-              concurrent projects: agent-based livestock modeling and LLM-powered
-              cybersecurity. I'm driven by the intersection of math, finance, and software.
-            </p>
+            <div className="flex gap-5 items-start">
+              <div className="shrink-0">
+                <div className="w-24 h-24 rounded-2xl overflow-hidden ring-2 ring-orange-200 shadow-md">
+                  <img
+                    src="/amritaraj-nair-portfolio/images/headshot.png"
+                    alt="Amritaraj Nair"
+                    className="w-full h-full object-cover object-top"
+                  />
+                </div>
+              </div>
+              <div>
+                <p className="text-xs mono text-muted-foreground uppercase tracking-widest mb-4">Bio</p>
+                <p className="text-foreground leading-relaxed mb-4">
+                  CS Honors student at Texas A&amp;M, National Merit Scholar &amp; President's
+                  Endowed Scholar. I build AI systems, quant tools, and full-stack products —
+                  from a Cornell-backed legal tech startup to an award-winning pickleball AI
+                  that caught the attention of Pear VC.
+                </p>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  Proficient in C++ and systems programming, I research AI at TAMU across two
+                  concurrent projects: agent-based livestock modeling and LLM-powered
+                  cybersecurity. I'm driven by the intersection of math, finance, and software.
+                </p>
+              </div>
+            </div>
           </Card>
 
           <Card delay={0.1} className="bg-orange-50 border-orange-100">
