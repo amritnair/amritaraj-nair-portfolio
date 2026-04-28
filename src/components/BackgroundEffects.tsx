@@ -1,24 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 
 interface Particle {
-  x: number;
-  y: number;
-  r: number;
-  speed: number;
-  opacity: number;
-  drift: number;
-  hue: number;
+  x: number; y: number; r: number;
+  speed: number; opacity: number; drift: number;
 }
 
 function initParticles(w: number, h: number): Particle[] {
-  return Array.from({ length: 50 }, () => ({
+  return Array.from({ length: 35 }, () => ({
     x: Math.random() * w,
     y: Math.random() * h,
-    r: 0.8 + Math.random() * 1.2,
-    speed: 0.1 + Math.random() * 0.25,
-    opacity: 0.1 + Math.random() * 0.3,
-    drift: (Math.random() - 0.5) * 0.25,
-    hue: [258, 191, 328][Math.floor(Math.random() * 3)],
+    r: 1 + Math.random(),
+    speed: 0.12 + Math.random() * 0.2,
+    opacity: 0.06 + Math.random() * 0.12,
+    drift: (Math.random() - 0.5) * 0.2,
   }));
 }
 
@@ -32,10 +26,8 @@ const BackgroundEffects = () => {
     if (!canvas) return;
     const ctx = canvas.getContext("2d")!;
     let animId: number;
-    let w = window.innerWidth;
-    let h = window.innerHeight;
-    canvas.width = w;
-    canvas.height = h;
+    let w = window.innerWidth, h = window.innerHeight;
+    canvas.width = w; canvas.height = h;
     let particles = initParticles(w, h);
 
     const draw = () => {
@@ -44,12 +36,12 @@ const BackgroundEffects = () => {
       for (const p of particles) {
         p.y -= p.speed;
         p.x += p.drift;
-        if (p.y < -10) { p.y = h + 10; p.x = Math.random() * w; }
-        if (p.x < -10) p.x = w + 10;
-        if (p.x > w + 10) p.x = -10;
+        if (p.y < -8) { p.y = h + 8; p.x = Math.random() * w; }
+        if (p.x < -8) p.x = w + 8;
+        if (p.x > w + 8) p.x = -8;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${p.hue}, 80%, 70%, ${p.opacity})`;
+        ctx.fillStyle = `hsla(217, 80%, 45%, ${p.opacity})`;
         ctx.fill();
       }
     };
@@ -68,11 +60,7 @@ const BackgroundEffects = () => {
     if (isTouchDevice) return;
     const el = cursorRef.current;
     if (!el) return;
-    const onMove = (e: MouseEvent) => {
-      el.style.left = `${e.clientX}px`;
-      el.style.top = `${e.clientY}px`;
-      el.style.opacity = "1";
-    };
+    const onMove = (e: MouseEvent) => { el.style.left = `${e.clientX}px`; el.style.top = `${e.clientY}px`; el.style.opacity = "1"; };
     const onLeave = () => { el.style.opacity = "0"; };
     window.addEventListener("mousemove", onMove);
     document.addEventListener("mouseleave", onLeave);

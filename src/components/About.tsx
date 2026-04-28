@@ -4,42 +4,34 @@ const vp = { once: true, amount: 0.2 };
 const ease = [0.22, 1, 0.36, 1] as const;
 
 const stats = [
-  { value: "2", label: "Research\nPositions", color: "text-blue-400" },
-  { value: "3+", label: "Hackathons\nWon", color: "text-sky-400" },
-  { value: "$70K", label: "Fund\nManaged", color: "text-blue-300" },
-  { value: "10+", label: "Projects\nShipped", color: "text-indigo-400" },
+  { value: "2", label: "Research\nPositions", color: "text-blue-600" },
+  { value: "3+", label: "Hackathons\nWon", color: "text-sky-600" },
+  { value: "$70K", label: "Fund\nManaged", color: "text-indigo-600" },
+  { value: "10+", label: "Projects\nShipped", color: "text-blue-500" },
 ];
 
 const skills = [
-  { name: "Python", color: "bg-blue-500/10 text-blue-300 border-blue-500/15" },
-  { name: "C++", color: "bg-slate-500/10 text-slate-300 border-slate-500/15" },
-  { name: "TypeScript", color: "bg-sky-500/10 text-sky-300 border-sky-500/15" },
-  { name: "React", color: "bg-cyan-500/10 text-cyan-300 border-cyan-500/15" },
-  { name: "FastAPI", color: "bg-teal-500/10 text-teal-300 border-teal-500/15" },
-  { name: "Java", color: "bg-orange-500/10 text-orange-300 border-orange-500/15" },
-  { name: "Machine Learning", color: "bg-violet-500/10 text-violet-300 border-violet-500/15" },
-  { name: "OpenCV", color: "bg-red-500/10 text-red-300 border-red-500/15" },
-  { name: "Supabase", color: "bg-emerald-500/10 text-emerald-300 border-emerald-500/15" },
-  { name: "Docker", color: "bg-blue-500/10 text-blue-300 border-blue-500/15" },
-  { name: "AWS", color: "bg-yellow-500/10 text-yellow-300 border-yellow-500/15" },
-  { name: "SQL", color: "bg-indigo-500/10 text-indigo-300 border-indigo-500/15" },
+  { name: "Python", color: "bg-blue-50 text-blue-700 border-blue-200" },
+  { name: "C++", color: "bg-slate-100 text-slate-700 border-slate-200" },
+  { name: "TypeScript", color: "bg-sky-50 text-sky-700 border-sky-200" },
+  { name: "React", color: "bg-cyan-50 text-cyan-700 border-cyan-200" },
+  { name: "FastAPI", color: "bg-teal-50 text-teal-700 border-teal-200" },
+  { name: "Java", color: "bg-orange-50 text-orange-700 border-orange-200" },
+  { name: "Machine Learning", color: "bg-violet-50 text-violet-700 border-violet-200" },
+  { name: "OpenCV", color: "bg-red-50 text-red-700 border-red-200" },
+  { name: "Supabase", color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+  { name: "Docker", color: "bg-blue-50 text-blue-700 border-blue-200" },
+  { name: "AWS", color: "bg-yellow-50 text-yellow-700 border-yellow-200" },
+  { name: "SQL", color: "bg-indigo-50 text-indigo-700 border-indigo-200" },
 ];
 
-const Card = ({
-  children,
-  className = "",
-  delay = 0,
-}: {
-  children: React.ReactNode;
-  className?: string;
-  delay?: number;
-}) => (
+const Card = ({ children, className = "", delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) => (
   <motion.div
     initial={{ opacity: 0, y: 28 }}
     whileInView={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.55, delay, ease }}
     viewport={vp}
-    className={`rounded-2xl border border-border bg-card card-glow p-6 ${className}`}
+    className={`rounded-2xl border border-border bg-card card-glow p-6 shadow-sm ${className}`}
   >
     {children}
   </motion.div>
@@ -58,7 +50,7 @@ const About = () => (
           className="mb-14"
         >
           <p className="section-num mb-3">01 — About</p>
-          <h2 className="text-4xl md:text-5xl font-bold tracking-tight">
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground">
             The person behind<br />
             <span className="text-gradient">the code</span>
           </h2>
@@ -83,8 +75,8 @@ const About = () => (
           </Card>
 
           {/* Currently building */}
-          <Card delay={0.1} className="bg-gradient-to-br from-blue-500/8 to-indigo-500/5 border-blue-500/15">
-            <p className="text-xs mono text-blue-400 uppercase tracking-widest mb-4">Currently building</p>
+          <Card delay={0.1} className="bg-blue-50/60 border-blue-100">
+            <p className="text-xs mono text-blue-600 uppercase tracking-widest mb-4">Currently building</p>
             <div className="space-y-4">
               {[
                 { name: "AlphaForge", sub: "Robinhood + Scratch for quants" },
@@ -92,9 +84,9 @@ const About = () => (
                 { name: "ClinicalHours", sub: "AI receptionist for clinics" },
               ].map((item) => (
                 <div key={item.name} className="flex items-start gap-3">
-                  <div className="w-1 h-1 rounded-full bg-blue-400 mt-2 shrink-0" />
+                  <div className="w-1 h-1 rounded-full bg-blue-500 mt-2 shrink-0" />
                   <div>
-                    <p className="font-semibold text-sm">{item.name}</p>
+                    <p className="font-semibold text-sm text-foreground">{item.name}</p>
                     <p className="text-xs text-muted-foreground">{item.sub}</p>
                   </div>
                 </div>
@@ -127,10 +119,10 @@ const About = () => (
                   key={s.name}
                   initial={{ opacity: 0, scale: 0.85 }}
                   whileInView={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.3, delay: 0.35 + i * 0.035, ease: [0.22, 1, 0.36, 1] }}
+                  transition={{ duration: 0.3, delay: 0.35 + i * 0.03, ease: [0.22, 1, 0.36, 1] }}
                   viewport={vp}
-                  whileHover={{ scale: 1.08, transition: { duration: 0.15 } }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: 1.08, transition: { duration: 0.12 } }}
+                  whileTap={{ scale: 0.94 }}
                   className={`px-3 py-1.5 rounded-full border text-xs font-medium cursor-default select-none ${s.color}`}
                 >
                   {s.name}
