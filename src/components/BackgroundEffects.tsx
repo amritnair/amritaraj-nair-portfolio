@@ -1,18 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 
-interface Particle {
-  x: number; y: number; r: number;
-  speed: number; opacity: number; drift: number;
-}
+interface Particle { x: number; y: number; r: number; speed: number; opacity: number; drift: number; hue: number; }
 
 function initParticles(w: number, h: number): Particle[] {
-  return Array.from({ length: 35 }, () => ({
+  const hues = [22, 175, 45];
+  return Array.from({ length: 30 }, () => ({
     x: Math.random() * w,
     y: Math.random() * h,
-    r: 1 + Math.random(),
-    speed: 0.12 + Math.random() * 0.2,
-    opacity: 0.06 + Math.random() * 0.12,
+    r: 0.8 + Math.random() * 1.2,
+    speed: 0.1 + Math.random() * 0.2,
+    opacity: 0.08 + Math.random() * 0.15,
     drift: (Math.random() - 0.5) * 0.2,
+    hue: hues[Math.floor(Math.random() * hues.length)],
   }));
 }
 
@@ -34,14 +33,13 @@ const BackgroundEffects = () => {
       animId = requestAnimationFrame(draw);
       ctx.clearRect(0, 0, w, h);
       for (const p of particles) {
-        p.y -= p.speed;
-        p.x += p.drift;
+        p.y -= p.speed; p.x += p.drift;
         if (p.y < -8) { p.y = h + 8; p.x = Math.random() * w; }
         if (p.x < -8) p.x = w + 8;
         if (p.x > w + 8) p.x = -8;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(217, 80%, 45%, ${p.opacity})`;
+        ctx.fillStyle = `hsla(${p.hue}, 85%, 55%, ${p.opacity})`;
         ctx.fill();
       }
     };

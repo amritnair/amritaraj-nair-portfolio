@@ -28,14 +28,14 @@ const items = [
 const Marquee = () => {
   const doubled = [...items, ...items];
   return (
-    <div className="relative z-10 py-5 border-y border-border overflow-hidden bg-white/50">
-      <div className="absolute left-0 inset-y-0 w-20 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
-      <div className="absolute right-0 inset-y-0 w-20 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
+    <div className="relative z-10 py-5 border-y border-border overflow-hidden bg-white/60">
+      <div className="absolute left-0 inset-y-0 w-16 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
+      <div className="absolute right-0 inset-y-0 w-16 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
       <div className="marquee-track">
         {doubled.map((item, i) => (
           <span key={i} className="mono text-[11px] text-muted-foreground whitespace-nowrap px-8 flex items-center gap-6">
             {item}
-            <span className="text-border text-xs">·</span>
+            <span className="text-orange-300 text-xs">·</span>
           </span>
         ))}
       </div>
@@ -46,7 +46,6 @@ const Marquee = () => {
 const Index = () => (
   <div className="min-h-screen bg-background relative overflow-hidden noise dot-grid">
     <ScrollProgress />
-    <div className="color-wash" />
     <BackgroundEffects />
     <Navigation />
     <Hero />
@@ -55,7 +54,7 @@ const Index = () => (
     <Projects />
     <Contact />
 
-    <footer className="relative z-10 border-t border-border py-10 bg-white/40">
+    <footer className="relative z-10 border-t border-border py-10 bg-white/50">
       <div className="container mx-auto px-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="mono text-xs text-muted-foreground">© 2025 Amritaraj Nair</p>
