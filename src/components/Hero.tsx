@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { ArrowDown, FileText, Github, Linkedin, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-// ── Text scramble ─────────────────────────────────────────────────────────────
 const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 function useScramble(text: string, delay = 200, duration = 1200) {
@@ -31,7 +30,6 @@ function useScramble(text: string, delay = 200, duration = 1200) {
   return output;
 }
 
-// ── Magnetic wrapper ──────────────────────────────────────────────────────────
 const Magnetic = ({ children }: { children: React.ReactNode }) => {
   const ref = useRef<HTMLDivElement>(null);
   const x = useMotionValue(0);
@@ -52,10 +50,8 @@ const Magnetic = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-// ── Role rotator ──────────────────────────────────────────────────────────────
 const roles = ["Software Engineer", "AI Researcher", "Quant Developer", "Full-Stack Builder", "Hackathon Winner"];
 
-// ── Hero ──────────────────────────────────────────────────────────────────────
 const Hero = () => {
   const navigate = useNavigate();
   const [roleIdx, setRoleIdx] = useState(0);
@@ -71,7 +67,7 @@ const Hero = () => {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Colorful background blobs */}
+      {/* Color blobs — more vivid */}
       <div className="blob-orange" />
       <div className="blob-teal" />
       <div className="blob-yellow" />
@@ -79,13 +75,14 @@ const Hero = () => {
       <div className="container mx-auto px-6 relative z-10">
         <div className="max-w-3xl mx-auto text-center">
 
-          {/* Scrambling name — Fraunces serif */}
-          <div className="overflow-hidden mb-3">
+          {/* Name — extra padding-bottom so Fraunces descenders aren't clipped */}
+          <div className="overflow-hidden" style={{ paddingBottom: "0.2em", marginBottom: "-0.2em" }}>
             <motion.h1
               initial={{ y: 90, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
-              className="display text-6xl sm:text-7xl md:text-8xl lg:text-[108px] font-black tracking-tight leading-[0.88]"
+              className="display font-black tracking-tight leading-[0.9]"
+              style={{ fontSize: "clamp(3.5rem, 12vw, 7.5rem)" }}
             >
               <span className="text-gradient italic">{firstName}</span>
               <br />
@@ -94,7 +91,7 @@ const Hero = () => {
           </div>
 
           {/* Role rotator */}
-          <div className="h-7 flex items-center justify-center mb-8 overflow-hidden">
+          <div className="h-7 flex items-center justify-center mb-8 overflow-hidden mt-6">
             <AnimatePresence mode="wait">
               <motion.p
                 key={roleIdx}
@@ -109,7 +106,6 @@ const Hero = () => {
             </AnimatePresence>
           </div>
 
-          {/* Description */}
           <motion.p
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
@@ -120,7 +116,6 @@ const Hero = () => {
             from a Cornell-backed startup to a computer vision app pitched to Pear&nbsp;VC.
           </motion.p>
 
-          {/* Magnetic CTAs */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -135,14 +130,13 @@ const Hero = () => {
             </Magnetic>
             <Magnetic>
               <Button variant="outline" size="lg" onClick={() => navigate("/resume")}
-                className="rounded-full px-8 border-border hover:border-primary/40 hover:bg-primary/5 transition-all duration-300">
+                className="rounded-full px-8 bg-white/60 backdrop-blur-sm border-border hover:border-primary/50 hover:bg-white transition-all duration-300">
                 <FileText className="mr-2 h-4 w-4" />
                 Resume
               </Button>
             </Magnetic>
           </motion.div>
 
-          {/* Socials */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -154,7 +148,7 @@ const Hero = () => {
               { href: "https://www.linkedin.com/in/amritaraj-nair-227063313", icon: Linkedin, label: "LinkedIn" },
             ].map(({ href, icon: Icon, label }) => (
               <a key={label} href={href} target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-white/60 text-sm text-muted-foreground hover:text-foreground hover:border-primary/40 hover:bg-white transition-all duration-300 backdrop-blur-sm">
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-white/60 backdrop-blur-sm text-sm text-muted-foreground hover:text-foreground hover:border-primary/50 hover:bg-white transition-all duration-300">
                 <Icon className="h-4 w-4" />
                 {label}
                 <ArrowUpRight className="h-3 w-3 opacity-40" />
@@ -164,7 +158,6 @@ const Hero = () => {
         </div>
       </div>
 
-      {/* Scroll indicator */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
