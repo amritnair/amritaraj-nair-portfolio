@@ -37,8 +37,11 @@ const BackgroundEffects = () => {
     if (!canvas) return;
     const ctx = canvas.getContext("2d")!;
     let animId = 0;
-    let w = window.innerWidth, h = window.innerHeight;
+    const getHeight = () => Math.max(window.innerHeight, document.documentElement.scrollHeight);
+    let w = window.innerWidth, h = getHeight();
     canvas.width = w; canvas.height = h;
+    canvas.style.width = `${w}px`;
+    canvas.style.height = `${h}px`;
     let particles = initParticles(w, h);
     let tick = 0;
 
@@ -105,12 +108,22 @@ const BackgroundEffects = () => {
     if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) draw();
 
     const onResize = () => {
-      w = window.innerWidth; h = window.innerHeight;
+      w = window.innerWidth; h = getHeight();
       canvas.width = w; canvas.height = h;
+      canvas.style.width = `${w}px`;
+      canvas.style.height = `${h}px`;
       particles = initParticles(w, h);
     };
+    const resizeObserver = typeof ResizeObserver !== "undefined" ? new ResizeObserver(onResize) : null;
+    resizeObserver?.observe(document.body);
     window.addEventListener("resize", onResize);
-    return () => { if (animId) cancelAnimationFrame(animId); window.removeEventListener("resize", onResize); };
+    window.addEventListener("load", onResize);
+    return () => {
+      if (animId) cancelAnimationFrame(animId);
+      resizeObserver?.disconnect();
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("load", onResize);
+    };
   }, []);
 
   useEffect(() => {
@@ -128,7 +141,7 @@ const BackgroundEffects = () => {
     <>
       <div className="aurora-sheet" aria-hidden="true" />
       <div className="animated-data-grid" aria-hidden="true" />
-      <canvas ref={canvasRef} className="pointer-events-none fixed inset-0 z-0" aria-hidden="true" />
+      <canvas ref={canvasRef} className="pointer-events-none absolute left-0 top-0 z-0" aria-hidden="true" />
       {!isTouchDevice && <div ref={cursorRef} className="cursor-glow" aria-hidden="true" />}
     </>
   );

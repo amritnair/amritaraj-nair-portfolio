@@ -162,7 +162,7 @@ const positions = [
 ];
 
 export const FloatingSymbols = () => (
-  <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
+  <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
     {SYMBOLS.map((s, i) => {
       const pos = positions[i % positions.length];
       const duration = 14 + (i * 3.7) % 18;
@@ -210,7 +210,7 @@ export const MarketAtmosphere = () => {
   };
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
+    <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
       <motion.div
         className="absolute -left-20 top-[18%] hidden lg:block opacity-45"
         animate={slowFloat}
@@ -301,7 +301,7 @@ const codeTokens = [
 ];
 
 export const CodeAtmosphere = () => (
-  <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
+  <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
     {codePanels.map((panel, i) => (
       <motion.div
         key={panel.title}
