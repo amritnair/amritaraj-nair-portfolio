@@ -1,8 +1,8 @@
 export const PROJECTS = [
   {
     title: "AlphaForge",
-    description: "The Robinhood + Scratch for aspiring quants — a full-stack quantitative investing platform where users design, backtest, and deploy trading strategies. Users have consistently improved their portfolio performance by ~10% month-over-month over 6 months.",
-    fullDescription: "AlphaForge is a full-stack quantitative investing platform built to democratize algorithmic trading. It features a multi-level Quant IDE — a Scratch-like drag-and-drop builder for beginners and a full multi-language coding environment for advanced users. Users can design strategies, backtest them against historical data, and paper trade in real time. AlphaForge has demonstrated measurable results: users consistently improve portfolio performance by ~10% month-over-month over 6 months.",
+    description: "The Robinhood + Scratch for aspiring quants. Full-stack quantitative investing platform where users design, backtest, and deploy trading strategies. Users have consistently improved their portfolio performance by ~10% month-over-month over 6 months.",
+    fullDescription: "AlphaForge is a full-stack quantitative investing platform built to democratize algorithmic trading. It features a multi-level Quant IDE. Scratch-like drag-and-drop builder for beginners and full multi-language coding environment for advanced users. Users can design strategies, backtest them against historical data, and paper trade in real time. AlphaForge has demonstrated measurable results: users consistently improve portfolio performance by ~10% month-over-month over 6 months.",
     highlights: [
       "Multi-level Quant IDE: drag-and-drop builder + advanced code editor",
       "Backtesting & paper trading engine with real historical data",
@@ -20,9 +20,9 @@ export const PROJECTS = [
   {
     title: "Shot Sensei",
     description: "AI-powered pickleball coaching and competitive game platform. Winner of the Startup Ready Award at Hook'em Hacks 2026 (UT Austin) and invited to pitch to Pear VC at the McCombs School of Business.",
-    fullDescription: "Shot Sensei is a computer vision platform for competitive and training-based pickleball. It won the Startup Ready Award at Hook'em Hacks 2026 at UT Austin and was later invited to pitch to Pear VC (Khalil Fuller) at the McCombs School of Business. The platform features two modes: a real-time AI opponent game, and a training mode that uses Gemini + ElevenLabs to analyze every stroke in real time — serve, volley, forehand, and backhand — and deliver voice coaching feedback.",
+    fullDescription: "Shot Sensei is a computer vision platform for competitive and training-based pickleball. It won the Startup Ready Award at Hook'em Hacks 2026 at UT Austin and was later invited to pitch to Pear VC (Khalil Fuller) at the McCombs School of Business. The platform features two modes: a real-time AI opponent game, and a training mode that uses Gemini + ElevenLabs to analyze every stroke in real time. Analyzes serve, volley, forehand, and backhand. Delivers voice coaching feedback.",
     highlights: [
-      "Won Hook'em Hacks 2026 — Startup Ready Award + Multimodal Track",
+      "Won Hook'em Hacks 2026: Startup Ready Award + Multimodal Track",
       "Invited to pitch to Pear VC at UT Austin McCombs",
       "Real-time AI opponent game mode playable anytime",
       "Stroke analysis using YOLOv8 pose estimation + OpenCV",
@@ -39,7 +39,7 @@ export const PROJECTS = [
   {
     title: "ClinicalHours",
     description: "AI-powered virtual receptionist platform that automates email and call workflows for pre-med students seeking clinical hours. Integrates Gmail API and GoHighLevel to schedule clinic meetings at scale.",
-    fullDescription: "ClinicalHours is an AI-powered automation platform built to help pre-med students find and schedule clinical experience hours. It acts as a virtual receptionist — using the Gmail API and GoHighLevel to autonomously reach out to clinics, schedule meetings, and follow up. The platform integrates MapBox and Google APIs for geolocation-based clinic discovery, and processes large-scale U.S. hospital datasets to identify opportunities. Premium features include AI-assisted resume and application tools powered by OpenAI and Gemini.",
+    fullDescription: "ClinicalHours is an AI-powered automation platform built to help pre-med students find and schedule clinical experience hours. It acts as a virtual receptionist. Uses the Gmail API and GoHighLevel to autonomously reach out to clinics, schedule meetings, and follow up. The platform integrates MapBox and Google APIs for geolocation-based clinic discovery, and processes large-scale U.S. hospital datasets to identify opportunities. Premium features include AI-assisted resume and application tools powered by OpenAI and Gemini.",
     highlights: [
       "AI virtual receptionist automates clinic outreach and scheduling",
       "Gmail API + GoHighLevel for end-to-end communication pipelines",
@@ -59,7 +59,7 @@ export const PROJECTS = [
     description: "Disaster preparedness and response platform helping communities plan for and recover from emergencies. Won 1st Place in the 2026 TidalTAMU Google Gemini Track.",
     fullDescription: "Harbor is a disaster preparedness and community response platform built at TidalTAMU 2026, where it won 1st Place in the Google Gemini Track. It helps communities plan for, coordinate during, and recover from natural disasters and emergencies using AI-driven resource matching and communication tools.",
     highlights: [
-      "1st Place — TidalTAMU 2026 Google Gemini Track",
+      "1st Place: TidalTAMU 2026 Google Gemini Track",
       "AI-powered resource matching for disaster response",
       "Community coordination and communication tools",
       "Built with Google Gemini for intelligent decision support",

@@ -63,7 +63,7 @@ const Navigation = () => {
               <Button
                 onClick={() => isHome ? scrollToSection("#contact") : (window.location.href = "/#contact")}
                 size="sm"
-                className="ml-2 btn-primary rounded-full text-white border-0 text-xs px-5 font-semibold">
+                className="ml-2 btn-primary text-white border-0 text-xs px-5 font-mono font-semibold">
                 Get in Touch
               </Button>
             </div>
@@ -99,7 +99,7 @@ const Navigation = () => {
               ))}
               <Button
                 onClick={() => { isHome ? scrollToSection("#contact") : (window.location.href = "/#contact"); }}
-                className="w-full mt-4 btn-primary rounded-full text-white border-0 font-semibold">
+                className="w-full mt-4 btn-primary text-white border-0 font-mono font-semibold">
                 Get in Touch
               </Button>
             </motion.div>

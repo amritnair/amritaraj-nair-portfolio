@@ -112,8 +112,8 @@ const Hero = () => {
             transition={{ duration: 0.7, delay: 0.55 }}
             className="text-lg text-muted-foreground max-w-lg mx-auto mb-10 leading-relaxed"
           >
-            CS + Math at Texas A&amp;M. I build AI systems, quant tools, and products that win hackathons —
-            from a Cornell-backed startup to a computer vision app pitched to Pear&nbsp;VC.
+            CS + Math at Texas A&amp;M. I build AI systems, quant tools, and products that win hackathons.
+            Cornell-backed startup. Computer vision app pitched to Pear&nbsp;VC.
           </motion.p>
 
           <motion.div
@@ -124,13 +124,13 @@ const Hero = () => {
           >
             <Magnetic>
               <Button onClick={() => scrollTo("projects")} size="lg"
-                className="btn-primary rounded-full px-8 font-semibold border-0 text-white">
+                className="btn-primary px-8 font-semibold border-0 text-white font-mono">
                 View Projects
               </Button>
             </Magnetic>
             <Magnetic>
               <Button variant="outline" size="lg" onClick={() => navigate("/resume")}
-                className="rounded-full px-8 bg-white/60 backdrop-blur-sm border-border hover:border-primary/50 hover:bg-white transition-all duration-300">
+                className="px-8 bg-white/60 backdrop-blur-sm border-border hover:border-primary/50 hover:bg-white transition-all duration-300 font-mono">
                 <FileText className="mr-2 h-4 w-4" />
                 Resume
               </Button>
@@ -148,7 +148,7 @@ const Hero = () => {
               { href: "https://www.linkedin.com/in/amritaraj-nair-227063313", icon: Linkedin, label: "LinkedIn" },
             ].map(({ href, icon: Icon, label }) => (
               <a key={label} href={href} target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-white/60 backdrop-blur-sm text-sm text-muted-foreground hover:text-foreground hover:border-primary/50 hover:bg-white transition-all duration-300">
+                className="inline-flex items-center gap-2 px-4 py-2 border border-border bg-white/60 backdrop-blur-sm text-xs mono text-muted-foreground hover:text-foreground hover:border-primary/50 hover:bg-white transition-all duration-300">
                 <Icon className="h-4 w-4" />
                 {label}
                 <ArrowUpRight className="h-3 w-3 opacity-40" />

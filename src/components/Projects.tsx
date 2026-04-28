@@ -53,7 +53,7 @@ const TiltCard = ({ project, index, onClick }: { project: Project; index: number
         onMouseMove={onMove}
         onMouseLeave={onLeave}
         onClick={onClick}
-        className="group relative rounded-2xl border border-border bg-card overflow-hidden card-glow shadow-sm cursor-pointer select-none"
+        className="group relative border border-border bg-card overflow-hidden card-glow cursor-pointer select-none"
       >
         {/* Gradient accent bar */}
         <div className={`h-1 w-full ${m.accentBar}`} />
@@ -68,7 +68,7 @@ const TiltCard = ({ project, index, onClick }: { project: Project; index: number
           <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
           <div className="absolute top-3 left-3">
-            <span className={`px-2.5 py-1 rounded-full text-[10px] font-semibold border backdrop-blur-sm ${m.tagColor}`}>
+            <span className={`px-2.5 py-1 text-[10px] font-mono font-semibold border backdrop-blur-sm ${m.tagColor}`}>
               {m.tag}
             </span>
           </div>
@@ -81,7 +81,7 @@ const TiltCard = ({ project, index, onClick }: { project: Project; index: number
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/90 backdrop-blur-sm text-xs font-semibold text-foreground shadow-lg hover:bg-white transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-white/90 backdrop-blur-sm text-xs font-mono font-semibold text-foreground shadow-lg hover:bg-white transition-colors"
               >
                 <Play className="h-3.5 w-3.5 fill-current text-blue-500" />
                 Watch Demo
@@ -100,12 +100,12 @@ const TiltCard = ({ project, index, onClick }: { project: Project; index: number
           </p>
           <div className="flex flex-wrap gap-1.5 mb-4">
             {project.technologies.slice(0, 4).map((tech) => (
-              <Badge key={tech} variant="outline" className="text-[10px] rounded-full text-muted-foreground">
+              <Badge key={tech} variant="outline" className="text-[10px] font-mono text-muted-foreground">
                 {tech}
               </Badge>
             ))}
             {project.technologies.length > 4 && (
-              <Badge variant="outline" className="text-[10px] rounded-full text-muted-foreground">
+              <Badge variant="outline" className="text-[10px] font-mono text-muted-foreground">
                 +{project.technologies.length - 4}
               </Badge>
             )}
@@ -143,25 +143,26 @@ const Projects = () => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease }}
               viewport={vp}
-              className="mb-14"
+              className="mb-14 relative"
             >
-              <p className="section-num mb-3">02 — Work</p>
-              <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground">
-                Things I've <span className="text-gradient italic">built</span>
+              <div className="absolute -top-4 right-0 section-index select-none">02</div>
+              <p className="section-num mb-3">02 · Work</p>
+              <h2 className="text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[0.95]">
+                Things I've<br /><span className="text-gradient italic">built</span>
               </h2>
             </motion.div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
               {featured.map((p, i) => (
                 <TiltCard key={p.title} project={p} index={i} onClick={() => setActive(p)} />
               ))}
             </div>
 
-            <motion.div className="mt-10 flex justify-center"
+            <motion.div className="mt-10 flex justify-start"
               initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease }} viewport={vp}>
               <Button asChild variant="outline" size="lg"
-                className="rounded-full px-8 hover:border-primary/40 hover:bg-primary/5 transition-all duration-200">
+                className="px-8 hover:border-primary/40 hover:bg-primary/5 transition-all duration-200 font-mono text-sm">
                 <Link to="/projects">All Projects <ArrowRight className="ml-2 h-4 w-4" /></Link>
               </Button>
             </motion.div>

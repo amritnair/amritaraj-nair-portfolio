@@ -14,16 +14,16 @@ const ScrollProgress = () => {
 };
 
 const items = [
-  "Hook'em Hacks 2026 — Startup Ready Award",
-  "TidalTAMU — Google Gemini Track 1st Place",
+  "Hook'em Hacks 2026: Startup Ready Award",
+  "TidalTAMU: Google Gemini Track 1st Place",
   "Outstanding Undergraduate Researcher",
   "President's Endowed Scholar",
-  "MagNet Agents — Cornell-Backed Startup",
-  "Quantitative Developer — $70K Student Fund",
+  "MagNet Agents: Cornell-Backed Startup",
+  "Quantitative Developer: $70K Student Fund",
   "Google Labs Makeathon",
-  "Pear VC Pitch — McCombs School of Business",
-  "Shot Sensei — AI Pickleball Coach",
-  "AlphaForge — Robinhood + Scratch for Quants",
+  "Pear VC Pitch: McCombs School of Business",
+  "Shot Sensei: AI Pickleball Coach",
+  "AlphaForge: Robinhood + Scratch for Quants",
 ];
 
 const Marquee = () => {
