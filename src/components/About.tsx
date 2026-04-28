@@ -90,7 +90,7 @@ const Card = ({ children, className = "", delay = 0 }: { children: React.ReactNo
     whileInView={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.55, delay, ease }}
     viewport={vp}
-    className={`rounded-2xl border border-border bg-card card-glow p-6 shadow-sm ${className}`}
+    className={`rounded-2xl border border-border bg-card card-glow p-7 shadow-sm ${className}`}
   >
     {children}
   </motion.div>
@@ -123,7 +123,7 @@ const About = () => {
 
   return (
     <section id="about" className="py-32 relative z-10 section-sage">
-      <div className="container mx-auto px-6">
+      <div className="container mx-auto px-4 sm:px-6">
         <div className="max-w-5xl mx-auto">
 
           <motion.div
@@ -141,7 +141,7 @@ const About = () => {
           </motion.div>
 
           {/* Top row — photo + bio + building */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5 min-w-0">
 
             {/* Photo + name */}
             <motion.div
@@ -149,7 +149,7 @@ const About = () => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, delay: 0.05, ease }}
               viewport={vp}
-              className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden flex flex-col items-center justify-center p-6 gap-4"
+              className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden flex flex-col items-center justify-center p-8 gap-4"
             >
               <motion.div
                 whileHover={{ scale: 1.04 }}
@@ -218,7 +218,7 @@ const About = () => {
           </div>
 
           {/* Stats row */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-5">
             {stats.map((s, i) => (
               <Card key={i} delay={0.2 + i * 0.05}>
                 <motion.p

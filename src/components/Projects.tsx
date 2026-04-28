@@ -91,7 +91,7 @@ const TiltCard = ({ project, index, onClick }: { project: Project; index: number
         </div>
 
         {/* Content */}
-        <div className="p-5">
+        <div className="p-6">
           <h3 className="display font-bold mb-2 text-foreground group-hover:text-primary transition-colors duration-200 leading-snug">
             {project.title}
           </h3>
@@ -136,7 +136,7 @@ const Projects = () => {
   return (
     <>
       <section id="projects" className="py-32 relative z-10">
-        <div className="container mx-auto px-6">
+        <div className="container mx-auto px-4 sm:px-6">
           <div className="max-w-5xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 24 }}

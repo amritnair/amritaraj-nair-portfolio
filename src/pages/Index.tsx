@@ -57,7 +57,7 @@ const Index = () => (
     <Contact />
 
     <footer className="relative z-10 border-t border-border py-10 bg-white/50">
-      <div className="container mx-auto px-6">
+      <div className="container mx-auto px-4 sm:px-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="mono text-xs text-muted-foreground">© 2025 Amritaraj Nair</p>
           <div className="flex items-center gap-6">

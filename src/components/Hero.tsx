@@ -72,7 +72,7 @@ const Hero = () => {
       <div className="blob-teal" />
       <div className="blob-yellow" />
 
-      <div className="container mx-auto px-6 relative z-10">
+      <div className="container mx-auto px-4 sm:px-6 relative z-10">
         <div className="max-w-3xl mx-auto text-center">
 
           {/* Name — extra padding-bottom so Fraunces descenders aren't clipped */}
