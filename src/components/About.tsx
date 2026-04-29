@@ -94,7 +94,6 @@ const facts: Fact[] = [
     expanded: "Kobe is fluffy, dramatic, extremely photogenic, and somehow always positioned like he knows the camera is on. Named after the legend, obviously. He has the confidence of a franchise player and the work ethic of someone who expects treats for existing.",
     images: [
       { src: bioImage("kobe-flowers.jpeg"), alt: "Kobe the dog sitting between two colorful flower arrangements", caption: "Kobe with flowers, looking like the main character." },
-      { src: bioImage("kobe-friends.jpeg"), alt: "Kobe and another dog wearing Valentine bandanas", caption: "Kobe and friend, elite bandana rotation." },
     ],
     color: "bg-amber-50 border-l-4 border-l-amber-500 text-amber-900",
     iconColor: "text-amber-500",
