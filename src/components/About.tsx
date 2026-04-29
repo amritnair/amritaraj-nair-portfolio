@@ -53,6 +53,9 @@ const facts: Fact[] = [
     eyebrow: "Home base",
     detail: "Born and raised in Flower Mound, Texas. Suburb of Dallas. Where my love for the Mavs and Texas sunsets started.",
     expanded: "Flower Mound is home base: quiet suburb energy, big Texas skies, and close enough to Dallas that basketball, food, and city chaos were always nearby. It is also where a lot of my builder brain started: school projects, robotics-adjacent tinkering, and way too many late-night ideas.",
+    images: [
+      { src: bioImage("texas-map.svg"), alt: "Texas state map with Flower Mound marked near Dallas", caption: "Flower Mound, TX — suburb of Dallas." },
+    ],
     color: "bg-blue-50 border-l-4 border-l-blue-500 text-blue-800",
     iconColor: "text-blue-500",
     panelColor: "from-blue-50 to-cyan-50 border-blue-200",
@@ -65,6 +68,9 @@ const facts: Fact[] = [
     eyebrow: "Texas A&M",
     detail: "CS Honors + Math minor at Texas A&M. National Merit Scholar and President's Endowed Scholar. Basically I did okay on some tests.",
     expanded: "I like the overlap between systems, math, AI, and finance. The CS side gives me the tools to ship real products; the math side keeps me honest about modeling, probability, and whether an idea actually makes sense under pressure.",
+    images: [
+      { src: bioImage("computer.jpg"), alt: "Laptop open with code on screen", caption: "CS Honors + Math minor at Texas A&M." },
+    ],
     color: "bg-sky-50 border-l-4 border-l-sky-500 text-sky-800",
     iconColor: "text-sky-500",
     panelColor: "from-sky-50 to-indigo-50 border-sky-200",
