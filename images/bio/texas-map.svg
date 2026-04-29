@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 420" width="500" height="420">
+  <rect width="500" height="420" fill="#eff6ff"/>
+  <!-- Subtle grid lines -->
+  <g stroke="#bfdbfe" stroke-width="0.8" opacity="0.6">
+    <line x1="0" y1="70" x2="500" y2="70"/>
+    <line x1="0" y1="140" x2="500" y2="140"/>
+    <line x1="0" y1="210" x2="500" y2="210"/>
+    <line x1="0" y1="280" x2="500" y2="280"/>
+    <line x1="0" y1="350" x2="500" y2="350"/>
+    <line x1="70" y1="0" x2="70" y2="420"/>
+    <line x1="140" y1="0" x2="140" y2="420"/>
+    <line x1="210" y1="0" x2="210" y2="420"/>
+    <line x1="280" y1="0" x2="280" y2="420"/>
+    <line x1="350" y1="0" x2="350" y2="420"/>
+    <line x1="420" y1="0" x2="420" y2="420"/>
+  </g>
+  <!-- Texas state outline (simplified but recognizable) -->
+  <path d="
+    M 120,30
+    L 370,30
+    L 390,50
+    L 400,90
+    L 410,110
+    L 430,120
+    L 440,140
+    L 440,160
+    L 420,170
+    L 415,180
+    L 420,195
+    L 415,210
+    L 405,220
+    L 400,240
+    L 390,260
+    L 370,280
+    L 355,300
+    L 340,320
+    L 320,340
+    L 300,360
+    L 280,375
+    L 255,385
+    L 235,385
+    L 215,375
+    L 195,360
+    L 175,345
+    L 155,325
+    L 135,305
+    L 110,285
+    L 90,265
+    L 75,245
+    L 65,225
+    L 60,205
+    L 58,185
+    L 60,165
+    L 65,145
+    L 70,125
+    L 80,105
+    L 90,85
+    L 100,65
+    L 110,45
+    Z
+  " fill="#2563eb" fill-opacity="0.15" stroke="#1d4ed8" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- Star marker for Flower Mound area (north TX, near Dallas) -->
+  <g transform="translate(268, 155)">
+    <circle r="6" fill="#1d4ed8" opacity="0.9"/>
+    <circle r="3" fill="white"/>
+  </g>
+  <!-- Dallas label -->
+  <text x="282" y="148" font-family="monospace" font-size="10" fill="#1e40af" font-weight="600">Flower Mound</text>
+  <!-- TX label -->
+  <text x="210" y="255" font-family="Georgia, serif" font-size="52" fill="#1d4ed8" fill-opacity="0.12" font-weight="900" font-style="italic">TX</text>
+  <!-- Compass rose -->
+  <g transform="translate(450, 370)" opacity="0.4">
+    <line x1="0" y1="-14" x2="0" y2="14" stroke="#1d4ed8" stroke-width="1.2"/>
+    <line x1="-14" y1="0" x2="14" y2="0" stroke="#1d4ed8" stroke-width="1.2"/>
+    <text x="-3" y="-16" font-family="monospace" font-size="9" fill="#1d4ed8">N</text>
+  </g>
+</svg>
