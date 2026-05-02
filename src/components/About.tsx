@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-import { ChevronDown, MapPin, GraduationCap, Film, Dog, Trophy, Heart } from "lucide-react";
+import { ChevronDown, X, MapPin, GraduationCap, Film, Dog, Trophy, Heart } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 const vp = { once: true, amount: 0.15 };
@@ -154,6 +154,10 @@ const About = () => {
   const current = facts.find((f) => f.id === activeFact) ?? null;
   const CurrentIcon = current?.icon;
   const toggle = (id: string) => setActiveFact((prev) => (prev === id ? null : id));
+  const closeFact = () => {
+    setActiveFact(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   return (
     <section id="about" className="py-32 relative z-10 section-sage">
@@ -264,11 +268,21 @@ const About = () => {
                       <div className={`mt-4 border bg-gradient-to-br p-4 sm:p-5 ${current.panelColor}`}>
                         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(190px,260px)] lg:items-start">
                           <div>
-                            <div className="flex items-center gap-2 mb-3">
-                              {CurrentIcon && <CurrentIcon className={`h-4 w-4 ${current.iconColor}`} />}
-                              <p className="text-[10px] mono text-muted-foreground uppercase tracking-[0.22em]">
-                                {current.eyebrow}
-                              </p>
+                            <div className="flex items-center justify-between gap-2 mb-3">
+                              <div className="flex items-center gap-2">
+                                {CurrentIcon && <CurrentIcon className={`h-4 w-4 ${current.iconColor}`} />}
+                                <p className="text-[10px] mono text-muted-foreground uppercase tracking-[0.22em]">
+                                  {current.eyebrow}
+                                </p>
+                              </div>
+                              <button
+                                onClick={closeFact}
+                                className="flex items-center gap-1.5 px-2.5 py-1 border border-border/60 bg-white/60 hover:bg-white/90 text-muted-foreground hover:text-foreground transition-all duration-150 text-[10px] mono uppercase tracking-wider"
+                                aria-label="Close panel and return to top"
+                              >
+                                <X className="h-3 w-3" />
+                                Close
+                              </button>
                             </div>
                             <h3 className="display text-2xl font-black text-foreground leading-tight mb-3">
                               {current.title}

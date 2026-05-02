@@ -6,23 +6,23 @@
 
 @layer base {
   :root {
-    --background: 218 46% 94%;
+    --background: 205 65% 95%;
     --foreground: 220 20% 10%;
 
-    --card: 218 44% 98%;
+    --card: 200 55% 98%;
     --card-foreground: 220 20% 10%;
 
-    --popover: 218 44% 98%;
+    --popover: 200 55% 98%;
     --popover-foreground: 220 20% 10%;
 
     /* Mavs royal blue */
     --primary: 214 88% 48%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 212 48% 89%;
+    --secondary: 205 50% 89%;
     --secondary-foreground: 220 20% 10%;
 
-    --muted: 210 42% 90%;
+    --muted: 205 45% 90%;
     --muted-foreground: 220 10% 46%;
 
     --accent: 214 88% 48%;
@@ -31,8 +31,8 @@
     --destructive: 0 84% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 216 30% 82%;
-    --input: 216 30% 82%;
+    --border: 210 32% 82%;
+    --input: 210 32% 82%;
     --ring: 214 88% 48%;
 
     --radius: 0.25rem;
@@ -55,10 +55,13 @@
     @apply bg-background text-foreground antialiased;
     font-family: 'Inter', system-ui, sans-serif;
     background:
-      radial-gradient(circle at 12% 18%, hsl(188 90% 55% / 0.18), transparent 28rem),
-      radial-gradient(circle at 86% 8%, hsl(268 78% 62% / 0.16), transparent 30rem),
-      radial-gradient(circle at 78% 78%, hsl(38 95% 58% / 0.15), transparent 26rem),
-      linear-gradient(135deg, hsl(218 46% 94%), hsl(198 62% 92%) 45%, hsl(250 52% 94%));
+      radial-gradient(ellipse at 15% 5%, hsl(200 90% 93% / 0.7), transparent 35%),
+      radial-gradient(ellipse at 82% 0%, hsl(210 80% 91% / 0.6), transparent 40%),
+      radial-gradient(ellipse at 50% 60%, hsl(215 60% 88% / 0.4), transparent 50%),
+      linear-gradient(180deg,
+        hsl(205 85% 96%) 0%,
+        hsl(210 72% 93%) 40%,
+        hsl(215 58% 91%) 100%);
     min-height: 100vh;
   }
 
@@ -139,23 +142,27 @@
   }
 }
 
-/* ===== Dot grid ===== */
+/* ===== Dot grid — subtler for mountain sky ===== */
 .dot-grid::before {
   content: "";
   position: absolute;
   inset: 0;
   background-image:
-    radial-gradient(circle, hsl(214 70% 54% / 0.22) 1px, transparent 1px),
-    radial-gradient(circle, hsl(188 90% 48% / 0.12) 1px, transparent 1px);
-  background-size: 28px 28px;
-  background-position: 0 0, 14px 14px;
+    radial-gradient(circle, hsl(210 60% 58% / 0.14) 1px, transparent 1px),
+    radial-gradient(circle, hsl(200 80% 52% / 0.08) 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-position: 0 0, 16px 16px;
   pointer-events: none;
   z-index: 0;
 }
 
 .aurora-stage {
   background:
-    linear-gradient(120deg, hsl(212 100% 97% / 0.58), hsl(188 92% 92% / 0.42) 35%, hsl(268 90% 95% / 0.48) 70%, hsl(38 100% 93% / 0.42)),
+    linear-gradient(180deg,
+      hsl(205 90% 97% / 0.8) 0%,
+      hsl(200 80% 94% / 0.65) 30%,
+      hsl(210 70% 92% / 0.55) 60%,
+      hsl(215 60% 91% / 0.5) 100%),
     hsl(var(--background));
 }
 
@@ -391,39 +398,39 @@
   letter-spacing: 0.12em;
 }
 
-/* ===== Decorative blobs ===== */
-/* Mavs blue — top right */
+/* ===== Decorative cloud/mist blobs ===== */
+/* Cloud white-blue — top right, catching sunlight */
 .blob-orange {
   position: absolute;
-  width: 600px; height: 600px;
+  width: 700px; height: 500px;
   border-radius: 50%;
-  background: hsl(214 88% 58%);
-  filter: blur(130px);
-  opacity: 0.28;
-  top: -15%; right: -10%;
+  background: hsl(205 85% 88%);
+  filter: blur(140px);
+  opacity: 0.55;
+  top: -18%; right: -12%;
   pointer-events: none;
   animation: blob-drift-1 18s ease-in-out infinite;
 }
-/* Violet / Arrival purple — bottom left */
+/* Misty mountain haze — bottom left */
 .blob-teal {
   position: absolute;
-  width: 480px; height: 480px;
+  width: 520px; height: 480px;
   border-radius: 50%;
-  background: hsl(268 75% 62%);
-  filter: blur(120px);
-  opacity: 0.22;
+  background: hsl(210 70% 84%);
+  filter: blur(130px);
+  opacity: 0.48;
   bottom: -10%; left: -8%;
   pointer-events: none;
   animation: blob-drift-2 24s ease-in-out infinite;
 }
-/* Amber / Shot Sensei warmth — center */
+/* High-altitude ice-blue — center atmosphere */
 .blob-yellow {
   position: absolute;
-  width: 380px; height: 380px;
+  width: 420px; height: 380px;
   border-radius: 50%;
-  background: hsl(38 95% 60%);
-  filter: blur(110px);
-  opacity: 0.18;
+  background: hsl(195 80% 90%);
+  filter: blur(120px);
+  opacity: 0.42;
   top: 40%; left: 30%;
   pointer-events: none;
   animation: blob-drift-3 20s ease-in-out infinite;
@@ -458,26 +465,26 @@
   from { transform: translateY(-8rem); }
   to { transform: translateY(calc(100vh + 16rem)); }
 }
-/* Pink — mid left */
+/* Cloud wisp — mid left */
 .blob-pink {
   position: absolute;
-  width: 340px; height: 340px;
+  width: 360px; height: 320px;
   border-radius: 50%;
-  background: hsl(320 80% 60%);
-  filter: blur(110px);
-  opacity: 0.16;
+  background: hsl(215 75% 87%);
+  filter: blur(115px);
+  opacity: 0.4;
   top: 25%; left: -5%;
   pointer-events: none;
   animation: blob-drift-2 22s ease-in-out infinite reverse;
 }
-/* Lime / teal — bottom right */
+/* Mountain haze — bottom right */
 .blob-lime {
   position: absolute;
-  width: 300px; height: 300px;
+  width: 340px; height: 300px;
   border-radius: 50%;
-  background: hsl(175 70% 48%);
-  filter: blur(100px);
-  opacity: 0.15;
+  background: hsl(200 65% 86%);
+  filter: blur(105px);
+  opacity: 0.38;
   bottom: 15%; right: 5%;
   pointer-events: none;
   animation: blob-drift-1 26s ease-in-out infinite reverse;
@@ -533,22 +540,39 @@
   z-index: 2;
 }
 
-/* ===== Section separators — editorial lines, no colored fills ===== */
+/* ===== Mountain altitude section backgrounds ===== */
+/* About — upper mountain, misty pine forest */
 .section-sage  {
   background:
-    linear-gradient(135deg, hsl(156 56% 92% / 0.58), hsl(212 76% 94% / 0.72) 48%, hsl(268 72% 95% / 0.56));
-  border-top: 1px solid hsl(188 52% 72% / 0.6);
-  border-bottom: 1px solid hsl(216 40% 78% / 0.75);
+    linear-gradient(160deg,
+      hsl(192 55% 91% / 0.82),
+      hsl(165 40% 90% / 0.72) 50%,
+      hsl(205 58% 92% / 0.82));
+  border-top: 1px solid hsl(192 45% 78% / 0.55);
+  border-bottom: 1px solid hsl(205 40% 80% / 0.6);
 }
+/* Projects — mid mountain, rocky slate blues */
 .section-blue  {
   background:
-    linear-gradient(135deg, hsl(214 88% 93% / 0.7), hsl(188 82% 91% / 0.58) 48%, hsl(38 96% 92% / 0.5));
-  border-top: 1px solid hsl(214 52% 75% / 0.65);
-  border-bottom: 1px solid hsl(38 72% 76% / 0.55);
+    linear-gradient(160deg,
+      hsl(212 55% 90% / 0.82),
+      hsl(222 45% 89% / 0.72) 50%,
+      hsl(200 50% 91% / 0.78));
+  border-top: 1px solid hsl(212 42% 78% / 0.55);
+  border-bottom: 1px solid hsl(218 38% 79% / 0.55);
 }
+/* Contact/Footer — valley, slight warmth */
 .section-peach {
   background:
-    linear-gradient(135deg, hsl(38 96% 92% / 0.56), hsl(320 74% 94% / 0.42), hsl(212 78% 94% / 0.5));
+    linear-gradient(160deg,
+      hsl(205 55% 90% / 0.78),
+      hsl(215 48% 89% / 0.7),
+      hsl(200 52% 91% / 0.75));
+}
+
+@keyframes cloud-drift {
+  0%, 100% { transform: translateX(0px); }
+  50% { transform: translateX(20px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
