@@ -51,21 +51,21 @@ const Magnetic = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-/* Cloud SVG shapes */
+/* Sunrise-tinted cloud SVG */
 const CloudShape = ({
   width = 220,
   opacity = 0.88,
-  tint = "255,255,255",
+  r = 255, g = 220, b = 215,
 }: {
   width?: number;
   opacity?: number;
-  tint?: string;
+  r?: number; g?: number; b?: number;
 }) => (
   <svg width={width} height={width * 0.42} viewBox="0 0 220 92" fill="none">
-    <ellipse cx="110" cy="72" rx="102" ry="22" fill={`rgba(${tint},${opacity})`} />
-    <ellipse cx="74"  cy="56" rx="56"  ry="36" fill={`rgba(${tint},${opacity})`} />
-    <ellipse cx="132" cy="50" rx="62"  ry="42" fill={`rgba(${tint},${opacity})`} />
-    <ellipse cx="105" cy="44" rx="50"  ry="34" fill={`rgba(${tint},${opacity + 0.04})`} />
+    <ellipse cx="110" cy="72" rx="102" ry="22" fill={`rgba(${r},${g},${b},${opacity})`} />
+    <ellipse cx="74"  cy="56" rx="56"  ry="36" fill={`rgba(${r},${g},${b},${opacity})`} />
+    <ellipse cx="132" cy="50" rx="62"  ry="42" fill={`rgba(${r},${g},${b},${opacity})`} />
+    <ellipse cx="105" cy="44" rx="50"  ry="34" fill={`rgba(${r},${g},${b},${Math.min(1, opacity + 0.04)})`} />
   </svg>
 );
 
@@ -76,20 +76,21 @@ interface CloudProps {
   delay?: number;
   drift?: number;
   opacity?: number;
+  r?: number; g?: number; b?: number;
 }
 
-const Cloud = ({ left, top, scale = 1, delay = 0, drift = 12, opacity = 0.82 }: CloudProps) => (
+const Cloud = ({ left, top, scale = 1, delay = 0, drift = 12, opacity = 0.82, r = 255, g = 225, b = 218 }: CloudProps) => (
   <motion.div
-    initial={{ opacity: 0, x: -20 }}
+    initial={{ opacity: 0, x: -15 }}
     animate={{ opacity: 1, x: [0, drift, 0] }}
     transition={{
-      opacity: { duration: 1.8, delay, ease: "easeOut" },
-      x: { duration: 8 + delay * 1.5, repeat: Infinity, ease: "easeInOut", delay },
+      opacity: { duration: 2, delay, ease: "easeOut" },
+      x: { duration: 9 + delay * 1.4, repeat: Infinity, ease: "easeInOut", delay },
     }}
     className="absolute pointer-events-none"
     style={{ left, top, transform: `scale(${scale})`, transformOrigin: "left center" }}
   >
-    <CloudShape width={220} opacity={opacity} />
+    <CloudShape width={220} opacity={opacity} r={r} g={g} b={b} />
   </motion.div>
 );
 
@@ -110,22 +111,32 @@ const Hero = () => {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Sky atmosphere blobs */}
+      {/* Sunrise atmosphere blobs */}
       <div className="blob-orange" />
       <div className="blob-teal" />
       <div className="blob-yellow" />
       <div className="blob-pink" />
       <div className="blob-lime" />
 
-      {/* ── Floating clouds ── */}
-      <Cloud left="-4%" top="6%"  scale={1.4}  delay={0}    drift={18} opacity={0.78} />
-      <Cloud left="55%" top="3%"  scale={1.0}  delay={0.6}  drift={14} opacity={0.72} />
-      <Cloud left="75%" top="8%"  scale={0.85} delay={1.1}  drift={10} opacity={0.65} />
-      <Cloud left="20%" top="10%" scale={0.7}  delay={1.8}  drift={8}  opacity={0.58} />
-      <Cloud left="38%" top="2%"  scale={0.55} delay={2.4}  drift={16} opacity={0.52} />
-      {/* lower wispy clouds */}
-      <Cloud left="-2%" top="22%" scale={0.5}  delay={0.9}  drift={10} opacity={0.38} />
-      <Cloud left="80%" top="18%" scale={0.45} delay={2.0}  drift={12} opacity={0.32} />
+      {/* ── Snowy peak glow at top ── */}
+      <div
+        className="absolute top-0 left-0 right-0 h-48 pointer-events-none z-0"
+        style={{
+          background: "linear-gradient(180deg, hsl(278 55% 98% / 0.85) 0%, hsl(310 65% 96% / 0.55) 40%, transparent 100%)",
+        }}
+      />
+
+      {/* ── Sunrise clouds — pink/peach tinted ── */}
+      {/* High clouds near peak — pale lavender-pink */}
+      <Cloud left="-3%"  top="4%"  scale={1.45} delay={0}    drift={16} opacity={0.72} r={248} g={220} b={240} />
+      <Cloud left="55%"  top="2%"  scale={1.05} delay={0.7}  drift={12} opacity={0.66} r={252} g={218} b={235} />
+      <Cloud left="78%"  top="7%"  scale={0.88} delay={1.2}  drift={9}  opacity={0.60} r={255} g={222} b={238} />
+      {/* Mid clouds — warm rose-peach */}
+      <Cloud left="22%"  top="9%"  scale={0.72} delay={1.9}  drift={14} opacity={0.54} r={255} g={210} b={200} />
+      <Cloud left="42%"  top="1%"  scale={0.58} delay={2.5}  drift={18} opacity={0.48} r={255} g={215} b={205} />
+      {/* Wispy lower clouds — golden-peach */}
+      <Cloud left="-1%"  top="20%" scale={0.48} delay={1.0}  drift={10} opacity={0.35} r={255} g={218} b={195} />
+      <Cloud left="82%"  top="16%" scale={0.42} delay={2.2}  drift={11} opacity={0.30} r={255} g={220} b={198} />
 
       {/* ── Spinning globe — top right ── */}
       <motion.div
@@ -134,7 +145,7 @@ const Hero = () => {
         transition={{ duration: 1.2, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
         className="absolute top-12 right-8 md:right-16 z-0 pointer-events-none"
       >
-        <GlobeCanvas size={260} color="hsl(214 88% 55%)" opacity={0.55} />
+        <GlobeCanvas size={260} color="hsl(350 72% 58%)" opacity={0.45} />
       </motion.div>
 
       {/* ── Stock line chart — left side ── */}
@@ -144,8 +155,8 @@ const Hero = () => {
         transition={{ duration: 1, delay: 0.8 }}
         className="absolute left-6 md:left-12 top-1/3 z-0 pointer-events-none hidden md:block"
       >
-        <p className="text-[9px] mono text-blue-400/60 uppercase tracking-widest mb-1">AMRIT / AI</p>
-        <StockChart width={200} height={80} color="hsl(214 88% 55%)" />
+        <p className="text-[9px] mono text-rose-400/60 uppercase tracking-widest mb-1">AMRIT / AI</p>
+        <StockChart width={200} height={80} color="hsl(18 88% 55%)" />
       </motion.div>
 
       {/* ── Candlestick chart — right lower ── */}
@@ -155,27 +166,31 @@ const Hero = () => {
         transition={{ duration: 1, delay: 1.0 }}
         className="absolute right-6 md:right-14 bottom-32 z-0 pointer-events-none hidden md:block"
       >
-        <p className="text-[9px] mono text-violet-400/60 uppercase tracking-widest mb-1">QUANT / DAY</p>
-        <CandlestickChart width={160} height={80} opacity={0.55} />
+        <p className="text-[9px] mono text-amber-500/60 uppercase tracking-widest mb-1">QUANT / DAY</p>
+        <CandlestickChart width={160} height={80} opacity={0.5} />
       </motion.div>
 
-      {/* ── Mountain layers — bottom of hero ── */}
+      {/* ── Mountain layers — distant purple peaks at bottom ── */}
       <div className="absolute bottom-0 left-0 right-0 z-0 pointer-events-none">
-        {/* Distant back range */}
+        {/* Farthest distant range — pale lavender-purple */}
         <div className="absolute bottom-0 left-0 right-0">
-          <Mountains width={1200} height={220} color="hsl(215 60% 55%)" opacity={0.08} />
+          <Mountains width={1200} height={240} color="hsl(280 40% 45%)" opacity={0.12} />
         </div>
-        {/* Mid range */}
+        {/* Mid range — deeper indigo */}
         <div className="absolute bottom-0 left-0 right-0">
-          <Mountains width={1200} height={170} color="hsl(214 70% 45%)" opacity={0.11} />
+          <Mountains width={1200} height={185} color="hsl(265 50% 32%)" opacity={0.18} />
         </div>
-        {/* Front peaks */}
+        {/* Near peaks — dark purple-blue, crisp */}
         <div className="absolute bottom-0 left-0 right-0">
-          <Mountains width={1200} height={110} color="hsl(214 88% 40%)" opacity={0.14} />
+          <Mountains width={1200} height={120} color="hsl(252 55% 22%)" opacity={0.24} />
+        </div>
+        {/* Snow caps — white tips over the near peaks */}
+        <div className="absolute bottom-0 left-0 right-0">
+          <Mountains width={1200} height={48} color="hsl(0 0% 100%)" opacity={0.55} />
         </div>
       </div>
 
-      {/* ── Math equation strips — corners ── */}
+      {/* ── Math equation strips ── */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -187,7 +202,8 @@ const Hero = () => {
             key={eq}
             animate={{ x: [0, 6, 0] }}
             transition={{ duration: 4 + i * 1.2, repeat: Infinity, ease: "easeInOut" }}
-            className="text-[10px] mono text-blue-400/40 whitespace-nowrap"
+            className="text-[10px] mono whitespace-nowrap"
+            style={{ color: "hsl(350 65% 50% / 0.35)" }}
           >{eq}</motion.p>
         ))}
       </motion.div>
@@ -203,7 +219,8 @@ const Hero = () => {
             key={eq}
             animate={{ x: [0, -6, 0] }}
             transition={{ duration: 3.5 + i * 1.1, repeat: Infinity, ease: "easeInOut" }}
-            className="text-[10px] mono text-violet-400/40 whitespace-nowrap"
+            className="text-[10px] mono whitespace-nowrap"
+            style={{ color: "hsl(285 55% 50% / 0.32)" }}
           >{eq}</motion.p>
         ))}
       </motion.div>
@@ -212,20 +229,21 @@ const Hero = () => {
       <div className="container mx-auto px-4 sm:px-6 relative z-10">
         <div className="max-w-3xl mx-auto text-center">
 
-          {/* Name — extra padding on all sides to avoid italic clip */}
-          <div style={{ overflow: "hidden", padding: "0.2em 0.8em 0.4em", margin: "-0.2em -0.8em -0.4em" }}>
-            <motion.h1
-              initial={{ y: 110, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1], delay: 0.05 }}
-              className="display font-black tracking-tight leading-[0.95]"
-              style={{ fontSize: "clamp(3.5rem, 12vw, 7.5rem)" }}
-            >
-              <span className="text-gradient italic">{firstName}</span>
-              <br />
-              <span className="text-foreground">{lastName}</span>
-            </motion.h1>
-          </div>
+          {/*
+            Name — NO overflow:hidden, NO italic.
+            Simple fade+small-lift so nothing ever clips.
+          */}
+          <motion.h1
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.05 }}
+            className="display font-black tracking-tight leading-[0.95]"
+            style={{ fontSize: "clamp(3.2rem, 11vw, 7rem)" }}
+          >
+            <span className="text-gradient">{firstName}</span>
+            <br />
+            <span className="text-foreground">{lastName}</span>
+          </motion.h1>
 
           {/* Role rotator */}
           <div className="h-7 flex items-center justify-center mb-8 overflow-hidden mt-6">
@@ -244,9 +262,9 @@ const Hero = () => {
           </div>
 
           <motion.p
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.45 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
             className="text-lg text-muted-foreground max-w-lg mx-auto mb-10 leading-relaxed"
           >
             CS + Math at Texas A&amp;M. I build AI systems, quant tools, and products that win hackathons.
@@ -254,9 +272,9 @@ const Hero = () => {
           </motion.p>
 
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.6 }}
+            transition={{ duration: 0.5, delay: 0.55 }}
             className="flex flex-wrap gap-3 justify-center mb-10"
           >
             <Magnetic>
@@ -277,7 +295,7 @@ const Hero = () => {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.75 }}
+            transition={{ duration: 0.5, delay: 0.7 }}
             className="flex gap-3 justify-center"
           >
             {[
@@ -285,7 +303,7 @@ const Hero = () => {
               { href: "https://www.linkedin.com/in/amritaraj-nair-227063313", icon: Linkedin, label: "LinkedIn" },
             ].map(({ href, icon: Icon, label }) => (
               <a key={label} href={href} target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2 border border-border bg-white/65 backdrop-blur-sm text-xs mono text-muted-foreground hover:text-foreground hover:border-primary/50 hover:bg-white/90 transition-all duration-200">
+                className="inline-flex items-center gap-2 px-4 py-2 border border-border bg-white/60 backdrop-blur-sm text-xs mono text-muted-foreground hover:text-foreground hover:border-primary/50 hover:bg-white/90 transition-all duration-200">
                 <Icon className="h-4 w-4" />
                 {label}
                 <ArrowUpRight className="h-3 w-3 opacity-40" />
@@ -298,7 +316,7 @@ const Hero = () => {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 1.5, duration: 0.6 }}
+        transition={{ delay: 1.4, duration: 0.6 }}
         className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-10"
       >
         <span className="text-[10px] mono text-muted-foreground uppercase tracking-[0.2em]">Scroll</span>
