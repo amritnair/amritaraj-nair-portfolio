@@ -1,235 +1,42 @@
-import { motion, AnimatePresence, useMotionValue, useSpring } from "framer-motion";
-import { useEffect, useState, useRef, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import { ArrowDown, FileText, Github, Linkedin, ArrowUpRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Mountains } from "@/components/SceneBackground";
+import { motion } from "framer-motion";
+import { ArrowDown } from "lucide-react";
+import PortfolioGame from "@/components/PortfolioGame";
 
-const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const Hero = () => (
+  <section className="relative min-h-screen overflow-hidden px-4 pb-16 pt-24 sm:px-6">
+    <div className="blob-orange" />
+    <div className="blob-teal" />
+    <div className="blob-yellow" />
+    <div className="blob-pink" />
+    <div className="blob-lime" />
 
-function useScramble(text: string, delay = 200, duration = 900) {
-  const [output, setOutput] = useState(() =>
-    text.split("").map((c) => (c === " " ? " " : CHARS[Math.floor(Math.random() * CHARS.length)])).join("")
-  );
-  useEffect(() => {
-    let frame: number;
-    const start = Date.now() + delay;
-    const tick = () => {
-      const now = Date.now();
-      if (now < start) { frame = requestAnimationFrame(tick); return; }
-      const p = Math.min((now - start) / duration, 1);
-      setOutput(text.split("").map((c, i) => {
-        if (c === " ") return " ";
-        if (i / text.length < p) return c;
-        return CHARS[Math.floor(Math.random() * CHARS.length)];
-      }).join(""));
-      if (p < 1) frame = requestAnimationFrame(tick);
-    };
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [text, delay, duration]);
-  return output;
-}
+    <div
+      className="absolute left-0 right-0 top-0 h-56 pointer-events-none z-0"
+      style={{ background: "linear-gradient(180deg, hsl(210 90% 98% / 0.82) 0%, hsl(198 74% 94% / 0.58) 52%, transparent 100%)" }}
+    />
 
-const Magnetic = ({ children }: { children: React.ReactNode }) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const sx = useSpring(x, { stiffness: 400, damping: 16 });
-  const sy = useSpring(y, { stiffness: 400, damping: 16 });
-  const onMove = useCallback((e: React.MouseEvent) => {
-    const r = ref.current?.getBoundingClientRect();
-    if (!r) return;
-    x.set((e.clientX - r.left - r.width / 2) * 0.45);
-    y.set((e.clientY - r.top - r.height / 2) * 0.45);
-  }, [x, y]);
-  const onLeave = useCallback(() => { x.set(0); y.set(0); }, [x, y]);
-  return (
-    <motion.div ref={ref} style={{ x: sx, y: sy }} onMouseMove={onMove} onMouseLeave={onLeave}>
-      {children}
-    </motion.div>
-  );
-};
-
-/* Cloud SVG shape */
-const CloudShape = ({ width = 220, opacity = 0.88, r = 240, g = 250, b = 255 }: {
-  width?: number; opacity?: number; r?: number; g?: number; b?: number;
-}) => (
-  <svg width={width} height={width * 0.42} viewBox="0 0 220 92" fill="none">
-    <ellipse cx="110" cy="72" rx="102" ry="22" fill={`rgba(${r},${g},${b},${opacity})`} />
-    <ellipse cx="74"  cy="56" rx="56"  ry="36" fill={`rgba(${r},${g},${b},${opacity})`} />
-    <ellipse cx="132" cy="50" rx="62"  ry="42" fill={`rgba(${r},${g},${b},${opacity})`} />
-    <ellipse cx="105" cy="44" rx="50"  ry="34" fill={`rgba(${r},${g},${b},${Math.min(1, opacity + 0.04)})`} />
-  </svg>
-);
-
-const Cloud = ({ left, top, scale = 1, delay = 0, drift = 12, opacity = 0.82,
-  r = 240, g = 250, b = 255 }: {
-  left: string; top: string; scale?: number; delay?: number;
-  drift?: number; opacity?: number; r?: number; g?: number; b?: number;
-}) => (
-  <motion.div
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1, x: [0, drift, 0] }}
-    transition={{
-      opacity: { duration: 2, delay },
-      x: { duration: 9 + delay * 1.4, repeat: Infinity, ease: "easeInOut", delay },
-    }}
-    className="absolute pointer-events-none"
-    style={{ left, top, transform: `scale(${scale})`, transformOrigin: "left center" }}
-  >
-    <CloudShape width={220} opacity={opacity} r={r} g={g} b={b} />
-  </motion.div>
-);
-
-const roles = ["Software Engineer", "AI Researcher", "Quant Developer", "Full-Stack Builder", "Hackathon Winner"];
-
-const Hero = () => {
-  const navigate = useNavigate();
-  const [roleIdx, setRoleIdx] = useState(0);
-  const firstName = useScramble("Amritaraj", 200, 900);
-  const lastName   = useScramble("Nair", 350, 750);
-
-  useEffect(() => {
-    const id = setInterval(() => setRoleIdx((i) => (i + 1) % roles.length), 2000);
-    return () => clearInterval(id);
-  }, []);
-
-  const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-
-  return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      <div className="blob-orange" />
-      <div className="blob-teal" />
-      <div className="blob-yellow" />
-      <div className="blob-pink" />
-      <div className="blob-lime" />
-
-      {/* Sky glow at top */}
-      <div className="absolute top-0 left-0 right-0 h-56 pointer-events-none z-0"
-        style={{ background: "linear-gradient(180deg, hsl(210 90% 98% / 0.82) 0%, hsl(198 74% 94% / 0.58) 52%, transparent 100%)" }} />
-
-      {/* Clouds */}
-      <Cloud left="-3%"  top="5%"  scale={1.5}  delay={0}   drift={18} opacity={0.88} />
-      <Cloud left="55%"  top="3%"  scale={1.1}  delay={0.8} drift={14} opacity={0.82} />
-      <Cloud left="76%"  top="8%"  scale={0.92} delay={1.3} drift={10} opacity={0.76} />
-      <Cloud left="20%"  top="11%"  scale={0.75} delay={2.0} drift={15} opacity={0.65} />
-      <Cloud left="40%"  top="1%"  scale={0.60} delay={2.6} drift={20} opacity={0.58} />
-      <Cloud left="-2%"  top="22%" scale={0.50} delay={1.1} drift={11} opacity={0.42} />
-      <Cloud left="84%"  top="18%" scale={0.44} delay={2.3} drift={12} opacity={0.36} />
-
-      {/* Mountain peaks at base of hero */}
-      <div className="absolute bottom-0 left-0 right-0 z-0 pointer-events-none">
-        <div className="absolute bottom-0 left-0 right-0">
-          <Mountains width={1200} height={260} color="hsl(210 45% 60%)" opacity={0.10} />
-        </div>
-        <div className="absolute bottom-0 left-0 right-0">
-          <Mountains width={1200} height={200} color="hsl(205 50% 42%)" opacity={0.15} />
-        </div>
-        <div className="absolute bottom-0 left-0 right-0">
-          <Mountains width={1200} height={130} color="hsl(200 55% 28%)" opacity={0.22} />
-        </div>
-        <div className="absolute bottom-0 left-0 right-0">
-          <Mountains width={1200} height={52} color="hsl(200 30% 96%)" opacity={0.70} />
-        </div>
-      </div>
-
-      {/* Main content */}
-      <div className="container mx-auto px-4 sm:px-6 relative z-10">
-        <div className="max-w-3xl mx-auto text-center">
-
-          <motion.h1
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.05 }}
-            className="display font-black tracking-tight leading-[0.95]"
-            style={{ fontSize: "clamp(3.2rem, 11vw, 7rem)", textShadow: "0 2px 22px hsl(205 70% 98% / 0.72)" }}
-          >
-            <span className="text-gradient">{firstName}</span>
-            <br />
-            <span className="text-foreground">{lastName}</span>
-          </motion.h1>
-
-          <div className="h-7 flex items-center justify-center mb-8 overflow-hidden mt-6">
-            <AnimatePresence mode="wait">
-              <motion.p
-                key={roleIdx}
-                initial={{ y: 24, opacity: 0, scale: 0.92 }}
-                animate={{ y: 0, opacity: 1, scale: 1 }}
-                exit={{ y: -24, opacity: 0, scale: 0.92 }}
-                transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-                className="mono text-xs tracking-[0.22em] text-foreground/65 uppercase"
-              >
-                {roles[roleIdx]}
-              </motion.p>
-            </AnimatePresence>
-          </div>
-
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="text-lg text-foreground/72 max-w-lg mx-auto mb-10 leading-relaxed bg-sky-50/30 backdrop-blur-[2px] px-4 py-3 border border-sky-100/50"
-          >
-            CS + Math at Texas A&amp;M. I build AI systems, quant tools, and products that win hackathons.
-            Cornell-backed startup. Computer vision app pitched to Pear&nbsp;VC.
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.55 }}
-            className="flex flex-wrap gap-3 justify-center mb-10"
-          >
-            <Magnetic>
-              <Button onClick={() => scrollTo("projects")} size="lg"
-                className="btn-primary px-8 font-semibold border-0 text-white font-mono">
-                View Projects
-              </Button>
-            </Magnetic>
-            <Magnetic>
-              <Button variant="outline" size="lg" onClick={() => navigate("/resume")}
-                className="px-8 bg-sky-50/75 backdrop-blur-sm border-border hover:border-primary/50 hover:bg-white/90 transition-all duration-200 font-mono text-foreground">
-                <FileText className="mr-2 h-4 w-4" />
-                Resume
-              </Button>
-            </Magnetic>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.7 }}
-            className="flex gap-3 justify-center"
-          >
-            {[
-              { href: "https://github.com/amritnair?tab=repositories", icon: Github, label: "GitHub" },
-              { href: "https://www.linkedin.com/in/amritaraj-nair-227063313", icon: Linkedin, label: "LinkedIn" },
-            ].map(({ href, icon: Icon, label }) => (
-              <a key={label} href={href} target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2 border border-border bg-sky-50/70 backdrop-blur-sm text-xs mono text-foreground/65 hover:text-foreground hover:border-primary/50 hover:bg-white/90 transition-all duration-200">
-                <Icon className="h-4 w-4" />
-                {label}
-                <ArrowUpRight className="h-3 w-3 opacity-40" />
-              </a>
-            ))}
-          </motion.div>
-        </div>
-      </div>
-
+    <div className="relative z-10 mx-auto w-full max-w-7xl">
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.4, duration: 0.6 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-10"
+        initial={{ opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
       >
-        <span className="text-[10px] mono text-foreground/58 uppercase tracking-[0.2em]">Scroll</span>
-        <motion.div animate={{ y: [0, 10, 0] }} transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}>
-          <ArrowDown className="h-4 w-4 text-muted-foreground" />
-        </motion.div>
+        <PortfolioGame />
       </motion.div>
-    </section>
-  );
-};
+    </div>
+
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 1, duration: 0.6 }}
+      className="absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-2"
+    >
+      <span className="mono text-[10px] uppercase tracking-[0.2em] text-foreground/58">Scroll</span>
+      <motion.div animate={{ y: [0, 10, 0] }} transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}>
+        <ArrowDown className="h-4 w-4 text-muted-foreground" />
+      </motion.div>
+    </motion.div>
+  </section>
+);
 
 export default Hero;

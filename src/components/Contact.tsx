@@ -47,17 +47,16 @@ const Contact = () => {
     setFormData((prev) => ({ ...prev, [e.target.id]: e.target.value }));
 
   return (
-    <section id="contact" className="py-32 relative z-10 section-peach">
-      <div className="container mx-auto px-4 sm:px-6">
-        <div className="max-w-5xl mx-auto">
+    <section id="contact" className="page-section section-peach">
+      <div className="section-wrap">
 
           <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease }} viewport={vp} className="mb-14 relative">
+            transition={{ duration: 0.6, ease }} viewport={vp} className="section-header">
             <div className="absolute -top-4 right-0 section-index select-none">03</div>
             <p className="section-num mb-3">03 · Contact</p>
-            <h2 className="text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[0.95]">
+            <h2 className="section-title text-balance">
               Let's build<br />
-              <span className="text-gradient italic">something</span>
+              <span className="text-gradient">something</span>
             </h2>
           </motion.div>
 
@@ -65,36 +64,36 @@ const Contact = () => {
             <motion.form onSubmit={handleSubmit}
               initial={{ opacity: 0, x: -24 }} whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, ease }} viewport={vp}
-              className="lg:col-span-3 space-y-4">
+              className="lg:col-span-3 space-y-4 surface-panel-strong p-5 sm:p-7">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName" className="text-[10px] mono text-muted-foreground uppercase tracking-[0.2em]">First</Label>
                   <Input id="firstName" value={formData.firstName} onChange={handleChange} required
-                    className="bg-sky-50/70 border-border focus:border-primary/50 rounded-none font-mono text-foreground placeholder:text-muted-foreground/60" placeholder="John" />
+                    className="bg-sky-50/70 border-border focus:border-primary/50 rounded-lg font-mono text-foreground placeholder:text-muted-foreground/60" placeholder="John" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lastName" className="text-[10px] mono text-muted-foreground uppercase tracking-[0.2em]">Last</Label>
                   <Input id="lastName" value={formData.lastName} onChange={handleChange} required
-                    className="bg-sky-50/70 border-border focus:border-primary/50 rounded-none font-mono text-foreground placeholder:text-muted-foreground/60" placeholder="Doe" />
+                    className="bg-sky-50/70 border-border focus:border-primary/50 rounded-lg font-mono text-foreground placeholder:text-muted-foreground/60" placeholder="Doe" />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-[10px] mono text-muted-foreground uppercase tracking-[0.2em]">Email</Label>
                 <Input id="email" type="email" value={formData.email} onChange={handleChange} required
-                  className="bg-sky-50/70 border-border focus:border-primary/50 rounded-none font-mono text-foreground placeholder:text-muted-foreground/60" placeholder="john@example.com" />
+                  className="bg-sky-50/70 border-border focus:border-primary/50 rounded-lg font-mono text-foreground placeholder:text-muted-foreground/60" placeholder="john@example.com" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="subject" className="text-[10px] mono text-muted-foreground uppercase tracking-[0.2em]">Subject</Label>
                 <Input id="subject" value={formData.subject} onChange={handleChange} required
-                  className="bg-sky-50/70 border-border focus:border-primary/50 rounded-none font-mono text-foreground placeholder:text-muted-foreground/60" placeholder="Project Collaboration" />
+                  className="bg-sky-50/70 border-border focus:border-primary/50 rounded-lg font-mono text-foreground placeholder:text-muted-foreground/60" placeholder="Project Collaboration" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="message" className="text-[10px] mono text-muted-foreground uppercase tracking-[0.2em]">Message</Label>
                 <Textarea id="message" value={formData.message} onChange={handleChange} required
-                  className="bg-sky-50/70 border-border focus:border-primary/50 rounded-none min-h-32 resize-none font-mono text-foreground placeholder:text-muted-foreground/60" placeholder="Tell me about your project or idea..." />
+                  className="bg-sky-50/70 border-border focus:border-primary/50 rounded-lg min-h-32 resize-none font-mono text-foreground placeholder:text-muted-foreground/60" placeholder="Tell me about your project or idea..." />
               </div>
               <Button type="submit" disabled={isSubmitting}
-                className="w-full btn-primary font-mono font-semibold border-0 text-white">
+                className="w-full btn-primary font-mono font-semibold border-0 text-white rounded-lg">
                 <Send className="mr-2 h-4 w-4" />
                 {isSubmitting ? "Sending..." : "Send Message"}
               </Button>
@@ -103,7 +102,7 @@ const Contact = () => {
             <motion.div initial={{ opacity: 0, x: 24 }} whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.1, ease }} viewport={vp}
               className="lg:col-span-2 flex flex-col gap-4">
-              <div className="border border-amber-200/80 border-l-4 border-l-amber-500 bg-amber-50/75 p-6 backdrop-blur-sm">
+              <div className="surface-panel border-l-4 border-l-amber-500 bg-amber-50/75 p-6">
                 <p className="font-black text-amber-950 mb-2 display text-lg">Looking to connect</p>
                 <p className="text-sm text-amber-900/80 leading-relaxed">
                   Looking for internships, research collabs, and interesting projects.
@@ -115,7 +114,7 @@ const Contact = () => {
                   <motion.a key={link.label} href={link.href}
                     initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: 0.2 + i * 0.07, ease }} viewport={vp}
-                    className={`flex items-center gap-4 p-4 border border-border border-l-4 ${link.accent} bg-card/95 backdrop-blur-sm hover:border-primary/25 transition-all duration-200 group card-glow`}>
+                    className={`flex items-center gap-4 p-4 border-l-4 ${link.accent} surface-panel hover:border-primary/25 transition-all duration-200 group card-glow`}>
                     <link.icon className={`h-4 w-4 ${link.color} shrink-0`} />
                     <span className="text-sm mono text-muted-foreground group-hover:text-foreground transition-colors flex-1 truncate">
                       {link.label}
@@ -126,7 +125,6 @@ const Contact = () => {
               </div>
             </motion.div>
           </div>
-        </div>
       </div>
     </section>
   );

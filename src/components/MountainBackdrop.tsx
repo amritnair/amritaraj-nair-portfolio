@@ -174,13 +174,13 @@ const MoonGlow = () => {
     <motion.div
       className="absolute pointer-events-none"
       style={{
-        top: "1.4%",
-        right: "6%",
-        width: "clamp(210px, 19vw, 330px)",
-        height: "clamp(210px, 19vw, 330px)",
-        filter: "drop-shadow(0 0 46px hsl(205 95% 88% / 0.7))",
+        top: "0.4%",
+        right: "3.5%",
+        width: "clamp(280px, 24vw, 430px)",
+        height: "clamp(280px, 24vw, 430px)",
+        filter: "drop-shadow(0 0 64px hsl(205 95% 88% / 0.76))",
       }}
-      animate={prefersReducedMotion ? { opacity: 0.84, scale: 1 } : { opacity: [0.74, 0.96, 0.84, 0.94, 0.74], scale: [0.985, 1.015, 1] }}
+      animate={prefersReducedMotion ? { opacity: 0.86, scale: 1 } : { opacity: [0.78, 0.98, 0.86, 0.95, 0.78], scale: [0.985, 1.02, 1] }}
       transition={prefersReducedMotion ? { duration: 0 } : { duration: 9, repeat: Infinity, ease: "easeInOut" }}
     >
       <svg viewBox="0 0 260 260" className="h-full w-full">
@@ -201,16 +201,22 @@ const MoonGlow = () => {
           </filter>
         </defs>
         <circle cx="130" cy="130" r="126" fill="url(#moonAura)" />
-        <circle cx="130" cy="130" r="85" fill="none" stroke="hsl(202 100% 88% / 0.22)" strokeWidth="2" />
-        <circle cx="130" cy="130" r="63" fill="url(#moonBody)" />
-        <g filter="url(#moonSurfaceBlur)">
-          <circle cx="107" cy="111" r="9" fill="hsl(214 46% 72% / 0.2)" />
-          <circle cx="151" cy="140" r="14" fill="hsl(214 46% 69% / 0.18)" />
-          <circle cx="139" cy="94" r="5" fill="hsl(214 46% 70% / 0.2)" />
-          <circle cx="113" cy="151" r="6" fill="hsl(214 46% 76% / 0.17)" />
-          <path d="M91,129 C110,121 128,121 151,130" stroke="hsl(212 50% 72% / 0.14)" strokeWidth="5" fill="none" strokeLinecap="round" />
-          <path d="M124,80 C147,91 162,108 168,132" stroke="white" strokeWidth="4" fill="none" strokeLinecap="round" opacity="0.26" />
-        </g>
+        <circle cx="130" cy="130" r="96" fill="none" stroke="hsl(202 100% 88% / 0.18)" strokeWidth="2" />
+        <circle cx="130" cy="130" r="73" fill="url(#moonBody)" />
+        <motion.g
+          filter="url(#moonSurfaceBlur)"
+          animate={prefersReducedMotion ? { rotate: 0 } : { rotate: 360 }}
+          transition={prefersReducedMotion ? { duration: 0 } : { duration: 90, repeat: Infinity, ease: "linear" }}
+          style={{ transformOrigin: "130px 130px" }}
+        >
+          <circle cx="104" cy="108" r="10" fill="hsl(214 46% 72% / 0.2)" />
+          <circle cx="154" cy="141" r="16" fill="hsl(214 46% 69% / 0.18)" />
+          <circle cx="139" cy="88" r="6" fill="hsl(214 46% 70% / 0.2)" />
+          <circle cx="108" cy="156" r="7" fill="hsl(214 46% 76% / 0.17)" />
+          <circle cx="171" cy="118" r="5" fill="hsl(214 46% 72% / 0.14)" />
+          <path d="M83,130 C108,119 132,119 164,132" stroke="hsl(212 50% 72% / 0.14)" strokeWidth="5" fill="none" strokeLinecap="round" />
+          <path d="M120,70 C151,84 171,108 178,138" stroke="white" strokeWidth="4" fill="none" strokeLinecap="round" opacity="0.26" />
+        </motion.g>
       </svg>
     </motion.div>
   );

@@ -53,7 +53,7 @@ const TiltCard = ({ project, index, onClick }: { project: Project; index: number
         onMouseMove={onMove}
         onMouseLeave={onLeave}
         onClick={onClick}
-        className="group relative border border-border bg-card/95 overflow-hidden card-glow cursor-pointer select-none backdrop-blur-sm"
+        className="group relative surface-panel overflow-hidden card-glow cursor-pointer select-none"
       >
         {/* Gradient accent bar */}
         <div className={`h-1 w-full ${m.accentBar}`} />
@@ -68,7 +68,7 @@ const TiltCard = ({ project, index, onClick }: { project: Project; index: number
           <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
           <div className="absolute top-3 left-3">
-            <span className={`px-2.5 py-1 text-[10px] font-mono font-semibold border backdrop-blur-sm ${m.tagColor}`}>
+            <span className={`px-2.5 py-1 text-[10px] font-mono font-semibold border backdrop-blur-sm rounded-full ${m.tagColor}`}>
               {m.tag}
             </span>
           </div>
@@ -81,7 +81,7 @@ const TiltCard = ({ project, index, onClick }: { project: Project; index: number
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className="flex items-center gap-2 px-4 py-2 bg-cyan-50/95 backdrop-blur-sm text-xs font-mono font-semibold text-foreground shadow-lg hover:bg-white transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-cyan-50/95 backdrop-blur-sm text-xs font-mono font-semibold text-foreground shadow-lg hover:bg-white transition-colors rounded-lg"
               >
                 <Play className="h-3.5 w-3.5 fill-current text-blue-500" />
                 Watch Demo
@@ -135,20 +135,19 @@ const Projects = () => {
 
   return (
     <>
-      <section id="projects" className="py-32 relative z-10 section-blue">
-        <div className="container mx-auto px-4 sm:px-6">
-          <div className="max-w-5xl mx-auto">
+      <section id="projects" className="page-section section-blue">
+        <div className="section-wrap">
             <motion.div
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease }}
               viewport={vp}
-              className="mb-14 relative"
+              className="section-header"
             >
               <div className="absolute -top-4 right-0 section-index select-none">02</div>
               <p className="section-num mb-3">02 · Work</p>
-              <h2 className="text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[0.95]">
-                Things I've<br /><span className="text-gradient italic">built</span>
+              <h2 className="section-title text-balance">
+                Things I've<br /><span className="text-gradient">built</span>
               </h2>
             </motion.div>
 
@@ -162,11 +161,10 @@ const Projects = () => {
               initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease }} viewport={vp}>
               <Button asChild variant="outline" size="lg"
-                className="px-8 hover:border-primary/40 hover:bg-primary/5 transition-all duration-200 font-mono text-sm">
+                className="px-8 hover:border-primary/40 hover:bg-primary/5 transition-all duration-200 font-mono text-sm rounded-lg bg-sky-50/70">
                 <Link to="/projects">All Projects <ArrowRight className="ml-2 h-4 w-4" /></Link>
               </Button>
             </motion.div>
-          </div>
         </div>
       </section>
 

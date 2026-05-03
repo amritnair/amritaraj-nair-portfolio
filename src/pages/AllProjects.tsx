@@ -6,7 +6,6 @@ import { Link } from "react-router-dom";
 import { PROJECTS } from "@/data/projects";
 import Navigation from "@/components/Navigation";
 import BackgroundEffects from "@/components/BackgroundEffects";
-import { CodeAtmosphere, MarketAtmosphere } from "@/components/SceneBackground";
 
 const AllProjects = () => {
   const projects = PROJECTS;
@@ -18,7 +17,7 @@ const AllProjects = () => {
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.05 * index }}
-      className="group rounded-2xl border border-border/70 bg-card/95 backdrop-blur-sm overflow-hidden hover:border-primary/25 hover:shadow-hover transition-all duration-500"
+      className="group surface-panel overflow-hidden card-glow transition-all duration-300"
     >
       <div className="overflow-hidden">
         <img
@@ -63,20 +62,24 @@ const AllProjects = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden noise dot-grid aurora-stage">
+    <div className="min-h-screen bg-background relative overflow-hidden noise dot-grid">
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: "linear-gradient(180deg, hsl(210 82% 96%) 0%, hsl(198 58% 91%) 42%, hsl(164 32% 84%) 100%)",
+        }}
+      />
       <BackgroundEffects />
-      <MarketAtmosphere />
-      <CodeAtmosphere />
       <Navigation />
       <div className="container mx-auto px-6 pt-24 pb-20 relative z-10">
         <div className="max-w-5xl mx-auto">
-          <Button asChild variant="ghost" size="sm" className="mb-8 text-muted-foreground hover:text-foreground">
+          <Button asChild variant="ghost" size="sm" className="mb-8 text-muted-foreground hover:text-foreground rounded-lg">
             <Link to="/"><ArrowLeft className="w-4 h-4 mr-2" />Back</Link>
           </Button>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <p className="mono text-primary text-sm tracking-widest uppercase mb-4">Portfolio</p>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">All <span className="text-gradient">Projects</span></h1>
+            <h1 className="section-title mb-4">All <span className="text-gradient">Projects</span></h1>
             <p className="text-muted-foreground text-lg mb-16 max-w-2xl">
               Research, engineering, nonprofit work, and community impact.
             </p>

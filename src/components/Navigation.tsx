@@ -35,7 +35,7 @@ const Navigation = () => {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-          isScrolled ? "backdrop-blur-xl border-b border-border shadow-sm" : "bg-transparent"
+          isScrolled ? "backdrop-blur-xl border-b border-border/70 shadow-sm" : "bg-transparent"
         }`}
         style={isScrolled ? { background: "hsl(205 66% 96% / 0.92)" } : {}}
       >
@@ -57,14 +57,14 @@ const Navigation = () => {
             <div className="hidden md:flex items-center gap-1">
               {isHome && navItems.map((item) => (
                 <button key={item.name} onClick={() => scrollToSection(item.href)}
-                  className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 rounded-lg hover:bg-sky-50/70">
+                  className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 rounded-lg hover:bg-sky-50/75">
                   {item.name}
                 </button>
               ))}
               <Button
                 onClick={() => isHome ? scrollToSection("#contact") : (window.location.href = "/#contact")}
                 size="sm"
-                className="ml-2 btn-primary text-white border-0 text-xs px-5 font-mono font-semibold">
+                className="ml-2 btn-primary text-white border-0 text-xs px-5 font-mono font-semibold rounded-lg">
                 Get in Touch
               </Button>
             </div>
@@ -91,8 +91,8 @@ const Navigation = () => {
             <motion.div
               initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }}
               transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-              className="fixed top-16 left-0 right-0 z-50 p-6 space-y-2 md:hidden border-b border-border shadow-lg"
-              style={{ background: "hsl(205 72% 96%)" }}
+              className="fixed top-16 left-3 right-3 z-50 p-4 space-y-2 md:hidden border border-border shadow-lg rounded-lg"
+              style={{ background: "hsl(205 72% 96% / 0.96)" }}
             >
               {isHome && navItems.map((item) => (
                 <button key={item.name} onClick={() => scrollToSection(item.href)}
@@ -108,7 +108,7 @@ const Navigation = () => {
                     window.location.href = "/#contact";
                   }
                 }}
-                className="w-full mt-4 btn-primary text-white border-0 font-mono font-semibold">
+                className="w-full mt-4 btn-primary text-white border-0 font-mono font-semibold rounded-lg">
                 Get in Touch
               </Button>
             </motion.div>

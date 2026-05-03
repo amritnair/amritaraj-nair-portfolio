@@ -30,12 +30,12 @@ const items = [
 const Marquee = () => {
   const doubled = [...items, ...items];
   return (
-    <div className="relative z-10 py-5 border-y border-border overflow-hidden backdrop-blur-sm bg-white/20">
+    <div className="relative z-10 py-4 border-y border-border/70 overflow-hidden backdrop-blur-md bg-sky-50/45">
       <div className="absolute left-0 inset-y-0 w-16 bg-gradient-to-r from-transparent to-transparent z-10 pointer-events-none" />
       <div className="absolute right-0 inset-y-0 w-16 bg-gradient-to-l from-transparent to-transparent z-10 pointer-events-none" />
       <div className="marquee-track">
         {doubled.map((item, i) => (
-          <span key={i} className="mono text-[11px] text-foreground/60 whitespace-nowrap px-8 flex items-center gap-6">
+          <span key={i} className="mono text-[11px] text-foreground/62 whitespace-nowrap px-8 flex items-center gap-6">
             {item}
             <span className="text-xs text-foreground/30">·</span>
           </span>
@@ -90,7 +90,7 @@ const Index = () => (
     <Projects />
     <Contact />
 
-    <footer className="relative z-10 border-t border-border/60 py-10 bg-slate-950/5 backdrop-blur-sm">
+    <footer className="relative z-10 border-t border-border/60 py-10 bg-sky-50/45 backdrop-blur-md">
       <div className="container mx-auto px-4 sm:px-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="mono text-xs text-foreground/50">© 2025 Amritaraj Nair</p>

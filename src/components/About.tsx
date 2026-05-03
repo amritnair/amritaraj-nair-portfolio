@@ -143,7 +143,7 @@ const Card = ({ children, className = "", delay = 0 }: { children: React.ReactNo
     whileInView={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.5, delay, ease }}
     viewport={vp}
-    className={`border border-border bg-card/95 backdrop-blur-sm card-glow p-7 ${className}`}
+    className={`surface-panel card-glow p-7 ${className}`}
   >
     {children}
   </motion.div>
@@ -160,9 +160,8 @@ const About = () => {
   };
 
   return (
-    <section id="about" className="py-32 relative z-10 section-sage">
-      <div className="container mx-auto px-4 sm:px-6">
-        <div className="max-w-5xl mx-auto">
+    <section id="about" className="page-section section-sage">
+      <div className="section-wrap">
 
           {/* Editorial section header */}
           <motion.div
@@ -170,18 +169,18 @@ const About = () => {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease }}
             viewport={vp}
-            className="mb-14 relative"
+            className="section-header"
           >
             <div className="absolute -top-4 right-0 section-index select-none">01</div>
             <p className="section-num mb-3">01 · About</p>
-            <h2 className="text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[0.95]">
+            <h2 className="section-title text-balance">
               The person<br />
-              <span className="text-gradient italic">behind the code</span>
+              <span className="text-gradient">behind the code</span>
             </h2>
           </motion.div>
 
           {/* Top row */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-px border border-border mb-px bg-border">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
 
             {/* Photo card */}
             <motion.div
@@ -189,12 +188,12 @@ const About = () => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.05, ease }}
               viewport={vp}
-              className="bg-card/95 backdrop-blur-sm flex flex-col items-center justify-center p-8 gap-5"
+              className="surface-panel-strong flex flex-col items-center justify-center p-8 gap-5"
             >
               <motion.div
                 whileHover={{ scale: 1.03 }}
                 transition={{ type: "spring", stiffness: 280, damping: 22 }}
-                className="w-36 h-36 overflow-hidden border-2 border-border shadow-md"
+                className="w-36 h-36 overflow-hidden border-2 border-border shadow-md rounded-lg"
               >
                 <img
                   src="/amritaraj-nair-portfolio/images/headshot.png"
@@ -213,7 +212,7 @@ const About = () => {
             </motion.div>
 
             {/* Bio */}
-            <Card delay={0.1} className="md:col-span-2 rounded-none">
+            <Card delay={0.1} className="md:col-span-2">
               <p className="text-[10px] mono text-muted-foreground uppercase tracking-[0.22em] mb-5">Bio</p>
               <p className="text-foreground leading-relaxed mb-4 text-base">
                 CS Honors + Math minor at Texas A&amp;M, National Merit Scholar &amp; President's
@@ -245,7 +244,7 @@ const About = () => {
                         className={`flex items-center gap-2 px-3 py-1.5 border text-xs font-mono font-medium transition-all duration-150 cursor-pointer select-none ${
                           isActive
                             ? "bg-primary text-white border-primary"
-                            : "bg-card border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                            : "soft-chip text-muted-foreground hover:border-primary/40 hover:text-foreground"
                         }`}
                       >
                         <Icon className="h-3.5 w-3.5" />
@@ -265,7 +264,7 @@ const About = () => {
                       transition={{ duration: 0.22, ease }}
                       className="overflow-hidden"
                     >
-                      <div className={`mt-4 border bg-gradient-to-br p-4 sm:p-5 ${current.panelColor}`}>
+                      <div className={`mt-4 border bg-gradient-to-br p-4 sm:p-5 rounded-lg ${current.panelColor}`}>
                         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(190px,260px)] lg:items-start">
                           <div>
                             <div className="flex items-center justify-between gap-2 mb-3">
@@ -277,7 +276,7 @@ const About = () => {
                               </div>
                               <button
                                 onClick={closeFact}
-                                className="flex items-center gap-1.5 px-2.5 py-1 border border-border/60 bg-white/60 hover:bg-white/90 text-muted-foreground hover:text-foreground transition-all duration-150 text-[10px] mono uppercase tracking-wider"
+                                className="flex items-center gap-1.5 px-2.5 py-1 border border-border/60 bg-white/70 hover:bg-white/95 text-muted-foreground hover:text-foreground transition-all duration-150 text-[10px] mono uppercase tracking-wider rounded-md"
                                 aria-label="Close panel and return to top"
                               >
                                 <X className="h-3 w-3" />
@@ -298,7 +297,7 @@ const About = () => {
                           {current.images && current.images.length > 0 ? (
                             <div className={`grid gap-3 ${current.images.length > 1 ? "sm:grid-cols-2 lg:grid-cols-1" : ""}`}>
                               {current.images.map((image) => (
-                                <figure key={image.src} className="overflow-hidden border border-border/70 bg-white/55 shadow-sm">
+                                <figure key={image.src} className="overflow-hidden border border-border/70 bg-white/65 shadow-sm rounded-lg">
                                   <div className="aspect-[4/3] bg-muted">
                                     <img
                                       src={image.src}
@@ -314,7 +313,7 @@ const About = () => {
                               ))}
                             </div>
                           ) : (
-                            <div className="border border-border/70 bg-white/45 p-4">
+                            <div className="border border-border/70 bg-white/55 p-4 rounded-lg">
                               <p className="display text-4xl font-black text-primary/25 leading-none">
                                 {current.label}
                               </p>
@@ -333,7 +332,7 @@ const About = () => {
           </div>
 
           {/* Stats row — flush grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-border mb-px">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
             {stats.map((s, i) => (
               <motion.div
                 key={i}
@@ -341,7 +340,7 @@ const About = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.45, delay: 0.1 + i * 0.05, ease }}
                 viewport={vp}
-                className="bg-card/95 backdrop-blur-sm p-7"
+                className="surface-panel p-7 card-glow"
               >
                 <motion.p
                   initial={{ opacity: 0, scale: 0.6 }}
@@ -358,14 +357,14 @@ const About = () => {
           </div>
 
           {/* Bottom row — building + tech */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-border">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
             <motion.div
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2, ease }}
               viewport={vp}
-              className="bg-card/95 backdrop-blur-sm p-7 border-l-4 border-l-primary"
+              className="surface-panel p-7 border-l-4 border-l-primary"
             >
               <p className="text-[10px] mono text-blue-600 uppercase tracking-[0.22em] mb-5">Currently building</p>
               <div className="space-y-5">
@@ -387,7 +386,7 @@ const About = () => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.25, ease }}
               viewport={vp}
-              className="bg-card/95 backdrop-blur-sm p-7 md:col-span-2"
+              className="surface-panel p-7 md:col-span-2"
             >
               <p className="text-[10px] mono text-muted-foreground uppercase tracking-[0.22em] mb-5">Tech Stack</p>
               <div className="flex flex-wrap gap-2">
@@ -399,7 +398,7 @@ const About = () => {
                     transition={{ duration: 0.24, delay: 0.3 + i * 0.025, ease }}
                     viewport={vp}
                     whileHover={{ y: -2, transition: { duration: 0.1 } }}
-                    className={`px-2.5 py-1 border text-[11px] mono font-medium cursor-default select-none ${s.color}`}
+                    className={`px-2.5 py-1 border text-[11px] mono font-medium cursor-default select-none rounded-full ${s.color}`}
                   >
                     {s.name}
                   </motion.span>
@@ -408,7 +407,6 @@ const About = () => {
             </motion.div>
           </div>
 
-        </div>
       </div>
     </section>
   );
