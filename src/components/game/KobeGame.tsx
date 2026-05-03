@@ -3,420 +3,131 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Stars } from "@react-three/drei";
 import * as THREE from "three";
 import { Dog, DogHandle } from "./Dog";
-import { World, SIGNS } from "./World";
+import { World } from "./World";
+import { NPC_DOGS, type NpcConfig, type QA } from "./npcData";
 import { useControls } from "./useControls";
 
-/* ── Gradient sky backdrop ────────────────────────────────────────── */
+/* ── Gradient sky ─────────────────────────────────────────────────── */
 function GradientSky() {
   const { scene } = useThree();
   useEffect(() => {
-    // Sunset gradient texture painted onto a sphere
     const canvas = document.createElement("canvas");
-    canvas.width = 4; canvas.height = 256;
+    canvas.width = 4; canvas.height = 512;
     const ctx = canvas.getContext("2d")!;
-    const grad = ctx.createLinearGradient(0, 0, 0, 256);
-    grad.addColorStop(0.00, "#0b0d2a"); // zenith — deep indigo night
-    grad.addColorStop(0.18, "#1a1060"); // upper sky
-    grad.addColorStop(0.38, "#7b2d8b"); // purple band
-    grad.addColorStop(0.55, "#c0392b"); // deep red horizon
-    grad.addColorStop(0.68, "#e8621a"); // orange
-    grad.addColorStop(0.80, "#f7a030"); // warm amber
-    grad.addColorStop(0.92, "#ffd580"); // pale gold at ground
-    grad.addColorStop(1.00, "#ffeaa0");
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 4, 256);
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.mapping = THREE.EquirectangularReflectionMapping;
-    scene.background = texture;
-    return () => { texture.dispose(); };
+    const g = ctx.createLinearGradient(0, 0, 0, 512);
+    g.addColorStop(0.00, "#080a1c");
+    g.addColorStop(0.15, "#150d40");
+    g.addColorStop(0.32, "#6b1f7a");
+    g.addColorStop(0.50, "#b83240");
+    g.addColorStop(0.64, "#e05a18");
+    g.addColorStop(0.78, "#f59020");
+    g.addColorStop(0.90, "#fdd06a");
+    g.addColorStop(1.00, "#ffe8a0");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 4, 512);
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.mapping = THREE.EquirectangularReflectionMapping;
+    scene.background = tex;
+    return () => { tex.dispose(); scene.background = null; };
   }, [scene]);
   return null;
 }
 
-/* ── Sign panel content ───────────────────────────────────────────── */
-function AboutPanel() {
-  const facts = [
-    { label: "🎓 Education",    detail: "B.S. Computer Science + Mathematics at Texas A&M University. President's Endowed Scholar. Expected May 2027." },
-    { label: "🔬 Research",     detail: "Outstanding Undergraduate Researcher — working on machine learning systems, computer vision, and agent architectures." },
-    { label: "🏆 Hackathons",   detail: "Hook'em Hacks 2026: Startup Ready Award. TidalTAMU: Google Gemini Track 1st Place. Google Labs Makeathon participant." },
-    { label: "🚀 Startup",      detail: "Co-founded MagNet Agents — an AI agent platform backed by Cornell. Building tools that let anyone deploy intelligent workflows." },
-    { label: "📈 Quant Dev",    detail: "Quantitative Developer at a $70K AUM student-run investment fund. Built alpha-generation tools and backtesting infrastructure." },
-    { label: "🎤 Pitching",     detail: "Pitched a computer vision app at McCombs School of Business. Demo'd to Pear VC (Y Combinator-affiliated seed fund)." },
-  ];
-  const [open, setOpen] = useState<number | null>(null);
-  return (
-    <div style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-      <h2 style={{ fontFamily: "'Bangers', cursive", fontSize: 30, letterSpacing: "0.06em", color: "#7dd3fc", marginBottom: 12 }}>About Me</h2>
-      <p style={{ fontSize: 12, color: "rgba(255,255,255,0.65)", marginBottom: 14, lineHeight: 1.6 }}>
-        CS + Math @ Texas A&M. I build AI systems, quant tools, and products that win hackathons.
-        Tap any card to learn more.
-      </p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-        {facts.map((f, i) => (
-          <div
-            key={i}
-            onClick={() => setOpen(open === i ? null : i)}
-            style={{
-              padding: open === i ? "10px 12px" : "8px 12px",
-              borderRadius: 8,
-              background: open === i ? "rgba(125,211,252,0.12)" : "rgba(255,255,255,0.05)",
-              border: `1px solid ${open === i ? "rgba(125,211,252,0.35)" : "rgba(255,255,255,0.08)"}`,
-              cursor: "pointer",
-              transition: "all 0.2s",
-            }}
-          >
-            <div style={{ fontSize: 13, fontWeight: 600, color: open === i ? "#7dd3fc" : "rgba(255,255,255,0.85)" }}>
-              {f.label}
-            </div>
-            {open === i && (
-              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", marginTop: 6, lineHeight: 1.65 }}>
-                {f.detail}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ProjectsPanel() {
-  const projects = [
-    {
-      name: "MagNet Agents",
-      tag: "AI Startup",
-      color: "#4ade80",
-      stack: "Python · LangChain · React",
-      desc: "Cornell-backed AI agent platform. Users can design, deploy, and chain intelligent agents without writing code. Backed through the eLab accelerator.",
-    },
-    {
-      name: "AlphaForge",
-      tag: "Quant",
-      color: "#f9c74f",
-      stack: "Python · Pandas · TA-Lib · React",
-      desc: "Drag-and-drop quantitative strategy builder. Think Robinhood meets Scratch for algo trading. Users build, backtest, and simulate strategies visually.",
-    },
-    {
-      name: "Shot Sensei",
-      tag: "Computer Vision",
-      color: "#f3722c",
-      stack: "Python · OpenCV · MediaPipe · React",
-      desc: "AI pickleball coach that uses pose estimation to analyze your swing, shot mechanics, and footwork in real time via webcam.",
-    },
-    {
-      name: "TidalTAMU",
-      tag: "🥇 1st Place",
-      color: "#a855f7",
-      stack: "Python · Gemini API · Next.js",
-      desc: "Won Google Gemini Track at TidalTAMU 2025. Built an AI-powered environmental monitoring system that predicts harmful algal bloom events.",
-    },
-    {
-      name: "Hook'em Hacks",
-      tag: "Startup Ready Award",
-      color: "#fb923c",
-      stack: "React · Node · OpenAI",
-      desc: "Hook'em Hacks 2026 — Startup Ready Award. Rapid prototype that impressed judges with its market-ready product angle and execution.",
-    },
-  ];
-  const [open, setOpen] = useState<number | null>(null);
-  return (
-    <div style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-      <h2 style={{ fontFamily: "'Bangers', cursive", fontSize: 30, letterSpacing: "0.06em", color: "#86efac", marginBottom: 12 }}>Projects</h2>
-      <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-        {projects.map((p, i) => (
-          <div
-            key={i}
-            onClick={() => setOpen(open === i ? null : i)}
-            style={{
-              padding: open === i ? "10px 12px" : "8px 12px",
-              borderRadius: 8,
-              background: open === i ? `${p.color}18` : "rgba(255,255,255,0.05)",
-              border: `1px solid ${open === i ? `${p.color}55` : "rgba(255,255,255,0.08)"}`,
-              cursor: "pointer",
-              transition: "all 0.2s",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 20, background: `${p.color}28`, color: p.color, letterSpacing: "0.05em" }}>
-                {p.tag}
-              </span>
-              <span style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.9)" }}>{p.name}</span>
-            </div>
-            {open === i && (
-              <>
-                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 5, fontFamily: "monospace" }}>{p.stack}</div>
-                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.72)", marginTop: 5, lineHeight: 1.6 }}>{p.desc}</div>
-              </>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ContactPanel() {
-  const [copied, setCopied] = useState(false);
-  const copy = () => {
-    navigator.clipboard.writeText("amritnair23@gmail.com");
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-  const links = [
-    {
-      label: "Send Email",
-      icon: "✉️",
-      desc: "amritnair23@gmail.com",
-      color: "#fbbf24",
-      action: () => window.open("mailto:amritnair23@gmail.com", "_blank"),
-    },
-    {
-      label: "LinkedIn",
-      icon: "💼",
-      desc: "/in/amritaraj-nair-227063313",
-      color: "#60a5fa",
-      action: () => window.open("https://www.linkedin.com/in/amritaraj-nair-227063313", "_blank"),
-    },
-    {
-      label: "GitHub",
-      icon: "🐙",
-      desc: "github.com/amritnair",
-      color: "#a78bfa",
-      action: () => window.open("https://github.com/amritnair", "_blank"),
-    },
-  ];
-  return (
-    <div style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-      <h2 style={{ fontFamily: "'Bangers', cursive", fontSize: 30, letterSpacing: "0.06em", color: "#fcd34d", marginBottom: 6 }}>Contact</h2>
-      <p style={{ fontSize: 12, color: "rgba(255,255,255,0.55)", marginBottom: 14, lineHeight: 1.6 }}>
-        Open to roles, collabs, and coffee chats. Reach out!
-      </p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {links.map((l, i) => (
-          <button
-            key={i}
-            onClick={l.action}
-            style={{
-              display: "flex", alignItems: "center", gap: 12,
-              padding: "12px 14px",
-              borderRadius: 10,
-              background: `${l.color}18`,
-              border: `1px solid ${l.color}44`,
-              cursor: "pointer",
-              textAlign: "left",
-              transition: "all 0.18s",
-            }}
-            onMouseEnter={e => (e.currentTarget.style.background = `${l.color}28`)}
-            onMouseLeave={e => (e.currentTarget.style.background = `${l.color}18`)}
-          >
-            <span style={{ fontSize: 22 }}>{l.icon}</span>
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: l.color }}>{l.label}</div>
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", fontFamily: "monospace" }}>{l.desc}</div>
-            </div>
-            <span style={{ marginLeft: "auto", fontSize: 16, color: l.color, opacity: 0.7 }}>↗</span>
-          </button>
-        ))}
-        {/* Copy email */}
-        <button
-          onClick={copy}
-          style={{
-            marginTop: 2,
-            padding: "9px 14px",
-            borderRadius: 8,
-            background: "rgba(255,255,255,0.05)",
-            border: "1px solid rgba(255,255,255,0.12)",
-            cursor: "pointer",
-            color: "rgba(255,255,255,0.5)",
-            fontSize: 11,
-            fontFamily: "'Space Grotesk', sans-serif",
-            letterSpacing: "0.05em",
-          }}
-        >
-          {copied ? "✓ Copied!" : "Copy email address"}
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function ResumePanel() {
-  const sections = [
-    {
-      title: "🎓 Education",
-      short: "Texas A&M University — B.S. CS + Math",
-      color: "#818cf8",
-      items: [
-        { label: "Degree",    val: "B.S. Computer Science + Mathematics (double major)" },
-        { label: "School",    val: "Texas A&M University — Class of 2027" },
-        { label: "Honors",    val: "President's Endowed Scholar" },
-        { label: "Courses",   val: "Data Structures, Algorithms, Linear Algebra, Probability, ML, Computer Vision" },
-      ],
-    },
-    {
-      title: "💼 Experience",
-      short: "Quant Dev · MagNet Agents · Research",
-      color: "#34d399",
-      items: [
-        { label: "Quant Developer",      val: "Student-run investment fund ($70K AUM). Built alpha signals, backtesting framework, live data pipelines." },
-        { label: "MagNet Agents",        val: "Co-founder. Cornell eLab-backed AI agent startup. Lead engineer — React frontend + Python/LangChain backend." },
-        { label: "Undergrad Researcher", val: "Outstanding Undergraduate Researcher award. ML + computer vision research." },
-      ],
-    },
-    {
-      title: "🏆 Awards",
-      short: "Hackathon wins & academic honors",
-      color: "#fbbf24",
-      items: [
-        { label: "TidalTAMU 2025",    val: "1st Place — Google Gemini Track" },
-        { label: "Hook'em Hacks 2026", val: "Startup Ready Award" },
-        { label: "Google Labs",        val: "Makeathon participant" },
-        { label: "Pear VC",            val: "Pitched at McCombs School of Business" },
-        { label: "Scholar",            val: "President's Endowed Scholar — Texas A&M" },
-      ],
-    },
-    {
-      title: "🛠 Skills",
-      short: "Python · TypeScript · React · ML",
-      color: "#f472b6",
-      items: [
-        { label: "Languages",   val: "Python, TypeScript/JavaScript, C++, SQL, R" },
-        { label: "Frameworks",  val: "React, Next.js, Node.js, FastAPI, LangChain" },
-        { label: "ML / AI",     val: "PyTorch, TensorFlow, OpenCV, MediaPipe, Scikit-learn" },
-        { label: "Tools",       val: "Git, Docker, PostgreSQL, Supabase, Vite, AWS" },
-        { label: "Finance",     val: "Pandas, NumPy, TA-Lib, Backtrader, Alpaca API" },
-      ],
-    },
-  ];
-  const [open, setOpen] = useState<number | null>(0);
-  return (
-    <div style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-      <h2 style={{ fontFamily: "'Bangers', cursive", fontSize: 30, letterSpacing: "0.06em", color: "#c4b5fd", marginBottom: 6 }}>Resume</h2>
-      <p style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginBottom: 12 }}>Tap a section to expand. <a href="/#/resume" style={{ color: "#a78bfa" }}>View full resume →</a></p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-        {sections.map((s, i) => (
-          <div
-            key={i}
-            style={{
-              borderRadius: 9,
-              background: open === i ? `${s.color}12` : "rgba(255,255,255,0.04)",
-              border: `1px solid ${open === i ? `${s.color}40` : "rgba(255,255,255,0.07)"}`,
-              overflow: "hidden",
-            }}
-          >
-            <button
-              onClick={() => setOpen(open === i ? null : i)}
-              style={{
-                width: "100%",
-                padding: "9px 12px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                cursor: "pointer",
-                background: "none",
-                border: "none",
-                textAlign: "left",
-              }}
-            >
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: open === i ? s.color : "rgba(255,255,255,0.85)" }}>{s.title}</div>
-                {open !== i && <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 1 }}>{s.short}</div>}
-              </div>
-              <span style={{ color: s.color, opacity: 0.7, fontSize: 16 }}>{open === i ? "▲" : "▼"}</span>
-            </button>
-            {open === i && (
-              <div style={{ padding: "0 12px 10px" }}>
-                {s.items.map((item, j) => (
-                  <div key={j} style={{ display: "flex", gap: 8, marginBottom: 5 }}>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: s.color, minWidth: 100, flexShrink: 0 }}>{item.label}</span>
-                    <span style={{ fontSize: 11, color: "rgba(255,255,255,0.65)", lineHeight: 1.55 }}>{item.val}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-const PANELS: Record<string, React.ReactNode> = {
-  about:    <AboutPanel />,
-  projects: <ProjectsPanel />,
-  contact:  <ContactPanel />,
-  resume:   <ResumePanel />,
-};
-
 /* ── Player controller ────────────────────────────────────────────── */
 function PlayerController({
-  dogRef,
-  onNearSign,
+  onNearNpc,
   onMovingChange,
+  dogRef,
 }: {
+  onNearNpc: (id: string | null) => void;
+  onMovingChange: (m: boolean, r: boolean) => void;
   dogRef: React.RefObject<DogHandle>;
-  onNearSign: (id: string | null) => void;
-  onMovingChange: (moving: boolean, running: boolean) => void;
 }) {
-  const keys = useControls();
+  const keys      = useControls();
   const { camera } = useThree();
-  const yaw      = useRef(0);
-  const angVel   = useRef(0);
-  const vel      = useRef(new THREE.Vector3());
-  const pos      = useRef(new THREE.Vector3(0, 0, 5));
-  const camPos   = useRef(new THREE.Vector3(0, 3.2, 10));
-  const prevNear = useRef<string | null>(null);
+
+  const pos       = useRef(new THREE.Vector3(0, 0, 5));
+  const vel       = useRef(new THREE.Vector3());
+  const dogYaw    = useRef(0);  // dog facing direction (world yaw)
+  const camYaw    = useRef(0);  // camera horizontal orbit
+  const camPitch  = useRef(0.38); // camera vertical angle (radians)
+  const camPos    = useRef(new THREE.Vector3(0, 3, 9));
+  const prevNear  = useRef<string | null>(null);
+
+  // Mouse look via pointer lock
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      if (!document.pointerLockElement) return;
+      camYaw.current  -= e.movementX * 0.0038;
+      camPitch.current = THREE.MathUtils.clamp(
+        camPitch.current - e.movementY * 0.0028,
+        0.08, 0.80,
+      );
+    };
+    document.addEventListener("mousemove", onMove);
+    return () => document.removeEventListener("mousemove", onMove);
+  }, []);
 
   useFrame((_, delta) => {
     const k = keys.current;
     const maxSpeed = k.run ? 8 : 4;
 
-    // Smooth turning
-    const targetAng = k.left ? 2.4 : k.right ? -2.4 : 0;
-    angVel.current = THREE.MathUtils.lerp(angVel.current, targetAng, delta * 10);
-    yaw.current   += angVel.current * delta;
+    // WASD movement is relative to camera yaw
+    const moveX = (k.right ? 1 : 0) - (k.left ? 1 : 0);
+    const moveZ = (k.backward ? 1 : 0) - (k.forward ? 1 : 0);
+    const moving = moveX !== 0 || moveZ !== 0;
 
-    // Smooth linear velocity
-    const fwd = k.forward ? 1 : k.backward ? -0.45 : 0;
-    const dir = new THREE.Vector3(0, 0, -fwd * maxSpeed)
-      .applyEuler(new THREE.Euler(0, yaw.current, 0));
-    const accel = (k.forward || k.backward) ? 9 : 14; // faster decel
-    vel.current.lerp(dir, delta * accel);
+    const dir = new THREE.Vector3(moveX, 0, moveZ);
+    if (dir.length() > 0) {
+      dir.normalize().applyEuler(new THREE.Euler(0, camYaw.current, 0));
+    }
+    const targetVel = dir.multiplyScalar(maxSpeed);
+    vel.current.lerp(targetVel, delta * (moving ? 9 : 14));
 
     pos.current.addScaledVector(vel.current, delta);
     pos.current.x = THREE.MathUtils.clamp(pos.current.x, -23, 23);
     pos.current.z = THREE.MathUtils.clamp(pos.current.z, -23, 23);
 
-    const isMoving  = vel.current.length() > 0.08;
-    const isRunning = k.run && isMoving;
-    onMovingChange(isMoving, isRunning);
+    const isMoving  = vel.current.length() > 0.1;
+    onMovingChange(isMoving, k.run && isMoving);
 
-    // Update dog
+    // Dog faces movement direction
+    if (isMoving) {
+      const targetYaw = Math.atan2(vel.current.x, vel.current.z);
+      dogYaw.current = THREE.MathUtils.lerp(
+        dogYaw.current,
+        targetYaw,
+        delta * 10,
+      );
+    }
     const dog = dogRef.current?.group;
     if (dog) {
       dog.position.copy(pos.current);
-      // smooth dog yaw
-      const dy = yaw.current - dog.rotation.y;
-      dog.rotation.y += dy * Math.min(1, delta * 12);
+      dog.rotation.y = dogYaw.current;
     }
 
-    // Spring follow camera — sits behind and slightly above dog
-    const behind = new THREE.Vector3(0, 2.8, 5.5).applyEuler(new THREE.Euler(0, yaw.current, 0));
-    const targetCam = pos.current.clone().add(behind);
-    camPos.current.lerp(targetCam, delta * 5);
+    // Camera orbit around dog
+    const dist  = 6.2;
+    const hDist = dist * Math.cos(camPitch.current);
+    const targetCam = new THREE.Vector3(
+      pos.current.x + Math.sin(camYaw.current) * hDist,
+      pos.current.y + dist * Math.sin(camPitch.current),
+      pos.current.z + Math.cos(camYaw.current) * hDist,
+    );
+    camPos.current.lerp(targetCam, delta * 6);
     camera.position.copy(camPos.current);
-    camera.lookAt(pos.current.x, pos.current.y + 0.7, pos.current.z);
+    camera.lookAt(pos.current.x, pos.current.y + 0.6, pos.current.z);
 
-    // Nearby sign detection
-    const nearSign = SIGNS.find(s => {
-      const dx = pos.current.x - s.position[0];
-      const dz = pos.current.z - s.position[2];
-      return dx * dx + dz * dz < 8;
+    // NPC proximity
+    const near = NPC_DOGS.find(n => {
+      const dx = pos.current.x - n.position[0];
+      const dz = pos.current.z - n.position[2];
+      return dx * dx + dz * dz < 9;
     });
-    const nearId = nearSign?.id ?? null;
+    const nearId = near?.id ?? null;
     if (nearId !== prevNear.current) {
       prevNear.current = nearId;
-      onNearSign(nearId);
+      onNearNpc(nearId);
     }
   });
 
@@ -424,138 +135,317 @@ function PlayerController({
 }
 
 /* ── Game scene ───────────────────────────────────────────────────── */
-function GameScene({ onNearSign }: { onNearSign: (id: string | null) => void }) {
-  const dogRef  = useRef<DogHandle>(null);
-  const [moving, setMoving]   = useState(false);
+function GameScene({ onNearNpc }: { onNearNpc: (id: string | null) => void }) {
+  const dogRef = useRef<DogHandle>(null);
+  const [moving,  setMoving]  = useState(false);
   const [running, setRunning] = useState(false);
-  const [nearSign, setNear]   = useState<string | null>(null);
+  const [nearNpc, setNear]    = useState<string | null>(null);
 
   const handleMoving = useCallback((m: boolean, r: boolean) => { setMoving(m); setRunning(r); }, []);
-  const handleNear   = useCallback((id: string | null) => { setNear(id); onNearSign(id); }, [onNearSign]);
+  const handleNear   = useCallback((id: string | null) => { setNear(id); onNearNpc(id); }, [onNearNpc]);
 
   return (
     <>
       <GradientSky />
-      <Stars radius={90} depth={50} count={1200} factor={3} fade />
-      <fog attach="fog" args={["#c05020", 35, 140]} />
+      <Stars radius={90} depth={50} count={1400} factor={3} fade />
+      <fog attach="fog" args={["#b84820", 40, 150]} />
 
-      <ambientLight intensity={0.7} color="#ffd0a0" />
+      <ambientLight intensity={0.65} color="#ffcc88" />
       <directionalLight
-        position={[15, 22, 8]}
-        intensity={1.8}
-        color="#ffb570"
+        position={[18, 24, 10]}
+        intensity={2.0}
+        color="#ffaa60"
         castShadow
         shadow-mapSize={[2048, 2048]}
         shadow-camera-far={80}
         shadow-camera-left={-30} shadow-camera-right={30}
         shadow-camera-top={30}  shadow-camera-bottom={-30}
       />
-      <hemisphereLight args={["#ff8844", "#2d4a20", 0.55]} />
-      {/* Rim / fill from opposing side */}
-      <directionalLight position={[-10, 8, -15]} intensity={0.4} color="#8855cc" />
+      <hemisphereLight args={["#ff8844", "#2d5020", 0.55]} />
+      <directionalLight position={[-12, 6, -18]} intensity={0.35} color="#7755bb" />
 
-      <World nearbySignId={nearSign} />
+      <World nearbyNpcId={nearNpc} />
       <Dog ref={dogRef} moving={moving} running={running} />
-      <PlayerController dogRef={dogRef} onNearSign={handleNear} onMovingChange={handleMoving} />
+      <PlayerController
+        dogRef={dogRef}
+        onNearNpc={handleNear}
+        onMovingChange={handleMoving}
+      />
     </>
   );
 }
 
+/* ── Dialogue panel ───────────────────────────────────────────────── */
+interface Message { from: "user" | "npc"; text: string; }
+
+function DialoguePanel({ npc, onClose }: { npc: NpcConfig; onClose: () => void }) {
+  const [messages, setMessages] = useState<Message[]>([
+    { from: "npc", text: npc.intro },
+  ]);
+  const [asked, setAsked] = useState<Set<number>>(new Set());
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const ask = (qa: QA, idx: number) => {
+    setAsked(prev => new Set(prev).add(idx));
+    setMessages(prev => [
+      ...prev,
+      { from: "user", text: qa.q },
+      { from: "npc",  text: qa.a },
+    ]);
+  };
+
+  const sp: React.CSSProperties = { fontFamily: "'Space Grotesk', sans-serif" };
+
+  return (
+    <div
+      style={{
+        position: "absolute", inset: 0,
+        background: "rgba(0,0,0,0.62)",
+        backdropFilter: "blur(4px)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        zIndex: 30,
+      }}
+      onClick={onClose}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          ...sp,
+          width: "min(520px, calc(100vw - 24px))",
+          maxHeight: "82vh",
+          display: "flex", flexDirection: "column",
+          borderRadius: 16,
+          background: "rgba(6, 8, 20, 0.94)",
+          border: `1px solid ${npc.accentColor}44`,
+          boxShadow: `0 0 60px ${npc.accentColor}22, 0 12px 48px rgba(0,0,0,0.7)`,
+          overflow: "hidden",
+        }}
+      >
+        {/* Header */}
+        <div style={{
+          padding: "14px 18px",
+          borderBottom: "1px solid rgba(255,255,255,0.08)",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          background: `${npc.accentColor}10`,
+        }}>
+          <div>
+            <div style={{ fontFamily: "'Bangers', cursive", fontSize: 22, letterSpacing: "0.07em", color: npc.accentColor }}>
+              {npc.name}
+            </div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 1 }}>
+              {npc.breed}
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)",
+              borderRadius: 7, color: "rgba(255,255,255,0.5)", cursor: "pointer",
+              padding: "3px 10px", fontSize: 12,
+            }}
+          >Esc</button>
+        </div>
+
+        {/* Messages */}
+        <div style={{ flex: 1, overflowY: "auto", padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
+          {messages.map((m, i) => (
+            <div key={i} style={{ display: "flex", justifyContent: m.from === "user" ? "flex-end" : "flex-start" }}>
+              <div style={{
+                maxWidth: "84%",
+                padding: "9px 13px",
+                borderRadius: m.from === "user" ? "12px 12px 3px 12px" : "12px 12px 12px 3px",
+                background: m.from === "user"
+                  ? `linear-gradient(135deg, ${npc.accentColor}44, ${npc.accentColor}28)`
+                  : "rgba(255,255,255,0.07)",
+                border: `1px solid ${m.from === "user" ? npc.accentColor + "44" : "rgba(255,255,255,0.08)"}`,
+                fontSize: 13,
+                lineHeight: 1.65,
+                color: m.from === "user" ? npc.accentColor : "rgba(255,255,255,0.85)",
+              }}>
+                {m.text}
+              </div>
+            </div>
+          ))}
+          <div ref={bottomRef} />
+        </div>
+
+        {/* Question buttons */}
+        <div style={{
+          padding: "12px 16px",
+          borderTop: "1px solid rgba(255,255,255,0.08)",
+          display: "flex", flexDirection: "column", gap: 6,
+        }}>
+          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 2 }}>
+            Ask a question
+          </div>
+          {npc.qa.map((qa, i) => (
+            <button
+              key={i}
+              onClick={() => ask(qa, i)}
+              disabled={asked.has(i)}
+              style={{
+                textAlign: "left",
+                padding: "8px 12px",
+                borderRadius: 8,
+                background: asked.has(i) ? "rgba(255,255,255,0.03)" : `${npc.accentColor}12`,
+                border: `1px solid ${asked.has(i) ? "rgba(255,255,255,0.06)" : npc.accentColor + "33"}`,
+                color: asked.has(i) ? "rgba(255,255,255,0.28)" : "rgba(255,255,255,0.82)",
+                fontSize: 12, cursor: asked.has(i) ? "default" : "pointer",
+                transition: "all 0.15s",
+              }}
+              onMouseEnter={e => { if (!asked.has(i)) e.currentTarget.style.background = `${npc.accentColor}22`; }}
+              onMouseLeave={e => { if (!asked.has(i)) e.currentTarget.style.background = `${npc.accentColor}12`; }}
+            >
+              {asked.has(i) ? `✓ ${qa.q}` : `› ${qa.q}`}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── HUD ──────────────────────────────────────────────────────────── */
-function HUD({ nearId, openId, onOpen, onClose }: {
-  nearId: string | null; openId: string | null;
-  onOpen: (id: string) => void; onClose: () => void;
+function HUD({
+  nearId, openNpc, locked,
+  onOpen, onClose, onLock,
+}: {
+  nearId: string | null;
+  openNpc: NpcConfig | null;
+  locked: boolean;
+  onOpen: (id: string) => void;
+  onClose: () => void;
+  onLock: () => void;
 }) {
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
-      if (e.code === "KeyE" && nearId && !openId) onOpen(nearId);
-      if (e.code === "Escape" && openId) onClose();
+      if (e.code === "KeyE" && nearId && !openNpc) onOpen(nearId);
+      if (e.code === "Escape" && openNpc) onClose();
     };
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
-  }, [nearId, openId, onOpen, onClose]);
+  }, [nearId, openNpc, onOpen, onClose]);
+
+  const sp: React.CSSProperties = { fontFamily: "'Space Grotesk', sans-serif" };
+
+  const hint = (key: string, label: string, highlight = false) => (
+    <span key={key} style={{
+      ...sp,
+      display: "flex", alignItems: "center", gap: 5,
+      padding: "4px 10px",
+      background: highlight ? "rgba(255,200,80,0.2)" : "rgba(0,0,0,0.4)",
+      border: `1px solid ${highlight ? "rgba(255,200,80,0.45)" : "rgba(255,255,255,0.12)"}`,
+      borderRadius: 6, backdropFilter: "blur(6px)",
+      fontSize: 11,
+      color: highlight ? "#ffe066" : "rgba(255,255,255,0.55)",
+      animation: highlight ? "pulse 1.2s ease-in-out infinite" : "none",
+    }}>
+      <kbd style={{ fontFamily: "monospace", fontSize: 10, background: "rgba(255,255,255,0.1)", padding: "1px 5px", borderRadius: 3 }}>{key}</kbd>
+      {label}
+    </span>
+  );
 
   return (
     <>
-      {/* Bottom controls bar */}
-      <div
-        className="absolute bottom-5 left-1/2 -translate-x-1/2 flex gap-3 pointer-events-none select-none"
-        style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-      >
-        {[["WASD", "Move"], ["Shift", "Run"], ...(nearId ? [["E", "Explore"]] : [])].map(([k, v]) => (
-          <span key={k} style={{
-            display: "flex", alignItems: "center", gap: 5,
-            padding: "5px 10px",
-            background: nearId && k === "E" ? "rgba(255,200,80,0.25)" : "rgba(0,0,0,0.35)",
-            border: `1px solid ${nearId && k === "E" ? "rgba(255,200,80,0.5)" : "rgba(255,255,255,0.15)"}`,
-            borderRadius: 6, backdropFilter: "blur(6px)",
-            fontSize: 11, color: nearId && k === "E" ? "#ffe066" : "rgba(255,255,255,0.6)",
-            animation: nearId && k === "E" ? "pulse 1.2s infinite" : "none",
-          }}>
-            <kbd style={{ background: "rgba(255,255,255,0.12)", padding: "1px 5px", borderRadius: 3, fontFamily: "monospace", fontSize: 10 }}>{k}</kbd>
-            {v}
-          </span>
-        ))}
-      </div>
-
-      {/* Sign panel overlay */}
-      {openId && PANELS[openId] && (
+      {/* Click-to-lock overlay when not locked */}
+      {!locked && !openNpc && (
         <div
-          className="absolute inset-0 flex items-center justify-center"
-          style={{ background: "rgba(0,0,0,0.55)", backdropFilter: "blur(3px)", zIndex: 20 }}
-          onClick={onClose}
+          onClick={onLock}
+          style={{
+            position: "absolute", inset: 0,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            background: "rgba(0,0,0,0.42)", backdropFilter: "blur(2px)",
+            zIndex: 25, cursor: "pointer",
+          }}
         >
-          <div
-            onClick={e => e.stopPropagation()}
-            style={{
-              position: "relative",
-              maxWidth: 480, width: "calc(100% - 32px)",
-              maxHeight: "80vh",
-              overflowY: "auto",
-              padding: 22,
-              borderRadius: 14,
-              background: "rgba(8, 10, 22, 0.92)",
-              border: "1px solid rgba(255,255,255,0.12)",
-              boxShadow: "0 0 60px rgba(180,80,20,0.25), 0 8px 40px rgba(0,0,0,0.6)",
-            }}
-          >
-            <button
-              onClick={onClose}
-              style={{
-                position: "absolute", top: 12, right: 14,
-                background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)",
-                borderRadius: 6, color: "rgba(255,255,255,0.5)", cursor: "pointer",
-                padding: "2px 8px", fontSize: 13,
-                fontFamily: "'Space Grotesk', sans-serif",
-              }}
-            >✕ Esc</button>
-            {PANELS[openId]}
+          <div style={{
+            ...sp,
+            textAlign: "center",
+            padding: "22px 36px",
+            borderRadius: 14,
+            background: "rgba(6,8,20,0.88)",
+            border: "1px solid rgba(255,255,255,0.12)",
+          }}>
+            <div style={{ fontFamily: "'Bangers', cursive", fontSize: 28, letterSpacing: "0.08em", color: "white", marginBottom: 6 }}>
+              Click to Play
+            </div>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)" }}>
+              Captures mouse for camera control &mdash; press Esc to release
+            </div>
           </div>
         </div>
       )}
+
+      {/* Control hints bar */}
+      {locked && !openNpc && (
+        <div style={{ position: "absolute", bottom: 20, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 8 }}>
+          {hint("WASD", "Move")}
+          {hint("Mouse", "Look")}
+          {hint("Shift", "Run")}
+          {nearId && hint("E", "Talk", true)}
+        </div>
+      )}
+
+      {/* Dialogue */}
+      {openNpc && <DialoguePanel npc={openNpc} onClose={onClose} />}
+
+      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}`}</style>
     </>
   );
 }
 
 /* ── Entry ────────────────────────────────────────────────────────── */
 export default function KobeGame() {
-  const [nearId, setNearId] = useState<string | null>(null);
-  const [openId, setOpenId] = useState<string | null>(null);
+  const [nearId,  setNearId]  = useState<string | null>(null);
+  const [openNpc, setOpenNpc] = useState<NpcConfig | null>(null);
+  const [locked,  setLocked]  = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  // Track pointer lock state
+  useEffect(() => {
+    const onChange = () => setLocked(!!document.pointerLockElement);
+    document.addEventListener("pointerlockchange", onChange);
+    return () => document.removeEventListener("pointerlockchange", onChange);
+  }, []);
+
+  // Release pointer lock when dialogue opens
+  useEffect(() => {
+    if (openNpc && document.pointerLockElement) document.exitPointerLock();
+  }, [openNpc]);
+
+  const handleLock = () => { wrapRef.current?.requestPointerLock(); };
+
+  const handleOpen = useCallback((id: string) => {
+    const npc = NPC_DOGS.find(n => n.id === id);
+    if (npc) setOpenNpc(npc);
+  }, []);
+
+  const handleClose = useCallback(() => {
+    setOpenNpc(null);
+  }, []);
 
   return (
-    <div className="w-full h-screen relative">
+    <div ref={wrapRef} style={{ width: "100%", height: "100vh", position: "relative" }}>
       <Canvas
         shadows
-        camera={{ position: [0, 3.2, 10], fov: 62, near: 0.1, far: 250 }}
+        camera={{ position: [0, 3, 9], fov: 62, near: 0.1, far: 250 }}
         gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.1 }}
       >
-        <GameScene onNearSign={setNearId} />
+        <GameScene onNearNpc={setNearId} />
       </Canvas>
-      <HUD nearId={nearId} openId={openId} onOpen={setOpenId} onClose={() => setOpenId(null)} />
 
-      <style>{`
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.55} }
-      `}</style>
+      <HUD
+        nearId={nearId}
+        openNpc={openNpc}
+        locked={locked}
+        onOpen={handleOpen}
+        onClose={handleClose}
+        onLock={handleLock}
+      />
     </div>
   );
 }
