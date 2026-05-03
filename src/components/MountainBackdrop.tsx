@@ -174,35 +174,104 @@ const MoonGlow = () => {
     <motion.div
       className="absolute pointer-events-none"
       style={{
-        top: "3.6%",
-        right: "10%",
-        width: 170,
-        height: 170,
-        filter: "drop-shadow(0 0 34px hsl(205 95% 86% / 0.55))",
+        top: "1.4%",
+        right: "6%",
+        width: "clamp(210px, 19vw, 330px)",
+        height: "clamp(210px, 19vw, 330px)",
+        filter: "drop-shadow(0 0 46px hsl(205 95% 88% / 0.7))",
       }}
-      animate={prefersReducedMotion ? { opacity: 0.78 } : { opacity: [0.64, 0.86, 0.72, 0.84, 0.64] }}
-      transition={prefersReducedMotion ? { duration: 0 } : { duration: 8, repeat: Infinity, ease: "easeInOut" }}
+      animate={prefersReducedMotion ? { opacity: 0.84, scale: 1 } : { opacity: [0.74, 0.96, 0.84, 0.94, 0.74], scale: [0.985, 1.015, 1] }}
+      transition={prefersReducedMotion ? { duration: 0 } : { duration: 9, repeat: Infinity, ease: "easeInOut" }}
     >
-      <svg viewBox="0 0 170 170" className="h-full w-full">
+      <svg viewBox="0 0 260 260" className="h-full w-full">
         <defs>
           <radialGradient id="moonAura" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="hsl(205 100% 94%)" stopOpacity="0.48" />
-            <stop offset="55%" stopColor="hsl(205 92% 88%)" stopOpacity="0.15" />
+            <stop offset="0%" stopColor="hsl(205 100% 96%)" stopOpacity="0.62" />
+            <stop offset="42%" stopColor="hsl(205 92% 88%)" stopOpacity="0.24" />
+            <stop offset="76%" stopColor="hsl(190 90% 82%)" stopOpacity="0.08" />
             <stop offset="100%" stopColor="transparent" />
           </radialGradient>
           <radialGradient id="moonBody" cx="42%" cy="34%" r="64%">
             <stop offset="0%" stopColor="white" stopOpacity="0.96" />
-            <stop offset="62%" stopColor="hsl(210 75% 92%)" stopOpacity="0.86" />
-            <stop offset="100%" stopColor="hsl(210 50% 78%)" stopOpacity="0.72" />
+            <stop offset="58%" stopColor="hsl(210 78% 93%)" stopOpacity="0.92" />
+            <stop offset="100%" stopColor="hsl(210 54% 78%)" stopOpacity="0.78" />
           </radialGradient>
+          <filter id="moonSurfaceBlur">
+            <feGaussianBlur stdDeviation="0.55" />
+          </filter>
         </defs>
-        <circle cx="85" cy="85" r="82" fill="url(#moonAura)" />
-        <circle cx="85" cy="85" r="43" fill="url(#moonBody)" />
-        <circle cx="70" cy="74" r="7" fill="hsl(212 45% 76% / 0.22)" />
-        <circle cx="99" cy="92" r="10" fill="hsl(212 45% 72% / 0.18)" />
-        <circle cx="91" cy="62" r="4" fill="hsl(212 45% 74% / 0.18)" />
+        <circle cx="130" cy="130" r="126" fill="url(#moonAura)" />
+        <circle cx="130" cy="130" r="85" fill="none" stroke="hsl(202 100% 88% / 0.22)" strokeWidth="2" />
+        <circle cx="130" cy="130" r="63" fill="url(#moonBody)" />
+        <g filter="url(#moonSurfaceBlur)">
+          <circle cx="107" cy="111" r="9" fill="hsl(214 46% 72% / 0.2)" />
+          <circle cx="151" cy="140" r="14" fill="hsl(214 46% 69% / 0.18)" />
+          <circle cx="139" cy="94" r="5" fill="hsl(214 46% 70% / 0.2)" />
+          <circle cx="113" cy="151" r="6" fill="hsl(214 46% 76% / 0.17)" />
+          <path d="M91,129 C110,121 128,121 151,130" stroke="hsl(212 50% 72% / 0.14)" strokeWidth="5" fill="none" strokeLinecap="round" />
+          <path d="M124,80 C147,91 162,108 168,132" stroke="white" strokeWidth="4" fill="none" strokeLinecap="round" opacity="0.26" />
+        </g>
       </svg>
     </motion.div>
+  );
+};
+
+const STAR_POINTS = [
+  [70, 30, 1.4, 0.48], [152, 86, 0.9, 0.32], [248, 44, 1.2, 0.42], [348, 116, 1.6, 0.38],
+  [454, 36, 0.8, 0.3], [540, 92, 1.3, 0.44], [622, 22, 1.0, 0.32], [768, 62, 1.5, 0.46],
+  [880, 118, 0.9, 0.28], [988, 38, 1.2, 0.42], [1098, 92, 0.8, 0.32], [1214, 34, 1.5, 0.5],
+  [1322, 118, 1.1, 0.34], [1390, 62, 0.9, 0.3], [186, 142, 1.0, 0.26], [690, 145, 0.8, 0.22],
+] as const;
+
+const StarField = () => {
+  const prefersReducedMotion = useReducedMotion();
+
+  return (
+    <svg
+      viewBox="0 0 1440 180"
+      preserveAspectRatio="xMidYMin meet"
+      className="w-full pointer-events-none block"
+      style={{ height: 180, overflow: "visible" }}
+    >
+      <defs>
+        <filter id="starGlow">
+          <feGaussianBlur stdDeviation="1.5" />
+        </filter>
+      </defs>
+      {STAR_POINTS.map(([cx, cy, r, opacity], i) => (
+        <motion.g
+          key={`${cx}-${cy}`}
+          animate={prefersReducedMotion ? { opacity } : { opacity: [opacity * 0.45, opacity, opacity * 0.7], scale: [0.92, 1.28, 0.98] }}
+          transition={prefersReducedMotion ? { duration: 0 } : { duration: 2.8 + (i % 5) * 0.7, delay: (i % 6) * 0.38, repeat: Infinity, ease: "easeInOut" }}
+          style={{ transformOrigin: `${cx}px ${cy}px` }}
+        >
+          <circle cx={cx} cy={cy} r={r * 2.8} fill="hsl(205 100% 92%)" opacity="0.12" filter="url(#starGlow)" />
+          <circle cx={cx} cy={cy} r={r} fill="white" opacity={opacity} />
+        </motion.g>
+      ))}
+      {!prefersReducedMotion && (
+        <>
+          <motion.path
+            d="M1040,20 L940,70"
+            stroke="hsl(205 100% 92%)"
+            strokeWidth="1.7"
+            strokeLinecap="round"
+            opacity="0"
+            animate={{ pathLength: [0, 1, 1], opacity: [0, 0.55, 0], x: [0, -24, -38], y: [0, 12, 19] }}
+            transition={{ duration: 1.4, delay: 2.5, repeat: Infinity, repeatDelay: 7.5, ease: "easeOut" }}
+          />
+          <motion.path
+            d="M460,34 L372,78"
+            stroke="hsl(185 100% 90%)"
+            strokeWidth="1.3"
+            strokeLinecap="round"
+            opacity="0"
+            animate={{ pathLength: [0, 1, 1], opacity: [0, 0.42, 0], x: [0, -18, -30], y: [0, 9, 15] }}
+            transition={{ duration: 1.2, delay: 6.2, repeat: Infinity, repeatDelay: 9, ease: "easeOut" }}
+          />
+        </>
+      )}
+    </svg>
   );
 };
 
@@ -658,6 +727,9 @@ const MountainBackdrop = () => {
         }}
       />
       <MoonGlow />
+      <div className="absolute w-full" style={{ top: "1.8%" }}>
+        <StarField />
+      </div>
       {/* Cirrus clouds */}
       <div className="absolute w-full" style={{ top: "3%" }}>
         <CirrusClouds />
