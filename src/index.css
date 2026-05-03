@@ -6,15 +6,15 @@
 
 @layer base {
   :root {
-    /* Sunrise palette — icy peak → warm base camp */
-    --background: 340 55% 95%;
-    --foreground: 25 20% 12%;
+    /* Sky at the top, warm earth at the base */
+    --background: 205 80% 96%;
+    --foreground: 30 18% 12%;
 
-    --card: 20 40% 98%;
-    --card-foreground: 25 20% 12%;
+    --card: 0 0% 99%;
+    --card-foreground: 30 18% 12%;
 
-    --popover: 20 40% 98%;
-    --popover-foreground: 25 20% 12%;
+    --popover: 0 0% 99%;
+    --popover-foreground: 30 18% 12%;
 
     /* Mavs royal blue — stays as brand accent */
     --primary: 214 88% 48%;
@@ -55,22 +55,8 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'Inter', system-ui, sans-serif;
-    /* Cloud top → mountain face → rocky descent → warm base camp */
-    background:
-      radial-gradient(ellipse at 50% 0%, hsl(210 90% 97% / 0.8), transparent 30%),
-      radial-gradient(ellipse at 20% 18%, hsl(200 85% 94% / 0.6), transparent 35%),
-      radial-gradient(ellipse at 80% 55%, hsl(155 40% 88% / 0.45), transparent 40%),
-      radial-gradient(ellipse at 30% 80%, hsl(30 72% 88% / 0.5), transparent 38%),
-      linear-gradient(180deg,
-        hsl(205 90% 97%) 0%,    /* cloud sky — bright pale blue */
-        hsl(200 80% 94%) 10%,   /* soft open sky */
-        hsl(195 60% 91%) 22%,   /* sky meeting mountain */
-        hsl(165 38% 87%) 38%,   /* upper mountain — pine mist */
-        hsl(150 32% 83%) 52%,   /* rocky forested slope */
-        hsl(38 58% 84%) 70%,    /* lower slope warm stone */
-        hsl(30 65% 82%) 85%,    /* base camp approach */
-        hsl(25 70% 80%) 100%    /* base camp — campfire earth */
-      );
+    /* Fallback — the real gradient is in Index.tsx on the absolute inset-0 layer */
+    background: hsl(205 80% 96%);
     min-height: 100vh;
   }
 
@@ -165,16 +151,9 @@
   z-index: 0;
 }
 
-/* Cloud → mountain → base camp overlay */
+/* aurora-stage is no longer used on the main container — kept for compatibility */
 .aurora-stage {
-  background:
-    linear-gradient(180deg,
-      hsl(205 92% 97% / 0.8) 0%,
-      hsl(195 70% 93% / 0.6) 20%,
-      hsl(162 42% 89% / 0.5) 50%,
-      hsl(32 60% 87% / 0.5) 80%,
-      hsl(25 68% 84% / 0.55) 100%),
-    hsl(var(--background));
+  /* intentionally empty — gradient lives on the absolute inset-0 layer in Index.tsx */
 }
 
 .aurora-sheet {
@@ -550,38 +529,26 @@
   z-index: 2;
 }
 
-/* ===== Section altitude backgrounds ===== */
+/* ===== Section overlays — very transparent, let page gradient show through ===== */
 
-/* About — mountainous: rocky face, pine green mist, stone grey */
+/* About — mountain face: very slight cool-green tint */
 .section-sage  {
-  background:
-    linear-gradient(160deg,
-      hsl(162 38% 88% / 0.9),
-      hsl(148 32% 86% / 0.82) 45%,
-      hsl(172 35% 87% / 0.88));
-  border-top: 1px solid hsl(160 32% 74% / 0.55);
-  border-bottom: 1px solid hsl(155 28% 76% / 0.55);
+  background: hsl(160 30% 60% / 0.06);
+  border-top: 1px solid hsl(160 28% 60% / 0.3);
+  border-bottom: 1px solid hsl(155 24% 62% / 0.3);
 }
 
-/* Projects — lower mountain slopes: warm stone, pine shadow */
+/* Projects — lower slopes: very slight warm stone tint */
 .section-blue  {
-  background:
-    linear-gradient(160deg,
-      hsl(148 30% 86% / 0.88),
-      hsl(38 48% 86% / 0.78) 55%,
-      hsl(30 52% 85% / 0.88));
-  border-top: 1px solid hsl(140 26% 74% / 0.5);
-  border-bottom: 1px solid hsl(35 45% 76% / 0.5);
+  background: hsl(35 40% 60% / 0.06);
+  border-top: 1px solid hsl(38 35% 60% / 0.3);
+  border-bottom: 1px solid hsl(32 38% 60% / 0.3);
 }
 
-/* Contact — base camp: warm campfire earth, canvas tent amber */
+/* Contact — base camp: very slight amber tint */
 .section-peach {
-  background:
-    linear-gradient(160deg,
-      hsl(30 62% 84% / 0.92),
-      hsl(25 68% 82% / 0.85) 50%,
-      hsl(32 65% 83% / 0.9));
-  border-top: 1px solid hsl(28 52% 70% / 0.5);
+  background: hsl(28 50% 58% / 0.07);
+  border-top: 1px solid hsl(26 44% 58% / 0.3);
 }
 
 @keyframes cloud-drift {
