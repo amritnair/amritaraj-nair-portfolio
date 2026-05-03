@@ -55,19 +55,21 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'Inter', system-ui, sans-serif;
-    /* Sunrise mountain gradient: icy snowy peak → rose morning → golden valley */
+    /* Cloud top → mountain face → rocky descent → warm base camp */
     background:
-      radial-gradient(ellipse at 50% 0%, hsl(290 55% 95% / 0.75), transparent 38%),
-      radial-gradient(ellipse at 15% 20%, hsl(350 72% 92% / 0.6), transparent 40%),
-      radial-gradient(ellipse at 85% 65%, hsl(30 82% 90% / 0.5), transparent 42%),
+      radial-gradient(ellipse at 50% 0%, hsl(210 90% 97% / 0.8), transparent 30%),
+      radial-gradient(ellipse at 20% 18%, hsl(200 85% 94% / 0.6), transparent 35%),
+      radial-gradient(ellipse at 80% 55%, hsl(155 40% 88% / 0.45), transparent 40%),
+      radial-gradient(ellipse at 30% 80%, hsl(30 72% 88% / 0.5), transparent 38%),
       linear-gradient(180deg,
-        hsl(278 48% 97%) 0%,    /* snowy peak — icy lavender */
-        hsl(315 62% 95%) 8%,    /* high cloud pink */
-        hsl(348 70% 93%) 20%,   /* rose sunrise sky */
-        hsl(12 78% 92%) 38%,    /* warm coral mid-mountain */
-        hsl(28 80% 91%) 58%,    /* golden slopes */
-        hsl(34 75% 90%) 78%,    /* amber lower slopes */
-        hsl(28 68% 89%) 100%    /* base camp warm gold */
+        hsl(205 90% 97%) 0%,    /* cloud sky — bright pale blue */
+        hsl(200 80% 94%) 10%,   /* soft open sky */
+        hsl(195 60% 91%) 22%,   /* sky meeting mountain */
+        hsl(165 38% 87%) 38%,   /* upper mountain — pine mist */
+        hsl(150 32% 83%) 52%,   /* rocky forested slope */
+        hsl(38 58% 84%) 70%,    /* lower slope warm stone */
+        hsl(30 65% 82%) 85%,    /* base camp approach */
+        hsl(25 70% 80%) 100%    /* base camp — campfire earth */
       );
     min-height: 100vh;
   }
@@ -93,9 +95,9 @@
     font-optical-sizing: auto;
   }
 
-  /* Sunrise gradient — rose → coral → gold */
+  /* Sky-to-mountain gradient — bright sky blue → alpine teal */
   .text-gradient {
-    background: linear-gradient(135deg, hsl(350 82% 55%), hsl(18 88% 58%), hsl(38 92% 55%));
+    background: linear-gradient(135deg, hsl(210 90% 52%), hsl(185 80% 48%), hsl(160 60% 44%));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -133,44 +135,45 @@
     font-size: 0.65rem;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: hsl(18 80% 48%);
+    color: hsl(160 55% 38%);
   }
 
-  /* Big editorial section index — warm tint */
+  /* Big editorial section index */
   .section-index {
     font-family: 'Fraunces', Georgia, serif;
     font-size: clamp(5rem, 14vw, 10rem);
     font-weight: 900;
     line-height: 1;
-    color: hsl(18 80% 55% / 0.07);
+    color: hsl(155 45% 40% / 0.07);
     pointer-events: none;
     user-select: none;
     font-optical-sizing: auto;
   }
 }
 
-/* ===== Dot grid — warm sunrise tone ===== */
+/* ===== Dot grid — sky blue tone ===== */
 .dot-grid::before {
   content: "";
   position: absolute;
   inset: 0;
   background-image:
-    radial-gradient(circle, hsl(350 65% 60% / 0.12) 1px, transparent 1px),
-    radial-gradient(circle, hsl(28 80% 58% / 0.08) 1px, transparent 1px);
+    radial-gradient(circle, hsl(205 70% 55% / 0.13) 1px, transparent 1px),
+    radial-gradient(circle, hsl(160 50% 50% / 0.07) 1px, transparent 1px);
   background-size: 32px 32px;
   background-position: 0 0, 16px 16px;
   pointer-events: none;
   z-index: 0;
 }
 
-/* Sunrise atmosphere overlay */
+/* Cloud → mountain → base camp overlay */
 .aurora-stage {
   background:
     linear-gradient(180deg,
-      hsl(278 55% 97% / 0.7) 0%,
-      hsl(348 68% 94% / 0.55) 25%,
-      hsl(18 75% 92% / 0.5) 55%,
-      hsl(34 78% 90% / 0.45) 100%),
+      hsl(205 92% 97% / 0.8) 0%,
+      hsl(195 70% 93% / 0.6) 20%,
+      hsl(162 42% 89% / 0.5) 50%,
+      hsl(32 60% 87% / 0.5) 80%,
+      hsl(25 68% 84% / 0.55) 100%),
     hsl(var(--background));
 }
 
@@ -406,40 +409,40 @@
   letter-spacing: 0.12em;
 }
 
-/* ===== Sunrise atmosphere blobs ===== */
-/* Coral-rose glow — top right (sunrise light) */
+/* ===== Mountain scene blobs ===== */
+/* Bright open sky — top right */
 .blob-orange {
   position: absolute;
   width: 700px; height: 500px;
   border-radius: 50%;
-  background: hsl(350 80% 82%);
+  background: hsl(205 88% 85%);
   filter: blur(145px);
-  opacity: 0.45;
+  opacity: 0.55;
   top: -18%; right: -12%;
   pointer-events: none;
   animation: blob-drift-1 18s ease-in-out infinite;
 }
-/* Lavender-pink — bottom left (icy summit mist) */
+/* Pine forest mist — bottom left */
 .blob-teal {
   position: absolute;
   width: 540px; height: 480px;
   border-radius: 50%;
-  background: hsl(290 55% 85%);
-  filter: blur(135px);
-  opacity: 0.42;
+  background: hsl(155 45% 72%);
+  filter: blur(140px);
+  opacity: 0.38;
   bottom: -10%; left: -8%;
   pointer-events: none;
   animation: blob-drift-2 24s ease-in-out infinite;
 }
-/* Golden dawn — center warmth */
+/* Warm base camp glow — center-low */
 .blob-yellow {
   position: absolute;
   width: 440px; height: 380px;
   border-radius: 50%;
-  background: hsl(38 90% 82%);
-  filter: blur(125px);
-  opacity: 0.38;
-  top: 40%; left: 30%;
+  background: hsl(32 78% 78%);
+  filter: blur(130px);
+  opacity: 0.32;
+  top: 55%; left: 28%;
   pointer-events: none;
   animation: blob-drift-3 20s ease-in-out infinite;
 }
@@ -472,40 +475,40 @@
   to { transform: translateY(calc(100vh + 16rem)); }
 }
 
-/* Warm coral wisp — mid left */
+/* Alpine sky wisp — mid left */
 .blob-pink {
   position: absolute;
   width: 360px; height: 320px;
   border-radius: 50%;
-  background: hsl(15 80% 84%);
-  filter: blur(115px);
-  opacity: 0.38;
-  top: 25%; left: -5%;
+  background: hsl(195 72% 82%);
+  filter: blur(120px);
+  opacity: 0.4;
+  top: 20%; left: -5%;
   pointer-events: none;
   animation: blob-drift-2 22s ease-in-out infinite reverse;
 }
-/* Amber base-camp glow — bottom right */
+/* Campfire ember glow — bottom right */
 .blob-lime {
   position: absolute;
-  width: 360px; height: 300px;
+  width: 380px; height: 320px;
   border-radius: 50%;
-  background: hsl(35 85% 80%);
-  filter: blur(110px);
-  opacity: 0.35;
-  bottom: 15%; right: 5%;
+  background: hsl(28 80% 75%);
+  filter: blur(115px);
+  opacity: 0.38;
+  bottom: 10%; right: 3%;
   pointer-events: none;
   animation: blob-drift-1 26s ease-in-out infinite reverse;
 }
 
-/* ===== Scroll progress — sunrise gradient ===== */
+/* ===== Scroll progress — sky to base camp ===== */
 .scroll-progress {
   position: fixed;
   top: 0; left: 0; right: 0;
   height: 3px;
-  background: linear-gradient(90deg, hsl(285 60% 60%), hsl(350 80% 60%), hsl(18 88% 58%), hsl(38 92% 55%));
+  background: linear-gradient(90deg, hsl(210 90% 55%), hsl(185 72% 48%), hsl(155 52% 44%), hsl(32 72% 52%));
   transform-origin: 0%;
   z-index: 100;
-  box-shadow: 0 0 12px hsl(350 75% 58% / 0.55);
+  box-shadow: 0 0 12px hsl(200 80% 55% / 0.5);
 }
 
 /* ===== Marquee ===== */
@@ -547,34 +550,38 @@
   z-index: 2;
 }
 
-/* ===== Mountain altitude section backgrounds ===== */
-/* About — upper mountain face, warm rose-pink morning light */
+/* ===== Section altitude backgrounds ===== */
+
+/* About — mountainous: rocky face, pine green mist, stone grey */
 .section-sage  {
   background:
     linear-gradient(160deg,
-      hsl(348 65% 93% / 0.88),
-      hsl(358 60% 94% / 0.78) 50%,
-      hsl(15 70% 93% / 0.85));
-  border-top: 1px solid hsl(350 50% 80% / 0.5);
-  border-bottom: 1px solid hsl(15 50% 82% / 0.55);
+      hsl(162 38% 88% / 0.9),
+      hsl(148 32% 86% / 0.82) 45%,
+      hsl(172 35% 87% / 0.88));
+  border-top: 1px solid hsl(160 32% 74% / 0.55);
+  border-bottom: 1px solid hsl(155 28% 76% / 0.55);
 }
-/* Projects — golden mid-mountain, sunlit rocky slopes */
+
+/* Projects — lower mountain slopes: warm stone, pine shadow */
 .section-blue  {
   background:
     linear-gradient(160deg,
-      hsl(20 72% 92% / 0.88),
-      hsl(30 78% 91% / 0.78) 50%,
-      hsl(22 68% 92% / 0.85));
-  border-top: 1px solid hsl(22 55% 80% / 0.5);
-  border-bottom: 1px solid hsl(32 55% 80% / 0.5);
+      hsl(148 30% 86% / 0.88),
+      hsl(38 48% 86% / 0.78) 55%,
+      hsl(30 52% 85% / 0.88));
+  border-top: 1px solid hsl(140 26% 74% / 0.5);
+  border-bottom: 1px solid hsl(35 45% 76% / 0.5);
 }
-/* Contact/Footer — base camp, amber campfire warmth */
+
+/* Contact — base camp: warm campfire earth, canvas tent amber */
 .section-peach {
   background:
     linear-gradient(160deg,
-      hsl(30 72% 91% / 0.88),
-      hsl(35 75% 90% / 0.8),
-      hsl(28 68% 91% / 0.85));
+      hsl(30 62% 84% / 0.92),
+      hsl(25 68% 82% / 0.85) 50%,
+      hsl(32 65% 83% / 0.9));
+  border-top: 1px solid hsl(28 52% 70% / 0.5);
 }
 
 @keyframes cloud-drift {
@@ -600,6 +607,6 @@
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: hsl(20 30% 94%); }
-::-webkit-scrollbar-thumb { background: hsl(18 75% 55% / 0.4); border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: hsl(18 75% 55% / 0.65); }
+::-webkit-scrollbar-track { background: hsl(200 40% 94%); }
+::-webkit-scrollbar-thumb { background: hsl(200 65% 50% / 0.4); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(200 65% 50% / 0.65); }

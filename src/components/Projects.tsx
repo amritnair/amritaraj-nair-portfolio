@@ -135,7 +135,7 @@ const Projects = () => {
 
   return (
     <>
-      <section id="projects" className="py-32 relative z-10 section-peach">
+      <section id="projects" className="py-32 relative z-10 section-blue">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="max-w-5xl mx-auto">
             <motion.div

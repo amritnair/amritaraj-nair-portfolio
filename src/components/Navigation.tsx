@@ -37,7 +37,7 @@ const Navigation = () => {
         className={`fixed top-0 w-full z-50 transition-all duration-300 ${
           isScrolled ? "backdrop-blur-xl border-b border-border shadow-sm" : "bg-transparent"
         }`}
-        style={isScrolled ? { background: "hsl(348 58% 96% / 0.88)" } : {}}
+        style={isScrolled ? { background: "hsl(205 75% 96% / 0.92)" } : {}}
       >
         <div className="container mx-auto px-6">
           <div className="flex items-center justify-between h-16">
@@ -91,7 +91,7 @@ const Navigation = () => {
               initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }}
               transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
               className="fixed top-16 left-0 right-0 z-50 p-6 space-y-2 md:hidden border-b border-border shadow-lg"
-              style={{ background: "hsl(348 58% 96%)" }}
+              style={{ background: "hsl(205 72% 96%)" }}
             >
               {isHome && navItems.map((item) => (
                 <button key={item.name} onClick={() => scrollToSection(item.href)}

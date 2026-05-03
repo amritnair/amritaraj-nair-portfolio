@@ -118,25 +118,25 @@ const Hero = () => {
       <div className="blob-pink" />
       <div className="blob-lime" />
 
-      {/* ── Snowy peak glow at top ── */}
+      {/* ── Bright open sky glow at top ── */}
       <div
-        className="absolute top-0 left-0 right-0 h-48 pointer-events-none z-0"
+        className="absolute top-0 left-0 right-0 h-56 pointer-events-none z-0"
         style={{
-          background: "linear-gradient(180deg, hsl(278 55% 98% / 0.85) 0%, hsl(310 65% 96% / 0.55) 40%, transparent 100%)",
+          background: "linear-gradient(180deg, hsl(205 95% 98% / 0.9) 0%, hsl(200 85% 95% / 0.6) 50%, transparent 100%)",
         }}
       />
 
-      {/* ── Sunrise clouds — pink/peach tinted ── */}
-      {/* High clouds near peak — pale lavender-pink */}
-      <Cloud left="-3%"  top="4%"  scale={1.45} delay={0}    drift={16} opacity={0.72} r={248} g={220} b={240} />
-      <Cloud left="55%"  top="2%"  scale={1.05} delay={0.7}  drift={12} opacity={0.66} r={252} g={218} b={235} />
-      <Cloud left="78%"  top="7%"  scale={0.88} delay={1.2}  drift={9}  opacity={0.60} r={255} g={222} b={238} />
-      {/* Mid clouds — warm rose-peach */}
-      <Cloud left="22%"  top="9%"  scale={0.72} delay={1.9}  drift={14} opacity={0.54} r={255} g={210} b={200} />
-      <Cloud left="42%"  top="1%"  scale={0.58} delay={2.5}  drift={18} opacity={0.48} r={255} g={215} b={205} />
-      {/* Wispy lower clouds — golden-peach */}
-      <Cloud left="-1%"  top="20%" scale={0.48} delay={1.0}  drift={10} opacity={0.35} r={255} g={218} b={195} />
-      <Cloud left="82%"  top="16%" scale={0.42} delay={2.2}  drift={11} opacity={0.30} r={255} g={220} b={198} />
+      {/* ── Sky clouds — pure white with faint sky-blue tint ── */}
+      {/* Large foreground clouds */}
+      <Cloud left="-3%"  top="5%"  scale={1.5}  delay={0}    drift={18} opacity={0.88} r={240} g={250} b={255} />
+      <Cloud left="55%"  top="3%"  scale={1.1}  delay={0.8}  drift={14} opacity={0.82} r={238} g={248} b={255} />
+      <Cloud left="76%"  top="8%"  scale={0.92} delay={1.3}  drift={10} opacity={0.76} r={242} g={251} b={255} />
+      {/* Mid-layer clouds */}
+      <Cloud left="20%"  top="11%" scale={0.75} delay={2.0}  drift={15} opacity={0.65} r={245} g={252} b={255} />
+      <Cloud left="40%"  top="1%"  scale={0.60} delay={2.6}  drift={20} opacity={0.58} r={243} g={250} b={255} />
+      {/* Wispy high clouds */}
+      <Cloud left="-2%"  top="22%" scale={0.50} delay={1.1}  drift={11} opacity={0.42} r={248} g={253} b={255} />
+      <Cloud left="84%"  top="18%" scale={0.44} delay={2.3}  drift={12} opacity={0.36} r={246} g={252} b={255} />
 
       {/* ── Spinning globe — top right ── */}
       <motion.div
@@ -145,7 +145,7 @@ const Hero = () => {
         transition={{ duration: 1.2, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
         className="absolute top-12 right-8 md:right-16 z-0 pointer-events-none"
       >
-        <GlobeCanvas size={260} color="hsl(350 72% 58%)" opacity={0.45} />
+        <GlobeCanvas size={260} color="hsl(210 88% 55%)" opacity={0.5} />
       </motion.div>
 
       {/* ── Stock line chart — left side ── */}
@@ -155,8 +155,8 @@ const Hero = () => {
         transition={{ duration: 1, delay: 0.8 }}
         className="absolute left-6 md:left-12 top-1/3 z-0 pointer-events-none hidden md:block"
       >
-        <p className="text-[9px] mono text-rose-400/60 uppercase tracking-widest mb-1">AMRIT / AI</p>
-        <StockChart width={200} height={80} color="hsl(18 88% 55%)" />
+        <p className="text-[9px] mono text-sky-400/60 uppercase tracking-widest mb-1">AMRIT / AI</p>
+        <StockChart width={200} height={80} color="hsl(210 88% 52%)" />
       </motion.div>
 
       {/* ── Candlestick chart — right lower ── */}
@@ -166,27 +166,27 @@ const Hero = () => {
         transition={{ duration: 1, delay: 1.0 }}
         className="absolute right-6 md:right-14 bottom-32 z-0 pointer-events-none hidden md:block"
       >
-        <p className="text-[9px] mono text-amber-500/60 uppercase tracking-widest mb-1">QUANT / DAY</p>
+        <p className="text-[9px] mono text-teal-500/60 uppercase tracking-widest mb-1">QUANT / DAY</p>
         <CandlestickChart width={160} height={80} opacity={0.5} />
       </motion.div>
 
-      {/* ── Mountain layers — distant purple peaks at bottom ── */}
+      {/* ── Mountain peaks rising up from below the clouds ── */}
       <div className="absolute bottom-0 left-0 right-0 z-0 pointer-events-none">
-        {/* Farthest distant range — pale lavender-purple */}
+        {/* Distant hazy ranges */}
         <div className="absolute bottom-0 left-0 right-0">
-          <Mountains width={1200} height={240} color="hsl(280 40% 45%)" opacity={0.12} />
+          <Mountains width={1200} height={260} color="hsl(210 45% 60%)" opacity={0.10} />
         </div>
-        {/* Mid range — deeper indigo */}
+        {/* Mid ranges — steely blue-grey */}
         <div className="absolute bottom-0 left-0 right-0">
-          <Mountains width={1200} height={185} color="hsl(265 50% 32%)" opacity={0.18} />
+          <Mountains width={1200} height={200} color="hsl(205 50% 42%)" opacity={0.15} />
         </div>
-        {/* Near peaks — dark purple-blue, crisp */}
+        {/* Near peaks — deep alpine blue */}
         <div className="absolute bottom-0 left-0 right-0">
-          <Mountains width={1200} height={120} color="hsl(252 55% 22%)" opacity={0.24} />
+          <Mountains width={1200} height={130} color="hsl(200 55% 28%)" opacity={0.22} />
         </div>
-        {/* Snow caps — white tips over the near peaks */}
+        {/* Snow-capped tips */}
         <div className="absolute bottom-0 left-0 right-0">
-          <Mountains width={1200} height={48} color="hsl(0 0% 100%)" opacity={0.55} />
+          <Mountains width={1200} height={52} color="hsl(200 30% 96%)" opacity={0.7} />
         </div>
       </div>
 
@@ -203,7 +203,7 @@ const Hero = () => {
             animate={{ x: [0, 6, 0] }}
             transition={{ duration: 4 + i * 1.2, repeat: Infinity, ease: "easeInOut" }}
             className="text-[10px] mono whitespace-nowrap"
-            style={{ color: "hsl(350 65% 50% / 0.35)" }}
+            style={{ color: "hsl(210 70% 50% / 0.35)" }}
           >{eq}</motion.p>
         ))}
       </motion.div>
@@ -220,7 +220,7 @@ const Hero = () => {
             animate={{ x: [0, -6, 0] }}
             transition={{ duration: 3.5 + i * 1.1, repeat: Infinity, ease: "easeInOut" }}
             className="text-[10px] mono whitespace-nowrap"
-            style={{ color: "hsl(285 55% 50% / 0.32)" }}
+            style={{ color: "hsl(185 60% 45% / 0.32)" }}
           >{eq}</motion.p>
         ))}
       </motion.div>
