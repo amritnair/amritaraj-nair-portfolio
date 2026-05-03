@@ -14,7 +14,7 @@ const ease = [0.22, 1, 0.36, 1] as const;
 const links = [
   { icon: Mail,   label: "amritnair23@gmail.com", href: "mailto:amritnair23@gmail.com", accent: "border-l-blue-500",   color: "text-blue-600"   },
   { icon: Phone,  label: "214-316-6196",           href: "tel:+12143166196",             accent: "border-l-teal-500",   color: "text-teal-600"   },
-  { icon: MapPin, label: "Flower Mound, TX",        href: "#",                            accent: "border-l-violet-500", color: "text-violet-600" },
+  { icon: MapPin, label: "Flower Mound, TX",        href: "#",                            accent: "border-l-emerald-500", color: "text-emerald-600" },
 ];
 
 const Contact = () => {
@@ -70,28 +70,28 @@ const Contact = () => {
                 <div className="space-y-2">
                   <Label htmlFor="firstName" className="text-[10px] mono text-muted-foreground uppercase tracking-[0.2em]">First</Label>
                   <Input id="firstName" value={formData.firstName} onChange={handleChange} required
-                    className="bg-amber-50/60 border-border focus:border-primary/50 rounded-none font-mono" placeholder="John" />
+                    className="bg-sky-50/70 border-border focus:border-primary/50 rounded-none font-mono text-foreground placeholder:text-muted-foreground/60" placeholder="John" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lastName" className="text-[10px] mono text-muted-foreground uppercase tracking-[0.2em]">Last</Label>
                   <Input id="lastName" value={formData.lastName} onChange={handleChange} required
-                    className="bg-amber-50/60 border-border focus:border-primary/50 rounded-none font-mono" placeholder="Doe" />
+                    className="bg-sky-50/70 border-border focus:border-primary/50 rounded-none font-mono text-foreground placeholder:text-muted-foreground/60" placeholder="Doe" />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-[10px] mono text-muted-foreground uppercase tracking-[0.2em]">Email</Label>
                 <Input id="email" type="email" value={formData.email} onChange={handleChange} required
-                  className="bg-amber-50/60 border-border focus:border-primary/50 rounded-none font-mono" placeholder="john@example.com" />
+                  className="bg-sky-50/70 border-border focus:border-primary/50 rounded-none font-mono text-foreground placeholder:text-muted-foreground/60" placeholder="john@example.com" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="subject" className="text-[10px] mono text-muted-foreground uppercase tracking-[0.2em]">Subject</Label>
                 <Input id="subject" value={formData.subject} onChange={handleChange} required
-                  className="bg-amber-50/60 border-border focus:border-primary/50 rounded-none font-mono" placeholder="Project Collaboration" />
+                  className="bg-sky-50/70 border-border focus:border-primary/50 rounded-none font-mono text-foreground placeholder:text-muted-foreground/60" placeholder="Project Collaboration" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="message" className="text-[10px] mono text-muted-foreground uppercase tracking-[0.2em]">Message</Label>
                 <Textarea id="message" value={formData.message} onChange={handleChange} required
-                  className="bg-blue-50/80 border-border focus:border-primary/50 rounded-none min-h-32 resize-none font-mono" placeholder="Tell me about your project or idea..." />
+                  className="bg-sky-50/70 border-border focus:border-primary/50 rounded-none min-h-32 resize-none font-mono text-foreground placeholder:text-muted-foreground/60" placeholder="Tell me about your project or idea..." />
               </div>
               <Button type="submit" disabled={isSubmitting}
                 className="w-full btn-primary font-mono font-semibold border-0 text-white">
@@ -103,9 +103,9 @@ const Contact = () => {
             <motion.div initial={{ opacity: 0, x: 24 }} whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.1, ease }} viewport={vp}
               className="lg:col-span-2 flex flex-col gap-4">
-              <div className="border border-amber-200 border-l-4 border-l-amber-500 bg-amber-50/80 p-6">
-                <p className="font-black text-amber-900 mb-2 display text-lg">Looking to connect</p>
-                <p className="text-sm text-amber-800/80 leading-relaxed">
+              <div className="border border-amber-200/80 border-l-4 border-l-amber-500 bg-amber-50/75 p-6 backdrop-blur-sm">
+                <p className="font-black text-amber-950 mb-2 display text-lg">Looking to connect</p>
+                <p className="text-sm text-amber-900/80 leading-relaxed">
                   Looking for internships, research collabs, and interesting projects.
                   If you're building something cool, let's talk.
                 </p>

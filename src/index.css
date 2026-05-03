@@ -6,46 +6,45 @@
 
 @layer base {
   :root {
-    /* Sky at the top, warm earth at the base */
-    --background: 205 80% 96%;
-    --foreground: 30 18% 12%;
+    /* Moonlit alpine base with evergreen and camp-amber accents */
+    --background: 205 74% 96%;
+    --foreground: 212 34% 14%;
 
-    --card: 0 0% 99%;
-    --card-foreground: 30 18% 12%;
+    --card: 205 60% 98%;
+    --card-foreground: 212 34% 14%;
 
-    --popover: 0 0% 99%;
-    --popover-foreground: 30 18% 12%;
+    --popover: 205 60% 98%;
+    --popover-foreground: 212 34% 14%;
 
-    /* Mavs royal blue — stays as brand accent */
-    --primary: 214 88% 48%;
+    --primary: 207 86% 43%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 25 45% 90%;
-    --secondary-foreground: 25 20% 12%;
+    --secondary: 190 34% 89%;
+    --secondary-foreground: 204 38% 17%;
 
-    --muted: 20 35% 90%;
-    --muted-foreground: 25 12% 46%;
+    --muted: 196 34% 90%;
+    --muted-foreground: 207 20% 36%;
 
-    --accent: 214 88% 48%;
+    --accent: 178 67% 36%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 25 28% 83%;
-    --input: 25 28% 83%;
-    --ring: 214 88% 48%;
+    --border: 198 28% 78%;
+    --input: 198 28% 78%;
+    --ring: 190 76% 40%;
 
     --radius: 0.25rem;
 
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 25 20% 12%;
-    --sidebar-primary: 214 88% 48%;
+    --sidebar-foreground: 212 34% 14%;
+    --sidebar-primary: 207 86% 43%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 20 25% 92%;
-    --sidebar-accent-foreground: 25 20% 12%;
-    --sidebar-border: 25 20% 87%;
-    --sidebar-ring: 214 88% 48%;
+    --sidebar-accent: 196 28% 92%;
+    --sidebar-accent-foreground: 212 34% 14%;
+    --sidebar-border: 198 24% 84%;
+    --sidebar-ring: 190 76% 40%;
   }
 }
 
@@ -56,7 +55,7 @@
     @apply bg-background text-foreground antialiased;
     font-family: 'Inter', system-ui, sans-serif;
     /* Fallback — the real gradient is in Index.tsx on the absolute inset-0 layer */
-    background: hsl(205 80% 96%);
+    background: hsl(205 74% 96%);
     min-height: 100vh;
   }
 
@@ -66,8 +65,8 @@
   }
 
   ::selection {
-    background: hsl(350 72% 55% / 0.18);
-    color: hsl(25 20% 10%);
+    background: hsl(190 76% 42% / 0.22);
+    color: hsl(212 34% 12%);
   }
 }
 
@@ -81,39 +80,39 @@
     font-optical-sizing: auto;
   }
 
-  /* Sky-to-mountain gradient — bright sky blue → alpine teal */
+  /* Moonlit sky to alpine river */
   .text-gradient {
-    background: linear-gradient(135deg, hsl(210 90% 52%), hsl(185 80% 48%), hsl(160 60% 44%));
+    background: linear-gradient(135deg, hsl(212 86% 42%), hsl(190 78% 39%), hsl(154 52% 34%));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
   .glass {
-    background: hsl(20 50% 97% / 0.78);
+    background: hsl(205 60% 98% / 0.82);
     backdrop-filter: blur(20px);
-    border: 1px solid hsl(25 40% 84% / 0.85);
+    border: 1px solid hsl(198 34% 76% / 0.85);
   }
 
   .card-glow {
     transition: box-shadow 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
   }
   .card-glow:hover {
-    box-shadow: 4px 4px 0px hsl(18 88% 58% / 0.22), 0 16px 40px hsl(350 72% 55% / 0.1);
-    border-color: hsl(18 88% 58% / 0.45) !important;
+    box-shadow: 4px 4px 0px hsl(190 78% 42% / 0.18), 0 16px 40px hsl(205 72% 30% / 0.12);
+    border-color: hsl(190 72% 42% / 0.45) !important;
     transform: translate(-2px, -2px);
   }
 
   .btn-primary {
-    background: hsl(214 88% 48%);
-    box-shadow: 0 2px 16px hsl(214 88% 48% / 0.45), 0 1px 4px hsl(0 0% 0% / 0.08);
+    background: linear-gradient(135deg, hsl(207 86% 43%), hsl(188 76% 36%));
+    box-shadow: 0 2px 18px hsl(196 82% 38% / 0.36), 0 1px 4px hsl(0 0% 0% / 0.08);
     transition: all 0.2s ease;
     color: #fff;
     border: none;
   }
   .btn-primary:hover {
-    background: hsl(214 88% 42%);
-    box-shadow: 0 4px 24px hsl(214 88% 48% / 0.6), 0 2px 8px hsl(0 0% 0% / 0.1);
+    background: linear-gradient(135deg, hsl(207 86% 37%), hsl(188 76% 31%));
+    box-shadow: 0 4px 24px hsl(196 82% 38% / 0.48), 0 2px 8px hsl(0 0% 0% / 0.1);
   }
 
   .section-num {
@@ -121,7 +120,7 @@
     font-size: 0.65rem;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: hsl(160 55% 38%);
+    color: hsl(188 70% 31%);
   }
 
   /* Big editorial section index */
@@ -130,7 +129,7 @@
     font-size: clamp(5rem, 14vw, 10rem);
     font-weight: 900;
     line-height: 1;
-    color: hsl(155 45% 40% / 0.07);
+    color: hsl(204 46% 34% / 0.08);
     pointer-events: none;
     user-select: none;
     font-optical-sizing: auto;
@@ -143,8 +142,8 @@
   position: absolute;
   inset: 0;
   background-image:
-    radial-gradient(circle, hsl(205 70% 55% / 0.13) 1px, transparent 1px),
-    radial-gradient(circle, hsl(160 50% 50% / 0.07) 1px, transparent 1px);
+    radial-gradient(circle, hsl(205 70% 44% / 0.1) 1px, transparent 1px),
+    radial-gradient(circle, hsl(166 44% 38% / 0.055) 1px, transparent 1px);
   background-size: 32px 32px;
   background-position: 0 0, 16px 16px;
   pointer-events: none;
@@ -418,7 +417,7 @@
   position: absolute;
   width: 440px; height: 380px;
   border-radius: 50%;
-  background: hsl(32 78% 78%);
+  background: hsl(38 76% 74%);
   filter: blur(130px);
   opacity: 0.32;
   top: 55%; left: 28%;
@@ -471,9 +470,9 @@
   position: absolute;
   width: 380px; height: 320px;
   border-radius: 50%;
-  background: hsl(28 80% 75%);
-  filter: blur(115px);
-  opacity: 0.38;
+  background: hsl(36 78% 72%);
+  filter: blur(125px);
+  opacity: 0.3;
   bottom: 10%; right: 3%;
   pointer-events: none;
   animation: blob-drift-1 26s ease-in-out infinite reverse;
@@ -512,8 +511,8 @@
   opacity: 0;
   transform: translate(-50%, -50%);
   background:
-    radial-gradient(circle, hsl(350 80% 65% / 0.1) 0%, transparent 54%),
-    radial-gradient(circle, hsl(38 90% 65% / 0.07) 0%, transparent 68%);
+    radial-gradient(circle, hsl(190 84% 58% / 0.11) 0%, transparent 54%),
+    radial-gradient(circle, hsl(38 88% 62% / 0.07) 0%, transparent 68%);
   transition: opacity 0.5s ease;
   will-change: left, top;
 }
@@ -533,22 +532,22 @@
 
 /* About — mountain face: very slight cool-green tint */
 .section-sage  {
-  background: hsl(160 30% 60% / 0.06);
-  border-top: 1px solid hsl(160 28% 60% / 0.3);
-  border-bottom: 1px solid hsl(155 24% 62% / 0.3);
+  background: linear-gradient(180deg, hsl(188 34% 74% / 0.1), hsl(154 32% 66% / 0.08));
+  border-top: 1px solid hsl(184 32% 56% / 0.26);
+  border-bottom: 1px solid hsl(156 30% 50% / 0.24);
 }
 
-/* Projects — lower slopes: very slight warm stone tint */
+/* Projects — lower slopes with cool river light */
 .section-blue  {
-  background: hsl(35 40% 60% / 0.06);
-  border-top: 1px solid hsl(38 35% 60% / 0.3);
-  border-bottom: 1px solid hsl(32 38% 60% / 0.3);
+  background: linear-gradient(180deg, hsl(198 42% 72% / 0.09), hsl(43 42% 74% / 0.08));
+  border-top: 1px solid hsl(198 34% 58% / 0.24);
+  border-bottom: 1px solid hsl(38 42% 56% / 0.22);
 }
 
 /* Contact — base camp: very slight amber tint */
 .section-peach {
-  background: hsl(28 50% 58% / 0.07);
-  border-top: 1px solid hsl(26 44% 58% / 0.3);
+  background: linear-gradient(180deg, hsl(38 56% 70% / 0.1), hsl(28 54% 66% / 0.12));
+  border-top: 1px solid hsl(32 48% 56% / 0.24);
 }
 
 @keyframes cloud-drift {

@@ -60,20 +60,19 @@ const Index = () => (
       style={{
         zIndex: 0,
         background: `linear-gradient(180deg,
-          hsl(205 92% 97%)  0%,
-          hsl(200 85% 94%)  8%,
-          hsl(195 72% 91%) 16%,
-          hsl(178 48% 88%) 24%,
-          hsl(162 40% 85%) 32%,
-          hsl(152 36% 83%) 40%,
-          hsl(145 32% 81%) 48%,
-          hsl(110 28% 82%) 54%,
-          hsl(60  30% 83%) 60%,
-          hsl(38  52% 82%) 68%,
-          hsl(30  60% 80%) 76%,
-          hsl(25  65% 78%) 84%,
-          hsl(22  68% 76%) 92%,
-          hsl(20  70% 74%) 100%
+          hsl(210 82% 96%)  0%,
+          hsl(205 72% 93%)  9%,
+          hsl(198 62% 90%) 18%,
+          hsl(184 42% 86%) 28%,
+          hsl(164 34% 82%) 38%,
+          hsl(151 30% 79%) 48%,
+          hsl(132 24% 78%) 56%,
+          hsl(96  24% 79%) 62%,
+          hsl(56  30% 80%) 68%,
+          hsl(39  44% 78%) 76%,
+          hsl(32  48% 76%) 84%,
+          hsl(28  52% 74%) 92%,
+          hsl(25  56% 72%) 100%
         )`,
       }}
     />
@@ -91,7 +90,7 @@ const Index = () => (
     <Projects />
     <Contact />
 
-    <footer className="relative z-10 border-t border-border/60 py-10 bg-black/5 backdrop-blur-sm">
+    <footer className="relative z-10 border-t border-border/60 py-10 bg-slate-950/5 backdrop-blur-sm">
       <div className="container mx-auto px-4 sm:px-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="mono text-xs text-foreground/50">© 2025 Amritaraj Nair</p>

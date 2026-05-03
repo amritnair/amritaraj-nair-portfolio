@@ -8,7 +8,7 @@ const ease = [0.22, 1, 0.36, 1] as const;
 
 const stats = [
   { value: "2",    label: "Research\nPositions", color: "text-blue-600"   },
-  { value: "3+",   label: "Hackathons\nWon",      color: "text-violet-600" },
+  { value: "3+",   label: "Hackathons\nWon",      color: "text-teal-600" },
   { value: "$70K", label: "Fund\nManaged",         color: "text-amber-600" },
   { value: "10+",  label: "Projects\nShipped",     color: "text-sky-600"   },
 ];
@@ -20,8 +20,8 @@ const skills = [
   { name: "React",           color: "bg-cyan-50 text-cyan-800 border-cyan-200"    },
   { name: "FastAPI",         color: "bg-teal-50 text-teal-800 border-teal-200"    },
   { name: "Java",            color: "bg-amber-50 text-amber-800 border-amber-200" },
-  { name: "Machine Learning",color: "bg-violet-50 text-violet-800 border-violet-200"},
-  { name: "OpenCV",          color: "bg-red-50 text-red-800 border-red-200"       },
+  { name: "Machine Learning",color: "bg-indigo-50 text-indigo-800 border-indigo-200"},
+  { name: "OpenCV",          color: "bg-emerald-50 text-emerald-800 border-emerald-200" },
   { name: "Supabase",        color: "bg-emerald-50 text-emerald-800 border-emerald-200"},
   { name: "Docker",          color: "bg-blue-50 text-blue-800 border-blue-200"    },
   { name: "AWS",             color: "bg-yellow-50 text-yellow-800 border-yellow-200"},

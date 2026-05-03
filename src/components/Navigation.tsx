@@ -37,7 +37,7 @@ const Navigation = () => {
         className={`fixed top-0 w-full z-50 transition-all duration-300 ${
           isScrolled ? "backdrop-blur-xl border-b border-border shadow-sm" : "bg-transparent"
         }`}
-        style={isScrolled ? { background: "hsl(205 75% 96% / 0.92)" } : {}}
+        style={isScrolled ? { background: "hsl(205 66% 96% / 0.92)" } : {}}
       >
         <div className="container mx-auto px-6">
           <div className="flex items-center justify-between h-16">
@@ -57,7 +57,7 @@ const Navigation = () => {
             <div className="hidden md:flex items-center gap-1">
               {isHome && navItems.map((item) => (
                 <button key={item.name} onClick={() => scrollToSection(item.href)}
-                  className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 rounded-lg hover:bg-orange-50/70">
+                  className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 rounded-lg hover:bg-sky-50/70">
                   {item.name}
                 </button>
               ))}
@@ -70,7 +70,8 @@ const Navigation = () => {
             </div>
 
             <button
-              className="md:hidden p-2 rounded-lg hover:bg-orange-50/70 transition-colors text-foreground"
+              className="md:hidden p-2 rounded-lg hover:bg-sky-50/70 transition-colors text-foreground"
+              aria-label="Toggle menu"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
               {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}

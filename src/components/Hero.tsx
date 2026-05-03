@@ -107,7 +107,7 @@ const Hero = () => {
 
       {/* Sky glow at top */}
       <div className="absolute top-0 left-0 right-0 h-56 pointer-events-none z-0"
-        style={{ background: "linear-gradient(180deg, hsl(205 95% 98% / 0.9) 0%, hsl(200 85% 95% / 0.6) 50%, transparent 100%)" }} />
+        style={{ background: "linear-gradient(180deg, hsl(210 90% 98% / 0.82) 0%, hsl(198 74% 94% / 0.58) 52%, transparent 100%)" }} />
 
       {/* Clouds */}
       <Cloud left="-3%"  top="5%"  scale={1.5}  delay={0}   drift={18} opacity={0.88} />
@@ -143,7 +143,7 @@ const Hero = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.05 }}
             className="display font-black tracking-tight leading-[0.95]"
-            style={{ fontSize: "clamp(3.2rem, 11vw, 7rem)" }}
+            style={{ fontSize: "clamp(3.2rem, 11vw, 7rem)", textShadow: "0 2px 22px hsl(205 70% 98% / 0.72)" }}
           >
             <span className="text-gradient">{firstName}</span>
             <br />
@@ -158,7 +158,7 @@ const Hero = () => {
                 animate={{ y: 0, opacity: 1, scale: 1 }}
                 exit={{ y: -24, opacity: 0, scale: 0.92 }}
                 transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-                className="mono text-xs tracking-[0.22em] text-muted-foreground uppercase"
+                className="mono text-xs tracking-[0.22em] text-foreground/65 uppercase"
               >
                 {roles[roleIdx]}
               </motion.p>
@@ -169,7 +169,7 @@ const Hero = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="text-lg text-muted-foreground max-w-lg mx-auto mb-10 leading-relaxed"
+            className="text-lg text-foreground/72 max-w-lg mx-auto mb-10 leading-relaxed bg-sky-50/30 backdrop-blur-[2px] px-4 py-3 border border-sky-100/50"
           >
             CS + Math at Texas A&amp;M. I build AI systems, quant tools, and products that win hackathons.
             Cornell-backed startup. Computer vision app pitched to Pear&nbsp;VC.
@@ -189,7 +189,7 @@ const Hero = () => {
             </Magnetic>
             <Magnetic>
               <Button variant="outline" size="lg" onClick={() => navigate("/resume")}
-                className="px-8 bg-white/70 backdrop-blur-sm border-border hover:border-primary/50 hover:bg-white/90 transition-all duration-200 font-mono">
+                className="px-8 bg-sky-50/75 backdrop-blur-sm border-border hover:border-primary/50 hover:bg-white/90 transition-all duration-200 font-mono text-foreground">
                 <FileText className="mr-2 h-4 w-4" />
                 Resume
               </Button>
@@ -207,7 +207,7 @@ const Hero = () => {
               { href: "https://www.linkedin.com/in/amritaraj-nair-227063313", icon: Linkedin, label: "LinkedIn" },
             ].map(({ href, icon: Icon, label }) => (
               <a key={label} href={href} target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2 border border-border bg-white/60 backdrop-blur-sm text-xs mono text-muted-foreground hover:text-foreground hover:border-primary/50 hover:bg-white/90 transition-all duration-200">
+                className="inline-flex items-center gap-2 px-4 py-2 border border-border bg-sky-50/70 backdrop-blur-sm text-xs mono text-foreground/65 hover:text-foreground hover:border-primary/50 hover:bg-white/90 transition-all duration-200">
                 <Icon className="h-4 w-4" />
                 {label}
                 <ArrowUpRight className="h-3 w-3 opacity-40" />
@@ -223,7 +223,7 @@ const Hero = () => {
         transition={{ delay: 1.4, duration: 0.6 }}
         className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-10"
       >
-        <span className="text-[10px] mono text-muted-foreground uppercase tracking-[0.2em]">Scroll</span>
+        <span className="text-[10px] mono text-foreground/58 uppercase tracking-[0.2em]">Scroll</span>
         <motion.div animate={{ y: [0, 10, 0] }} transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}>
           <ArrowDown className="h-4 w-4 text-muted-foreground" />
         </motion.div>

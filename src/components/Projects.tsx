@@ -14,7 +14,7 @@ const ease = [0.22, 1, 0.36, 1] as const;
 
 const projectMeta: Record<string, { tag: string; tagColor: string; accentBar: string; demoUrl?: string }> = {
   "AlphaForge":    { tag: "Live Product",  tagColor: "bg-emerald-100 text-emerald-700 border-emerald-200", accentBar: "bg-gradient-to-r from-emerald-400 to-teal-400" },
-  "Shot Sensei":   { tag: "Award Winner",  tagColor: "bg-amber-100 text-amber-700 border-amber-200",       accentBar: "bg-gradient-to-r from-amber-400 to-orange-400", demoUrl: "https://www.youtube.com/watch?v=v3SNs0O3G5g" },
+  "Shot Sensei":   { tag: "Award Winner",  tagColor: "bg-amber-100 text-amber-800 border-amber-200",       accentBar: "bg-gradient-to-r from-amber-400 to-teal-400", demoUrl: "https://www.youtube.com/watch?v=v3SNs0O3G5g" },
   "ClinicalHours": { tag: "AI-Powered",    tagColor: "bg-sky-100 text-sky-700 border-sky-200",             accentBar: "bg-gradient-to-r from-sky-400 to-blue-400"   },
 };
 
@@ -35,8 +35,8 @@ const TiltCard = ({ project, index, onClick }: { project: Project; index: number
 
   const m = projectMeta[project.title] ?? {
     tag: "Featured",
-    tagColor: "bg-orange-100 text-orange-700 border-orange-200",
-    accentBar: "bg-gradient-to-r from-orange-400 to-amber-400",
+    tagColor: "bg-teal-100 text-teal-700 border-teal-200",
+    accentBar: "bg-gradient-to-r from-teal-400 to-sky-400",
   };
 
   return (
