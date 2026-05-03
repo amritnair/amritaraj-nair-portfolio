@@ -166,6 +166,46 @@ const MistBand = ({ color = "hsl(195 65% 88%)", opacity = 0.35 }) => (
   />
 );
 
+/** Soft moon with a cool glow that ties the sky to the river highlights */
+const MoonGlow = () => {
+  const prefersReducedMotion = useReducedMotion();
+
+  return (
+    <motion.div
+      className="absolute pointer-events-none"
+      style={{
+        top: "3.6%",
+        right: "10%",
+        width: 170,
+        height: 170,
+        filter: "drop-shadow(0 0 34px hsl(205 95% 86% / 0.55))",
+      }}
+      animate={prefersReducedMotion ? { opacity: 0.78 } : { opacity: [0.64, 0.86, 0.72, 0.84, 0.64] }}
+      transition={prefersReducedMotion ? { duration: 0 } : { duration: 8, repeat: Infinity, ease: "easeInOut" }}
+    >
+      <svg viewBox="0 0 170 170" className="h-full w-full">
+        <defs>
+          <radialGradient id="moonAura" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="hsl(205 100% 94%)" stopOpacity="0.48" />
+            <stop offset="55%" stopColor="hsl(205 92% 88%)" stopOpacity="0.15" />
+            <stop offset="100%" stopColor="transparent" />
+          </radialGradient>
+          <radialGradient id="moonBody" cx="42%" cy="34%" r="64%">
+            <stop offset="0%" stopColor="white" stopOpacity="0.96" />
+            <stop offset="62%" stopColor="hsl(210 75% 92%)" stopOpacity="0.86" />
+            <stop offset="100%" stopColor="hsl(210 50% 78%)" stopOpacity="0.72" />
+          </radialGradient>
+        </defs>
+        <circle cx="85" cy="85" r="82" fill="url(#moonAura)" />
+        <circle cx="85" cy="85" r="43" fill="url(#moonBody)" />
+        <circle cx="70" cy="74" r="7" fill="hsl(212 45% 76% / 0.22)" />
+        <circle cx="99" cy="92" r="10" fill="hsl(212 45% 72% / 0.18)" />
+        <circle cx="91" cy="62" r="4" fill="hsl(212 45% 74% / 0.18)" />
+      </svg>
+    </motion.div>
+  );
+};
+
 /** Meadow clearing — open valley between forest sections */
 const MeadowSVG = () => {
   const grassL = useMemo(() => forestPath(520,  90, 12, 30, 7.1), []);
@@ -203,6 +243,61 @@ const MeadowSVG = () => {
     </svg>
   );
 };
+
+const SkyCloud = ({
+  x,
+  y,
+  scale = 1,
+  duration = 28,
+  delay = 0,
+  opacity = 0.54,
+}: {
+  x: number;
+  y: number;
+  scale?: number;
+  duration?: number;
+  delay?: number;
+  opacity?: number;
+}) => {
+  const prefersReducedMotion = useReducedMotion();
+
+  return (
+    <motion.g
+      initial={{ x, y, opacity: opacity * 0.75 }}
+      animate={prefersReducedMotion ? { x, y, opacity } : { x: [x, x + 90, x + 175], y: [y, y - 7, y + 5], opacity: [opacity * 0.55, opacity, opacity * 0.6] }}
+      transition={prefersReducedMotion ? { duration: 0 } : { duration, delay, repeat: Infinity, ease: "easeInOut" }}
+    >
+      <g transform={`scale(${scale})`}>
+        <ellipse cx="120" cy="66" rx="116" ry="24" fill="white" opacity="0.42" />
+        <ellipse cx="72" cy="53" rx="52" ry="31" fill="white" opacity="0.5" />
+        <ellipse cx="130" cy="45" rx="66" ry="38" fill="white" opacity="0.58" />
+        <ellipse cx="178" cy="58" rx="48" ry="26" fill="white" opacity="0.36" />
+      </g>
+    </motion.g>
+  );
+};
+
+/** Slow drifting cloud layer with enough motion to feel alive without becoming busy */
+const AnimatedCloudLayer = () => (
+  <svg
+    viewBox="0 0 1440 190"
+    preserveAspectRatio="xMidYMin meet"
+    className="w-full pointer-events-none block"
+    style={{ height: 190, overflow: "visible" }}
+  >
+    <defs>
+      <filter id="cloudGlow">
+        <feGaussianBlur stdDeviation="4" />
+      </filter>
+    </defs>
+    <g filter="url(#cloudGlow)">
+      <SkyCloud x={-180} y={92} scale={0.78} duration={30} delay={0} opacity={0.48} />
+      <SkyCloud x={260} y={36} scale={0.55} duration={34} delay={4} opacity={0.34} />
+      <SkyCloud x={700} y={80} scale={0.68} duration={38} delay={8} opacity={0.42} />
+      <SkyCloud x={1080} y={30} scale={0.48} duration={42} delay={2} opacity={0.28} />
+    </g>
+  </svg>
+);
 
 /** Base camp scene — campfire glow, tents, ground silhouette */
 const BaseCampSVG = () => {
@@ -311,15 +406,15 @@ const BaseCampSVG = () => {
 /** Single bird silhouette — M-shaped bezier */
 const BirdPath = ({ x = 0, y = 0, scale = 1 }: { x?: number; y?: number; scale?: number }) => (
   <g transform={`translate(${x},${y}) scale(${scale})`}>
-    <path d="M-10,0 Q-5,-5 0,-2 Q5,-5 10,0" stroke="hsl(215 40% 25%)" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+    <path d="M-11,0 Q-6,-6 0,-2 Q6,-6 11,0" stroke="hsl(215 40% 24%)" strokeWidth="1.65" fill="none" strokeLinecap="round" />
   </g>
 );
 
 /** Animated flock of birds crossing the sky */
 const BirdFlock = ({
-  startX, y, count = 5, scale = 1, duration = 18, delay = 0,
+  startX, startY, endX, endY, count = 5, scale = 1, duration = 18, delay = 0,
 }: {
-  startX: number; y: number; count?: number; scale?: number; duration?: number; delay?: number;
+  startX: number; startY: number; endX: number; endY: number; count?: number; scale?: number; duration?: number; delay?: number;
 }) => {
   const prefersReducedMotion = useReducedMotion();
   const offsets: [number, number][] = Array.from({ length: count }, (_, i) => [
@@ -328,14 +423,153 @@ const BirdFlock = ({
   ]);
   return (
     <motion.g
-      initial={{ x: startX }}
-      animate={prefersReducedMotion ? { x: startX + 420 } : { x: [startX, startX + 1900] }}
-      transition={prefersReducedMotion ? { duration: 0 } : { duration, delay, repeat: Infinity, ease: "linear" }}
+      initial={{ x: startX, y: startY, opacity: 0, scale: 0.94 }}
+      animate={prefersReducedMotion ? { x: endX * 0.45, y: endY, opacity: 0.42, scale: 1 } : {
+        x: [startX, (startX + endX) / 2, endX],
+        y: [startY, (startY + endY) / 2 - 18, endY],
+        opacity: [0, 0.55, 0.38, 0],
+        scale: [0.92, 1, 0.78],
+      }}
+      transition={prefersReducedMotion ? { duration: 0 } : { duration, delay, repeat: Infinity, repeatDelay: 3, ease: "easeInOut" }}
     >
       {offsets.map(([ox, oy], i) => (
-        <BirdPath key={i} x={ox} y={y + oy} scale={scale} />
+        <motion.g
+          key={i}
+          animate={prefersReducedMotion ? undefined : { y: [0, -3, 0, 2, 0] }}
+          transition={{ duration: 1.15 + i * 0.08, delay: i * 0.06, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <BirdPath x={ox} y={oy} scale={scale} />
+        </motion.g>
       ))}
     </motion.g>
+  );
+};
+
+const Fish = ({ x = 0, y = 0, scale = 1 }: { x?: number; y?: number; scale?: number }) => (
+  <g transform={`translate(${x},${y}) scale(${scale})`}>
+    <ellipse cx="0" cy="0" rx="13" ry="6" fill="hsl(185 75% 44%)" opacity="0.9" />
+    <path d="M-12,0 L-24,-8 L-22,0 L-24,8 Z" fill="hsl(188 82% 36%)" opacity="0.82" />
+    <circle cx="8" cy="-1" r="1.4" fill="hsl(205 60% 12%)" opacity="0.7" />
+  </g>
+);
+
+const JumpingFish = ({
+  startX,
+  y,
+  distance,
+  delay,
+  duration,
+  scale = 1,
+}: {
+  startX: number;
+  y: number;
+  distance: number;
+  delay: number;
+  duration: number;
+  scale?: number;
+}) => {
+  const prefersReducedMotion = useReducedMotion();
+
+  return (
+    <motion.g
+      initial={{ x: startX, y, opacity: 0, rotate: -18 }}
+      animate={prefersReducedMotion ? { x: startX + distance * 0.5, y, opacity: 0.55, rotate: 0 } : {
+        x: [startX, startX + distance * 0.35, startX + distance * 0.68, startX + distance],
+        y: [y, y - 38, y - 22, y + 4],
+        opacity: [0, 0.88, 0.78, 0],
+        rotate: [-22, 10, 28, 42],
+      }}
+      transition={prefersReducedMotion ? { duration: 0 } : { duration, delay, repeat: Infinity, repeatDelay: 5, ease: "easeOut" }}
+    >
+      <Fish scale={scale} />
+      {!prefersReducedMotion && (
+        <motion.path
+          d="M-16,7 Q0,16 20,8"
+          fill="none"
+          stroke="white"
+          strokeWidth="2"
+          strokeLinecap="round"
+          opacity="0.6"
+          animate={{ pathLength: [0, 1, 0], opacity: [0, 0.55, 0] }}
+          transition={{ duration: duration * 0.8, delay, repeat: Infinity, repeatDelay: 5, ease: "easeOut" }}
+        />
+      )}
+    </motion.g>
+  );
+};
+
+const GlowingRiver = () => {
+  const prefersReducedMotion = useReducedMotion();
+
+  return (
+    <svg
+      viewBox="0 0 1440 260"
+      preserveAspectRatio="xMidYMid slice"
+      className="w-full pointer-events-none block"
+      style={{ height: 260, overflow: "visible" }}
+    >
+      <defs>
+        <linearGradient id="riverFill" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="hsl(197 90% 58%)" stopOpacity="0.15" />
+          <stop offset="45%" stopColor="hsl(185 78% 48%)" stopOpacity="0.44" />
+          <stop offset="100%" stopColor="hsl(214 88% 52%)" stopOpacity="0.28" />
+        </linearGradient>
+        <linearGradient id="riverGlow" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="hsl(198 100% 85%)" stopOpacity="0" />
+          <stop offset="45%" stopColor="hsl(182 95% 72%)" stopOpacity="0.72" />
+          <stop offset="100%" stopColor="hsl(205 100% 86%)" stopOpacity="0" />
+        </linearGradient>
+        <filter id="riverSoftGlow">
+          <feGaussianBlur stdDeviation="7" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+
+      <path
+        d="M-30,92 C175,36 270,158 455,111 C640,63 768,74 924,135 C1080,196 1248,120 1470,154 L1470,260 L-30,260 Z"
+        fill="url(#riverFill)"
+        opacity="0.86"
+      />
+      <motion.path
+        d="M-40,104 C160,52 286,146 450,106 C636,61 760,72 930,130 C1090,185 1248,122 1480,148"
+        fill="none"
+        stroke="url(#riverGlow)"
+        strokeWidth="18"
+        strokeLinecap="round"
+        opacity="0.58"
+        filter="url(#riverSoftGlow)"
+        animate={prefersReducedMotion ? { pathLength: 1, pathOffset: 0 } : { pathOffset: [0, 1] }}
+        transition={prefersReducedMotion ? { duration: 0 } : { duration: 7, repeat: Infinity, ease: "linear" }}
+      />
+      {[0, 1, 2, 3, 4].map((i) => (
+        <motion.path
+          key={i}
+          d={`M${-80 + i * 290},${132 + (i % 2) * 28} C${30 + i * 290},${108 + (i % 2) * 24} ${150 + i * 290},${162 - (i % 2) * 20} ${290 + i * 290},${130 + (i % 2) * 24}`}
+          fill="none"
+          stroke="hsl(190 100% 88%)"
+          strokeWidth={i % 2 === 0 ? 3 : 2}
+          strokeLinecap="round"
+          opacity="0.42"
+          strokeDasharray="38 72"
+          animate={prefersReducedMotion ? { strokeDashoffset: 0 } : { strokeDashoffset: [0, -220] }}
+          transition={prefersReducedMotion ? { duration: 0 } : { duration: 4.2 + i * 0.55, repeat: Infinity, ease: "linear" }}
+        />
+      ))}
+      <motion.g
+        animate={prefersReducedMotion ? { opacity: 0.42 } : { opacity: [0.25, 0.55, 0.32, 0.62, 0.25] }}
+        transition={prefersReducedMotion ? { duration: 0 } : { duration: 5.4, repeat: Infinity, ease: "easeInOut" }}
+      >
+        <ellipse cx="350" cy="142" rx="52" ry="10" fill="white" opacity="0.18" />
+        <ellipse cx="832" cy="118" rx="70" ry="12" fill="white" opacity="0.14" />
+        <ellipse cx="1130" cy="160" rx="62" ry="11" fill="white" opacity="0.16" />
+      </motion.g>
+      <JumpingFish startX={250} y={137} distance={115} delay={1.2} duration={1.45} scale={0.72} />
+      <JumpingFish startX={690} y={112} distance={150} delay={3.8} duration={1.7} scale={0.86} />
+      <JumpingFish startX={1050} y={157} distance={125} delay={6.1} duration={1.5} scale={0.66} />
+    </svg>
   );
 };
 
@@ -414,27 +648,30 @@ const MountainBackdrop = () => {
     <div className="absolute inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 1 }}>
 
       {/* ══ SKY / HERO ZONE (0–18%) ══ */}
-      {/* Sun glow at top-right */}
+      {/* Moon glow and cool sky wash */}
       <div
         className="absolute pointer-events-none"
         style={{
           top: 0, right: 0,
           width: 600, height: 500,
-          background: "radial-gradient(ellipse at 75% 15%, hsl(50 95% 88% / 0.45) 0%, hsl(30 80% 78% / 0.18) 35%, transparent 65%)",
+          background: "radial-gradient(ellipse at 75% 15%, hsl(205 95% 90% / 0.34) 0%, hsl(185 80% 78% / 0.12) 38%, transparent 68%)",
         }}
       />
+      <MoonGlow />
       {/* Cirrus clouds */}
       <div className="absolute w-full" style={{ top: "3%" }}>
         <CirrusClouds />
       </div>
+      <div className="absolute w-full" style={{ top: "5.5%" }}>
+        <AnimatedCloudLayer />
+      </div>
 
       {/* Bird flocks in the sky */}
-      <div className="absolute w-full" style={{ top: "6%", height: 120, overflow: "hidden" }}>
-        <svg viewBox="0 0 1440 120" preserveAspectRatio="xMidYMid meet" className="w-full" style={{ height: 120 }}>
-          <BirdFlock startX={-200} y={30}  count={6} scale={1.1} duration={22} delay={0} />
-          <BirdFlock startX={-600} y={70}  count={4} scale={0.85} duration={28} delay={5} />
-          <BirdFlock startX={-900} y={50}  count={7} scale={1.25} duration={34} delay={11} />
-          <BirdFlock startX={-400} y={95}  count={5} scale={0.75} duration={40} delay={18} />
+      <div className="absolute w-full" style={{ top: "4.5%", height: 170, overflow: "hidden" }}>
+        <svg viewBox="0 0 1440 170" preserveAspectRatio="xMidYMid meet" className="w-full" style={{ height: 170 }}>
+          <BirdFlock startX={-180} startY={138} endX={980} endY={18} count={6} scale={1.08} duration={18} delay={0} />
+          <BirdFlock startX={-520} startY={156} endX={1260} endY={46} count={5} scale={0.82} duration={24} delay={6} />
+          <BirdFlock startX={1120} startY={130} endX={1540} endY={18} count={7} scale={0.72} duration={20} delay={12} />
         </svg>
       </div>
 
@@ -493,6 +730,9 @@ const MountainBackdrop = () => {
           colors={lowerForest.colors}
           seeds={lowerForest.seeds}
         />
+      </div>
+      <div className="absolute w-full" style={{ top: "57%" }}>
+        <GlowingRiver />
       </div>
 
       {/* ══ BASE CAMP (~68–88%) ══ */}
