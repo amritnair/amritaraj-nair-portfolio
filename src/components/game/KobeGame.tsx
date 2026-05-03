@@ -3,6 +3,14 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Stars } from "@react-three/drei";
 import { Physics, RigidBody, CapsuleCollider, type RapierRigidBody, useRapier } from "@react-three/rapier";
 import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
+// @ts-ignore — low-level default export accepts an optional URL
+import initRapierWasm from "@dimforge/rapier3d-compat/rapier_wasm3d";
+
+/* Start WASM load immediately at module level with the correct public path.
+   Physics won't mount until this Promise resolves (guarded in KobeGame). */
+const rapierReady: Promise<unknown> = initRapierWasm(
+  `${import.meta.env.BASE_URL}rapier_wasm3d_bg.wasm`
+);
 import * as THREE from "three";
 import { Dog, DogHandle } from "./Dog";
 import { World } from "./World";
@@ -417,7 +425,12 @@ export default function KobeGame() {
   const [openNpc,   setOpenNpc]   = useState<NpcConfig | null>(null);
   const [locked,    setLocked]    = useState(false);
   const [boneFound, setBoneFound] = useState(false);
+  const [wasmReady, setWasmReady] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    rapierReady.then(() => setWasmReady(true)).catch(() => setWasmReady(true));
+  }, []);
 
   useEffect(() => {
     const onChange = () => setLocked(!!document.pointerLockElement);
@@ -440,7 +453,7 @@ export default function KobeGame() {
         gl={{ antialias:true, toneMapping:THREE.ACESFilmicToneMapping, toneMappingExposure:1.05 }}
         onClick={() => { if (!locked) wrapRef.current?.requestPointerLock(); }}
       >
-        <GameScene onNearNpc={setNearId} onBoneFound={handleBone} />
+        {wasmReady && <GameScene onNearNpc={setNearId} onBoneFound={handleBone} />}
       </Canvas>
       <HUD
         nearId={nearId} openNpc={openNpc} locked={locked} boneFound={boneFound}
