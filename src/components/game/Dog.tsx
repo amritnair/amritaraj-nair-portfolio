@@ -12,195 +12,264 @@ interface DogProps {
 }
 
 export const Dog = forwardRef<DogHandle, DogProps>(({ moving, running }, ref) => {
-  const groupRef = useRef<THREE.Group>(null);
-  const bodyRef  = useRef<THREE.Mesh>(null);
-  const fl = useRef<THREE.Group>(null); // front-left leg
-  const fr = useRef<THREE.Group>(null);
-  const bl = useRef<THREE.Group>(null);
-  const br = useRef<THREE.Group>(null);
-  const tailRef = useRef<THREE.Group>(null);
-  const headRef = useRef<THREE.Group>(null);
+  const groupRef  = useRef<THREE.Group>(null);
+  const bodyRef   = useRef<THREE.Group>(null);  // entire dog floats on this
+  const chestRef  = useRef<THREE.Mesh>(null);
+  const headGroup = useRef<THREE.Group>(null);
+  // Each leg group pivots from shoulder/hip
+  const fl = useRef<THREE.Group>(null); // front-left
+  const fr = useRef<THREE.Group>(null); // front-right
+  const bl = useRef<THREE.Group>(null); // back-left
+  const br = useRef<THREE.Group>(null); // back-right
+  const tailGroup = useRef<THREE.Group>(null);
 
   useImperativeHandle(ref, () => ({ get group() { return groupRef.current; } }));
 
   useFrame(({ clock }) => {
     const t = clock.elapsedTime;
-    const speed = running ? 12 : 7;
-    const swing = moving ? Math.sin(t * speed) * 0.55 : 0;
+    const freq = running ? 11 : 6.5;
 
-    if (fl.current) fl.current.rotation.x =  swing;
-    if (fr.current) fr.current.rotation.x = -swing;
-    if (bl.current) bl.current.rotation.x = -swing;
-    if (br.current) br.current.rotation.x =  swing;
+    // Diagonal trot gait: FL+BR move together (phase 0), FR+BL offset by π
+    const phaseA = Math.sin(t * freq);           // FL, BR
+    const phaseB = Math.sin(t * freq + Math.PI); // FR, BL
+
+    const swingAmt = moving ? (running ? 0.72 : 0.55) : 0;
+    const liftAmt  = moving ? (running ? 0.28 : 0.18) : 0;
+
+    if (fl.current) {
+      fl.current.rotation.x = phaseA * swingAmt;
+      fl.current.position.z = phaseA * liftAmt * 0.12;
+    }
+    if (br.current) {
+      br.current.rotation.x = phaseA * swingAmt;
+      br.current.position.z = phaseA * liftAmt * 0.12;
+    }
+    if (fr.current) {
+      fr.current.rotation.x = phaseB * swingAmt;
+      fr.current.position.z = phaseB * liftAmt * 0.12;
+    }
+    if (bl.current) {
+      bl.current.rotation.x = phaseB * swingAmt;
+      bl.current.position.z = phaseB * liftAmt * 0.12;
+    }
 
     if (bodyRef.current) {
-      bodyRef.current.position.y = moving ? Math.abs(Math.sin(t * speed)) * 0.045 : 0;
+      if (moving) {
+        // Bounce: body rises on double-support
+        const bounce = Math.abs(Math.sin(t * freq)) * 0.055;
+        bodyRef.current.position.y = bounce;
+        // Subtle roll — shifts weight side to side
+        bodyRef.current.rotation.z = Math.sin(t * freq) * 0.04;
+        // Slight forward lean when running
+        bodyRef.current.rotation.x = running ? -0.06 : 0;
+      } else {
+        // Breathing idle
+        bodyRef.current.position.y = Math.sin(t * 1.8) * 0.012;
+        bodyRef.current.rotation.z = 0;
+        bodyRef.current.rotation.x = 0;
+      }
     }
 
-    // tail wag
-    if (tailRef.current) {
-      tailRef.current.rotation.z = moving
-        ? 0.6 + Math.sin(t * 10) * 0.5
-        : 0.4 + Math.sin(t * 3) * 0.25;
+    // Head sway / look
+    if (headGroup.current) {
+      if (moving) {
+        headGroup.current.rotation.x = Math.sin(t * freq * 0.5) * 0.06;
+        headGroup.current.rotation.z = Math.sin(t * freq * 0.5) * 0.03;
+      } else {
+        // idle look-around
+        headGroup.current.rotation.y = Math.sin(t * 0.6) * 0.25;
+        headGroup.current.rotation.x = Math.sin(t * 0.9) * 0.04;
+      }
     }
 
-    // head bob
-    if (headRef.current) {
-      headRef.current.rotation.x = moving ? Math.sin(t * speed * 0.5) * 0.08 : 0;
+    // Tail
+    if (tailGroup.current) {
+      const wagSpeed = moving ? (running ? 14 : 9) : 3.5;
+      const wagAmt   = moving ? (running ? 0.7 : 0.55) : 0.35;
+      tailGroup.current.rotation.z = 0.5 + Math.sin(t * wagSpeed) * wagAmt;
+      tailGroup.current.rotation.y = Math.sin(t * wagSpeed * 0.7) * 0.2;
     }
   });
 
-  const furColor = "#f5f0e8";
-  const darkColor = "#1a1a1a";
-  const noseColor = "#2a1a1a";
-  const tongueColor = "#e87070";
+  const fur   = "#f5f0e5";
+  const inner = "#e8ddc8";
+  const dark  = "#111111";
+  const pink  = "#e87878";
 
   return (
     <group ref={groupRef}>
-      {/* ── Body ── */}
-      <mesh ref={bodyRef} position={[0, 0.38, 0]} castShadow>
-        <sphereGeometry args={[0.28, 16, 12]} />
-        <meshStandardMaterial color={furColor} roughness={0.9} />
-      </mesh>
+      {/* bodyRef — entire dog, for bounce/sway */}
+      <group ref={bodyRef}>
 
-      {/* body fur bumps */}
-      <mesh position={[0.08, 0.42, 0.15]} castShadow>
-        <sphereGeometry args={[0.14, 10, 8]} />
-        <meshStandardMaterial color={furColor} roughness={0.95} />
-      </mesh>
-      <mesh position={[-0.08, 0.42, 0.15]} castShadow>
-        <sphereGeometry args={[0.13, 10, 8]} />
-        <meshStandardMaterial color={furColor} roughness={0.95} />
-      </mesh>
-
-      {/* ── Neck ── */}
-      <mesh position={[0, 0.58, 0.18]} rotation={[0.4, 0, 0]} castShadow>
-        <cylinderGeometry args={[0.11, 0.14, 0.22, 10]} />
-        <meshStandardMaterial color={furColor} roughness={0.9} />
-      </mesh>
-
-      {/* ── Head ── */}
-      <group ref={headRef} position={[0, 0.72, 0.3]}>
-        <mesh castShadow>
-          <sphereGeometry args={[0.20, 16, 12]} />
-          <meshStandardMaterial color={furColor} roughness={0.9} />
+        {/* ── Torso ── */}
+        <mesh ref={chestRef} position={[0, 0.40, 0]} scale={[1, 0.88, 1.22]} castShadow>
+          <sphereGeometry args={[0.28, 16, 12]} />
+          <meshStandardMaterial color={fur} roughness={0.88} />
+        </mesh>
+        {/* rump */}
+        <mesh position={[0, 0.37, -0.22]} scale={[0.9, 0.82, 0.9]} castShadow>
+          <sphereGeometry args={[0.24, 12, 10]} />
+          <meshStandardMaterial color={fur} roughness={0.88} />
+        </mesh>
+        {/* chest fur puff */}
+        <mesh position={[0, 0.44, 0.22]} scale={[0.85, 0.85, 0.7]}>
+          <sphereGeometry args={[0.20, 10, 8]} />
+          <meshStandardMaterial color="#faf6ee" roughness={0.92} />
         </mesh>
 
-        {/* forehead puff */}
-        <mesh position={[0, 0.10, 0.05]}>
-          <sphereGeometry args={[0.13, 10, 8]} />
-          <meshStandardMaterial color={furColor} roughness={0.95} />
+        {/* ── Neck ── */}
+        <mesh position={[0, 0.60, 0.20]} rotation={[0.45, 0, 0]} castShadow>
+          <cylinderGeometry args={[0.10, 0.13, 0.24, 10]} />
+          <meshStandardMaterial color={fur} roughness={0.9} />
         </mesh>
 
-        {/* Snout */}
-        <mesh position={[0, -0.04, 0.17]} castShadow>
-          <sphereGeometry args={[0.10, 12, 8]} />
-          <meshStandardMaterial color="#e8dcc8" roughness={0.85} />
-        </mesh>
+        {/* ── Head ── */}
+        <group ref={headGroup} position={[0, 0.76, 0.34]}>
+          {/* skull */}
+          <mesh castShadow>
+            <sphereGeometry args={[0.195, 16, 12]} />
+            <meshStandardMaterial color={fur} roughness={0.88} />
+          </mesh>
+          {/* brow bump */}
+          <mesh position={[0, 0.10, 0.08]}>
+            <sphereGeometry args={[0.115, 10, 8]} />
+            <meshStandardMaterial color="#faf5ed" roughness={0.92} />
+          </mesh>
+          {/* cheek puffs */}
+          <mesh position={[ 0.13, -0.02, 0.10]}>
+            <sphereGeometry args={[0.10, 10, 8]} />
+            <meshStandardMaterial color={fur} roughness={0.9} />
+          </mesh>
+          <mesh position={[-0.13, -0.02, 0.10]}>
+            <sphereGeometry args={[0.10, 10, 8]} />
+            <meshStandardMaterial color={fur} roughness={0.9} />
+          </mesh>
 
-        {/* Nose */}
-        <mesh position={[0, 0.00, 0.265]}>
-          <sphereGeometry args={[0.035, 10, 8]} />
-          <meshStandardMaterial color={noseColor} roughness={0.3} />
-        </mesh>
+          {/* Snout */}
+          <mesh position={[0, -0.038, 0.175]} scale={[1, 0.85, 0.9]}>
+            <sphereGeometry args={[0.10, 12, 9]} />
+            <meshStandardMaterial color={inner} roughness={0.82} />
+          </mesh>
+          {/* Nose */}
+          <mesh position={[0, -0.005, 0.268]}>
+            <sphereGeometry args={[0.032, 10, 8]} />
+            <meshStandardMaterial color={dark} roughness={0.25} metalness={0.1} />
+          </mesh>
+          {/* nose shine */}
+          <mesh position={[0.012, 0.005, 0.296]}>
+            <sphereGeometry args={[0.008, 6, 6]} />
+            <meshStandardMaterial color="white" roughness={0.1} />
+          </mesh>
 
-        {/* Eyes */}
-        <mesh position={[ 0.085, 0.05, 0.175]}>
-          <sphereGeometry args={[0.028, 10, 8]} />
-          <meshStandardMaterial color={darkColor} roughness={0.2} />
-        </mesh>
-        <mesh position={[-0.085, 0.05, 0.175]}>
-          <sphereGeometry args={[0.028, 10, 8]} />
-          <meshStandardMaterial color={darkColor} roughness={0.2} />
-        </mesh>
-        {/* Eye shine */}
-        <mesh position={[ 0.092, 0.062, 0.195]}>
-          <sphereGeometry args={[0.01, 6, 6]} />
-          <meshStandardMaterial color="white" roughness={0.1} />
-        </mesh>
-        <mesh position={[-0.078, 0.062, 0.195]}>
-          <sphereGeometry args={[0.01, 6, 6]} />
-          <meshStandardMaterial color="white" roughness={0.1} />
-        </mesh>
+          {/* Eyes */}
+          <mesh position={[ 0.082, 0.055, 0.172]}>
+            <sphereGeometry args={[0.030, 12, 10]} />
+            <meshStandardMaterial color={dark} roughness={0.2} />
+          </mesh>
+          <mesh position={[-0.082, 0.055, 0.172]}>
+            <sphereGeometry args={[0.030, 12, 10]} />
+            <meshStandardMaterial color={dark} roughness={0.2} />
+          </mesh>
+          {/* Eye shines */}
+          <mesh position={[ 0.092, 0.068, 0.196]}>
+            <sphereGeometry args={[0.009, 6, 6]} />
+            <meshStandardMaterial color="white" roughness={0.05} />
+          </mesh>
+          <mesh position={[-0.072, 0.068, 0.196]}>
+            <sphereGeometry args={[0.009, 6, 6]} />
+            <meshStandardMaterial color="white" roughness={0.05} />
+          </mesh>
+          {/* Brown eye ring */}
+          <mesh position={[ 0.082, 0.055, 0.170]}>
+            <sphereGeometry args={[0.032, 12, 10]} />
+            <meshStandardMaterial color="#6b3a1f" roughness={0.3} transparent opacity={0.6} />
+          </mesh>
+          <mesh position={[-0.082, 0.055, 0.170]}>
+            <sphereGeometry args={[0.032, 12, 10]} />
+            <meshStandardMaterial color="#6b3a1f" roughness={0.3} transparent opacity={0.6} />
+          </mesh>
 
-        {/* Tongue */}
-        <mesh position={[0, -0.095, 0.24]} rotation={[0.3, 0, 0]}>
-          <sphereGeometry args={[0.045, 10, 6]} />
-          <meshStandardMaterial color={tongueColor} roughness={0.6} />
-        </mesh>
+          {/* Tongue */}
+          <mesh position={[0, -0.09, 0.245]} rotation={[0.35, 0, 0]} scale={[1, 0.7, 0.6]}>
+            <sphereGeometry args={[0.050, 10, 7]} />
+            <meshStandardMaterial color={pink} roughness={0.55} />
+          </mesh>
 
-        {/* Ears */}
-        <mesh position={[ 0.17, 0.12, -0.04]} rotation={[0, 0, 0.5]} castShadow>
-          <sphereGeometry args={[0.095, 10, 8]} />
-          <meshStandardMaterial color="#e8dcc0" roughness={0.9} />
-        </mesh>
-        <mesh position={[-0.17, 0.12, -0.04]} rotation={[0, 0, -0.5]} castShadow>
-          <sphereGeometry args={[0.095, 10, 8]} />
-          <meshStandardMaterial color="#e8dcc0" roughness={0.9} />
-        </mesh>
-      </group>
+          {/* Ears — floppy */}
+          <mesh position={[ 0.175, 0.09, -0.06]} rotation={[0.1, 0, 0.55]} scale={[0.7, 1.1, 0.6]} castShadow>
+            <sphereGeometry args={[0.108, 10, 8]} />
+            <meshStandardMaterial color={inner} roughness={0.88} />
+          </mesh>
+          <mesh position={[-0.175, 0.09, -0.06]} rotation={[0.1, 0, -0.55]} scale={[0.7, 1.1, 0.6]} castShadow>
+            <sphereGeometry args={[0.108, 10, 8]} />
+            <meshStandardMaterial color={inner} roughness={0.88} />
+          </mesh>
+        </group>
 
-      {/* ── Legs — each leg is a group so rotation pivots from top ── */}
-      {/* Front-left */}
-      <group ref={fl} position={[ 0.14, 0.28, 0.14]}>
-        <mesh position={[0, -0.18, 0]} castShadow>
-          <capsuleGeometry args={[0.055, 0.24, 6, 8]} />
-          <meshStandardMaterial color={furColor} roughness={0.9} />
-        </mesh>
-        {/* paw */}
-        <mesh position={[0, -0.32, 0.02]}>
-          <sphereGeometry args={[0.065, 10, 8]} />
-          <meshStandardMaterial color="#e8dcc0" roughness={0.7} />
-        </mesh>
-      </group>
+        {/* ── Legs ── each group pivots from shoulder/hip ── */}
+        {/* Front-left */}
+        <group ref={fl} position={[ 0.155, 0.28, 0.13]}>
+          <mesh position={[0, -0.17, 0]} castShadow>
+            <capsuleGeometry args={[0.052, 0.22, 6, 8]} />
+            <meshStandardMaterial color={fur} roughness={0.9} />
+          </mesh>
+          <mesh position={[0, -0.30, 0.025]} scale={[1.1, 0.8, 1.15]}>
+            <sphereGeometry args={[0.065, 10, 8]} />
+            <meshStandardMaterial color={inner} roughness={0.72} />
+          </mesh>
+        </group>
+        {/* Front-right */}
+        <group ref={fr} position={[-0.155, 0.28, 0.13]}>
+          <mesh position={[0, -0.17, 0]} castShadow>
+            <capsuleGeometry args={[0.052, 0.22, 6, 8]} />
+            <meshStandardMaterial color={fur} roughness={0.9} />
+          </mesh>
+          <mesh position={[0, -0.30, 0.025]} scale={[1.1, 0.8, 1.15]}>
+            <sphereGeometry args={[0.065, 10, 8]} />
+            <meshStandardMaterial color={inner} roughness={0.72} />
+          </mesh>
+        </group>
+        {/* Back-left */}
+        <group ref={bl} position={[ 0.145, 0.27, -0.18]}>
+          <mesh position={[0, -0.17, 0]} castShadow>
+            <capsuleGeometry args={[0.054, 0.22, 6, 8]} />
+            <meshStandardMaterial color={fur} roughness={0.9} />
+          </mesh>
+          <mesh position={[0, -0.30, 0.02]} scale={[1.1, 0.8, 1.15]}>
+            <sphereGeometry args={[0.065, 10, 8]} />
+            <meshStandardMaterial color={inner} roughness={0.72} />
+          </mesh>
+        </group>
+        {/* Back-right */}
+        <group ref={br} position={[-0.145, 0.27, -0.18]}>
+          <mesh position={[0, -0.17, 0]} castShadow>
+            <capsuleGeometry args={[0.054, 0.22, 6, 8]} />
+            <meshStandardMaterial color={fur} roughness={0.9} />
+          </mesh>
+          <mesh position={[0, -0.30, 0.02]} scale={[1.1, 0.8, 1.15]}>
+            <sphereGeometry args={[0.065, 10, 8]} />
+            <meshStandardMaterial color={inner} roughness={0.72} />
+          </mesh>
+        </group>
 
-      {/* Front-right */}
-      <group ref={fr} position={[-0.14, 0.28, 0.14]}>
-        <mesh position={[0, -0.18, 0]} castShadow>
-          <capsuleGeometry args={[0.055, 0.24, 6, 8]} />
-          <meshStandardMaterial color={furColor} roughness={0.9} />
-        </mesh>
-        <mesh position={[0, -0.32, 0.02]}>
-          <sphereGeometry args={[0.065, 10, 8]} />
-          <meshStandardMaterial color="#e8dcc0" roughness={0.7} />
-        </mesh>
-      </group>
+        {/* ── Tail ── mounted on rump ── */}
+        <group ref={tailGroup} position={[0, 0.46, -0.38]}>
+          <mesh rotation={[-0.4, 0, 0.4]} castShadow>
+            <capsuleGeometry args={[0.042, 0.20, 6, 8]} />
+            <meshStandardMaterial color={fur} roughness={0.9} />
+          </mesh>
+          {/* curl */}
+          <mesh position={[0.06, 0.18, -0.06]} scale={0.85}>
+            <capsuleGeometry args={[0.036, 0.12, 6, 8]} />
+            <meshStandardMaterial color={fur} roughness={0.9} />
+          </mesh>
+          {/* tail tip */}
+          <mesh position={[0.10, 0.26, -0.08]}>
+            <sphereGeometry args={[0.058, 10, 8]} />
+            <meshStandardMaterial color="white" roughness={0.92} />
+          </mesh>
+        </group>
 
-      {/* Back-left */}
-      <group ref={bl} position={[ 0.14, 0.28, -0.16]}>
-        <mesh position={[0, -0.18, 0]} castShadow>
-          <capsuleGeometry args={[0.055, 0.24, 6, 8]} />
-          <meshStandardMaterial color={furColor} roughness={0.9} />
-        </mesh>
-        <mesh position={[0, -0.32, 0.02]}>
-          <sphereGeometry args={[0.065, 10, 8]} />
-          <meshStandardMaterial color="#e8dcc0" roughness={0.7} />
-        </mesh>
-      </group>
-
-      {/* Back-right */}
-      <group ref={br} position={[-0.14, 0.28, -0.16]}>
-        <mesh position={[0, -0.18, 0]} castShadow>
-          <capsuleGeometry args={[0.055, 0.24, 6, 8]} />
-          <meshStandardMaterial color={furColor} roughness={0.9} />
-        </mesh>
-        <mesh position={[0, -0.32, 0.02]}>
-          <sphereGeometry args={[0.065, 10, 8]} />
-          <meshStandardMaterial color="#e8dcc0" roughness={0.7} />
-        </mesh>
-      </group>
-
-      {/* ── Tail ── */}
-      <group ref={tailRef} position={[0, 0.44, -0.26]}>
-        <mesh rotation={[-0.5, 0, 0]} castShadow>
-          <capsuleGeometry args={[0.045, 0.22, 6, 8]} />
-          <meshStandardMaterial color={furColor} roughness={0.9} />
-        </mesh>
-        {/* tail tip puff */}
-        <mesh position={[0, 0.16, -0.08]}>
-          <sphereGeometry args={[0.06, 10, 8]} />
-          <meshStandardMaterial color="white" roughness={0.95} />
-        </mesh>
       </group>
     </group>
   );
