@@ -6,7 +6,6 @@ import Contact from "@/components/Contact";
 import BackgroundEffects from "@/components/BackgroundEffects";
 import CursorDot from "@/components/CursorDot";
 import MountainBackdrop from "@/components/MountainBackdrop";
-import { CodeAtmosphere, FloatingSymbols, MarketAtmosphere } from "@/components/SceneBackground";
 import { motion, useScroll, useSpring } from "framer-motion";
 
 const ScrollProgress = () => {
@@ -83,9 +82,6 @@ const Index = () => (
     <MountainBackdrop />
 
     <CursorDot />
-    <FloatingSymbols />
-    <MarketAtmosphere />
-    <CodeAtmosphere />
     <ScrollProgress />
     <BackgroundEffects />
     <Navigation />

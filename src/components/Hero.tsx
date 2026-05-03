@@ -3,7 +3,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowDown, FileText, Github, Linkedin, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { GlobeCanvas, Mountains, StockChart, CandlestickChart } from "@/components/SceneBackground";
+import { Mountains } from "@/components/SceneBackground";
 
 const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -51,15 +51,9 @@ const Magnetic = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-/* Sunrise-tinted cloud SVG */
-const CloudShape = ({
-  width = 220,
-  opacity = 0.88,
-  r = 255, g = 220, b = 215,
-}: {
-  width?: number;
-  opacity?: number;
-  r?: number; g?: number; b?: number;
+/* Cloud SVG shape */
+const CloudShape = ({ width = 220, opacity = 0.88, r = 240, g = 250, b = 255 }: {
+  width?: number; opacity?: number; r?: number; g?: number; b?: number;
 }) => (
   <svg width={width} height={width * 0.42} viewBox="0 0 220 92" fill="none">
     <ellipse cx="110" cy="72" rx="102" ry="22" fill={`rgba(${r},${g},${b},${opacity})`} />
@@ -69,22 +63,16 @@ const CloudShape = ({
   </svg>
 );
 
-interface CloudProps {
-  left: string;
-  top: string;
-  scale?: number;
-  delay?: number;
-  drift?: number;
-  opacity?: number;
-  r?: number; g?: number; b?: number;
-}
-
-const Cloud = ({ left, top, scale = 1, delay = 0, drift = 12, opacity = 0.82, r = 255, g = 225, b = 218 }: CloudProps) => (
+const Cloud = ({ left, top, scale = 1, delay = 0, drift = 12, opacity = 0.82,
+  r = 240, g = 250, b = 255 }: {
+  left: string; top: string; scale?: number; delay?: number;
+  drift?: number; opacity?: number; r?: number; g?: number; b?: number;
+}) => (
   <motion.div
-    initial={{ opacity: 0, x: -15 }}
+    initial={{ opacity: 0 }}
     animate={{ opacity: 1, x: [0, drift, 0] }}
     transition={{
-      opacity: { duration: 2, delay, ease: "easeOut" },
+      opacity: { duration: 2, delay },
       x: { duration: 9 + delay * 1.4, repeat: Infinity, ease: "easeInOut", delay },
     }}
     className="absolute pointer-events-none"
@@ -111,128 +99,45 @@ const Hero = () => {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Sunrise atmosphere blobs */}
       <div className="blob-orange" />
       <div className="blob-teal" />
       <div className="blob-yellow" />
       <div className="blob-pink" />
       <div className="blob-lime" />
 
-      {/* ── Bright open sky glow at top ── */}
-      <div
-        className="absolute top-0 left-0 right-0 h-56 pointer-events-none z-0"
-        style={{
-          background: "linear-gradient(180deg, hsl(205 95% 98% / 0.9) 0%, hsl(200 85% 95% / 0.6) 50%, transparent 100%)",
-        }}
-      />
+      {/* Sky glow at top */}
+      <div className="absolute top-0 left-0 right-0 h-56 pointer-events-none z-0"
+        style={{ background: "linear-gradient(180deg, hsl(205 95% 98% / 0.9) 0%, hsl(200 85% 95% / 0.6) 50%, transparent 100%)" }} />
 
-      {/* ── Sky clouds — pure white with faint sky-blue tint ── */}
-      {/* Large foreground clouds */}
-      <Cloud left="-3%"  top="5%"  scale={1.5}  delay={0}    drift={18} opacity={0.88} r={240} g={250} b={255} />
-      <Cloud left="55%"  top="3%"  scale={1.1}  delay={0.8}  drift={14} opacity={0.82} r={238} g={248} b={255} />
-      <Cloud left="76%"  top="8%"  scale={0.92} delay={1.3}  drift={10} opacity={0.76} r={242} g={251} b={255} />
-      {/* Mid-layer clouds */}
-      <Cloud left="20%"  top="11%" scale={0.75} delay={2.0}  drift={15} opacity={0.65} r={245} g={252} b={255} />
-      <Cloud left="40%"  top="1%"  scale={0.60} delay={2.6}  drift={20} opacity={0.58} r={243} g={250} b={255} />
-      {/* Wispy high clouds */}
-      <Cloud left="-2%"  top="22%" scale={0.50} delay={1.1}  drift={11} opacity={0.42} r={248} g={253} b={255} />
-      <Cloud left="84%"  top="18%" scale={0.44} delay={2.3}  drift={12} opacity={0.36} r={246} g={252} b={255} />
+      {/* Clouds */}
+      <Cloud left="-3%"  top="5%"  scale={1.5}  delay={0}   drift={18} opacity={0.88} />
+      <Cloud left="55%"  top="3%"  scale={1.1}  delay={0.8} drift={14} opacity={0.82} />
+      <Cloud left="76%"  top="8%"  scale={0.92} delay={1.3} drift={10} opacity={0.76} />
+      <Cloud left="20%"  top="11%"  scale={0.75} delay={2.0} drift={15} opacity={0.65} />
+      <Cloud left="40%"  top="1%"  scale={0.60} delay={2.6} drift={20} opacity={0.58} />
+      <Cloud left="-2%"  top="22%" scale={0.50} delay={1.1} drift={11} opacity={0.42} />
+      <Cloud left="84%"  top="18%" scale={0.44} delay={2.3} drift={12} opacity={0.36} />
 
-      {/* ── Spinning globe — top right ── */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.6 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 1.2, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        className="absolute top-12 right-8 md:right-16 z-0 pointer-events-none"
-      >
-        <GlobeCanvas size={260} color="hsl(210 88% 55%)" opacity={0.5} />
-      </motion.div>
-
-      {/* ── Stock line chart — left side ── */}
-      <motion.div
-        initial={{ opacity: 0, x: -40 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 1, delay: 0.8 }}
-        className="absolute left-6 md:left-12 top-1/3 z-0 pointer-events-none hidden md:block"
-      >
-        <p className="text-[9px] mono text-sky-400/60 uppercase tracking-widest mb-1">AMRIT / AI</p>
-        <StockChart width={200} height={80} color="hsl(210 88% 52%)" />
-      </motion.div>
-
-      {/* ── Candlestick chart — right lower ── */}
-      <motion.div
-        initial={{ opacity: 0, x: 40 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 1, delay: 1.0 }}
-        className="absolute right-6 md:right-14 bottom-32 z-0 pointer-events-none hidden md:block"
-      >
-        <p className="text-[9px] mono text-teal-500/60 uppercase tracking-widest mb-1">QUANT / DAY</p>
-        <CandlestickChart width={160} height={80} opacity={0.5} />
-      </motion.div>
-
-      {/* ── Mountain peaks rising up from below the clouds ── */}
+      {/* Mountain peaks at base of hero */}
       <div className="absolute bottom-0 left-0 right-0 z-0 pointer-events-none">
-        {/* Distant hazy ranges */}
         <div className="absolute bottom-0 left-0 right-0">
           <Mountains width={1200} height={260} color="hsl(210 45% 60%)" opacity={0.10} />
         </div>
-        {/* Mid ranges — steely blue-grey */}
         <div className="absolute bottom-0 left-0 right-0">
           <Mountains width={1200} height={200} color="hsl(205 50% 42%)" opacity={0.15} />
         </div>
-        {/* Near peaks — deep alpine blue */}
         <div className="absolute bottom-0 left-0 right-0">
           <Mountains width={1200} height={130} color="hsl(200 55% 28%)" opacity={0.22} />
         </div>
-        {/* Snow-capped tips */}
         <div className="absolute bottom-0 left-0 right-0">
-          <Mountains width={1200} height={52} color="hsl(200 30% 96%)" opacity={0.7} />
+          <Mountains width={1200} height={52} color="hsl(200 30% 96%)" opacity={0.70} />
         </div>
       </div>
 
-      {/* ── Math equation strips ── */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.4, duration: 0.8 }}
-        className="absolute left-4 bottom-40 z-0 pointer-events-none hidden lg:flex flex-col gap-2"
-      >
-        {["∑(xᵢ - μ)²", "P(A|B) = P(B|A)·P(A)", "∇f = ∂f/∂x"].map((eq, i) => (
-          <motion.p
-            key={eq}
-            animate={{ x: [0, 6, 0] }}
-            transition={{ duration: 4 + i * 1.2, repeat: Infinity, ease: "easeInOut" }}
-            className="text-[10px] mono whitespace-nowrap"
-            style={{ color: "hsl(210 70% 50% / 0.35)" }}
-          >{eq}</motion.p>
-        ))}
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.6, duration: 0.8 }}
-        className="absolute right-4 top-1/2 z-0 pointer-events-none hidden lg:flex flex-col gap-2 items-end"
-      >
-        {["O(n log n)", "E[X] = μ", "σ² = Var(X)"].map((eq, i) => (
-          <motion.p
-            key={eq}
-            animate={{ x: [0, -6, 0] }}
-            transition={{ duration: 3.5 + i * 1.1, repeat: Infinity, ease: "easeInOut" }}
-            className="text-[10px] mono whitespace-nowrap"
-            style={{ color: "hsl(185 60% 45% / 0.32)" }}
-          >{eq}</motion.p>
-        ))}
-      </motion.div>
-
-      {/* ── Main content ── */}
+      {/* Main content */}
       <div className="container mx-auto px-4 sm:px-6 relative z-10">
         <div className="max-w-3xl mx-auto text-center">
 
-          {/*
-            Name — NO overflow:hidden, NO italic.
-            Simple fade+small-lift so nothing ever clips.
-          */}
           <motion.h1
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -245,7 +150,6 @@ const Hero = () => {
             <span className="text-foreground">{lastName}</span>
           </motion.h1>
 
-          {/* Role rotator */}
           <div className="h-7 flex items-center justify-center mb-8 overflow-hidden mt-6">
             <AnimatePresence mode="wait">
               <motion.p

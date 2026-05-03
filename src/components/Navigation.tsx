@@ -100,7 +100,13 @@ const Navigation = () => {
                 </button>
               ))}
               <Button
-                onClick={() => { isHome ? scrollToSection("#contact") : (window.location.href = "/#contact"); }}
+                onClick={() => {
+                  if (isHome) {
+                    scrollToSection("#contact");
+                  } else {
+                    window.location.href = "/#contact";
+                  }
+                }}
                 className="w-full mt-4 btn-primary text-white border-0 font-mono font-semibold">
                 Get in Touch
               </Button>

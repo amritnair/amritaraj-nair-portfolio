@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 
 /* ── Path generators ───────────────────────────────────────────────── */
 
@@ -125,9 +125,9 @@ const ForestBelt = ({
   colors: [string, string, string];
   seeds: [number, number, number];
 }) => {
-  const p1 = useMemo(() => forestPath(1440, baseH, minH * 0.6, maxH * 0.7, seeds[0]), []);
-  const p2 = useMemo(() => forestPath(1440, baseH, minH * 0.8, maxH * 0.9, seeds[1]), []);
-  const p3 = useMemo(() => forestPath(1440, baseH, minH,       maxH,       seeds[2]), []);
+  const p1 = useMemo(() => forestPath(1440, baseH, minH * 0.6, maxH * 0.7, seeds[0]), [baseH, maxH, minH, seeds]);
+  const p2 = useMemo(() => forestPath(1440, baseH, minH * 0.8, maxH * 0.9, seeds[1]), [baseH, maxH, minH, seeds]);
+  const p3 = useMemo(() => forestPath(1440, baseH, minH,       maxH,       seeds[2]), [baseH, maxH, minH, seeds]);
 
   return (
     <svg
@@ -308,6 +308,59 @@ const BaseCampSVG = () => {
   );
 };
 
+/** Single bird silhouette — M-shaped bezier */
+const BirdPath = ({ x = 0, y = 0, scale = 1 }: { x?: number; y?: number; scale?: number }) => (
+  <g transform={`translate(${x},${y}) scale(${scale})`}>
+    <path d="M-10,0 Q-5,-5 0,-2 Q5,-5 10,0" stroke="hsl(215 40% 25%)" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+  </g>
+);
+
+/** Animated flock of birds crossing the sky */
+const BirdFlock = ({
+  startX, y, count = 5, scale = 1, duration = 18, delay = 0,
+}: {
+  startX: number; y: number; count?: number; scale?: number; duration?: number; delay?: number;
+}) => {
+  const prefersReducedMotion = useReducedMotion();
+  const offsets: [number, number][] = Array.from({ length: count }, (_, i) => [
+    (i % 3) * 22 * scale - ((count / 2) * 22 * scale) / 2,
+    Math.floor(i / 3) * 16 * scale - 8 * scale,
+  ]);
+  return (
+    <motion.g
+      initial={{ x: startX }}
+      animate={prefersReducedMotion ? { x: startX + 420 } : { x: [startX, startX + 1900] }}
+      transition={prefersReducedMotion ? { duration: 0 } : { duration, delay, repeat: Infinity, ease: "linear" }}
+    >
+      {offsets.map(([ox, oy], i) => (
+        <BirdPath key={i} x={ox} y={y + oy} scale={scale} />
+      ))}
+    </motion.g>
+  );
+};
+
+/** Deer silhouette crossing the meadow */
+const DeerSilhouette = () => (
+  <g>
+    {/* body */}
+    <ellipse cx="0" cy="0" rx="28" ry="14" fill="hsl(28 45% 22%)" opacity="0.72" />
+    {/* neck */}
+    <rect x="16" y="-22" width="9" height="22" rx="4" fill="hsl(28 45% 22%)" opacity="0.72" />
+    {/* head */}
+    <ellipse cx="24" cy="-28" rx="9" ry="7" fill="hsl(28 45% 22%)" opacity="0.72" />
+    {/* antlers */}
+    <path d="M22,-34 L18,-50 M18,-50 L14,-44 M18,-50 L22,-44" stroke="hsl(28 45% 22%)" strokeWidth="2.2" fill="none" strokeLinecap="round" opacity="0.72" />
+    <path d="M26,-34 L30,-48 M30,-48 L26,-42 M30,-48 L34,-43" stroke="hsl(28 45% 22%)" strokeWidth="2.2" fill="none" strokeLinecap="round" opacity="0.72" />
+    {/* legs */}
+    <line x1="-18" y1="12" x2="-22" y2="36" stroke="hsl(28 45% 22%)" strokeWidth="5" strokeLinecap="round" opacity="0.72" />
+    <line x1="-6"  y1="13" x2="-8"  y2="37" stroke="hsl(28 45% 22%)" strokeWidth="5" strokeLinecap="round" opacity="0.72" />
+    <line x1="8"   y1="13" x2="10"  y2="37" stroke="hsl(28 45% 22%)" strokeWidth="5" strokeLinecap="round" opacity="0.72" />
+    <line x1="20"  y1="12" x2="24"  y2="36" stroke="hsl(28 45% 22%)" strokeWidth="5" strokeLinecap="round" opacity="0.72" />
+    {/* tail */}
+    <ellipse cx="-28" cy="-4" rx="6" ry="4" fill="hsl(0 0% 90%)" opacity="0.55" />
+  </g>
+);
+
 /** Wispy cirrus cloud streaks for the sky zone */
 const CirrusClouds = () => (
   <svg
@@ -346,6 +399,7 @@ const CirrusClouds = () => (
 
 /* ── Master backdrop ───────────────────────────────────────────────── */
 const MountainBackdrop = () => {
+  const prefersReducedMotion = useReducedMotion();
   const upperForest = useMemo(() => ({
     colors: ["hsl(158 42% 34%)", "hsl(154 45% 27%)", "hsl(150 48% 21%)"] as [string, string, string],
     seeds:  [3.2, 5.8, 8.1] as [number, number, number],
@@ -374,6 +428,16 @@ const MountainBackdrop = () => {
         <CirrusClouds />
       </div>
 
+      {/* Bird flocks in the sky */}
+      <div className="absolute w-full" style={{ top: "6%", height: 120, overflow: "hidden" }}>
+        <svg viewBox="0 0 1440 120" preserveAspectRatio="xMidYMid meet" className="w-full" style={{ height: 120 }}>
+          <BirdFlock startX={-200} y={30}  count={6} scale={1.1} duration={22} delay={0} />
+          <BirdFlock startX={-600} y={70}  count={4} scale={0.85} duration={28} delay={5} />
+          <BirdFlock startX={-900} y={50}  count={7} scale={1.25} duration={34} delay={11} />
+          <BirdFlock startX={-400} y={95}  count={5} scale={0.75} duration={40} delay={18} />
+        </svg>
+      </div>
+
       {/* ══ MOUNTAIN TRANSITION (~17–24%) ══ */}
       <div className="absolute w-full" style={{ top: "17%" }}>
         <MountainPanorama />
@@ -394,6 +458,29 @@ const MountainBackdrop = () => {
       {/* ══ MEADOW CLEARING (~40–48%) ══ */}
       <div className="absolute w-full" style={{ top: "40%" }}>
         <MeadowSVG />
+      </div>
+      {/* Deer crossing the meadow */}
+      <div className="absolute w-full" style={{ top: "43%", height: 80, overflow: "hidden" }}>
+        <svg viewBox="0 0 1440 80" preserveAspectRatio="xMidYMid meet" className="w-full" style={{ height: 80 }}>
+          <motion.g
+            initial={{ x: -120 }}
+            animate={prefersReducedMotion ? { x: 380 } : { x: [-120, 1560] }}
+            transition={prefersReducedMotion ? { duration: 0 } : { duration: 38, delay: 4, repeat: Infinity, ease: "linear" }}
+          >
+            <g transform="translate(0,42)">
+              <DeerSilhouette />
+            </g>
+          </motion.g>
+          <motion.g
+            initial={{ x: -120 }}
+            animate={prefersReducedMotion ? { x: 1020 } : { x: [-120, 1560] }}
+            transition={prefersReducedMotion ? { duration: 0 } : { duration: 48, delay: 22, repeat: Infinity, ease: "linear" }}
+          >
+            <g transform="translate(60,50) scale(0.75)">
+              <DeerSilhouette />
+            </g>
+          </motion.g>
+        </svg>
       </div>
 
       {/* ══ LOWER FOREST BELT (~48–62%) ══ */}
@@ -420,8 +507,8 @@ const MountainBackdrop = () => {
       />
       <div className="absolute w-full" style={{ top: "69%" }}>
         <motion.div
-          animate={{ opacity: [0.82, 1, 0.86, 0.96, 0.82] }}
-          transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+          animate={prefersReducedMotion ? { opacity: 0.92 } : { opacity: [0.82, 1, 0.86, 0.96, 0.82] }}
+          transition={prefersReducedMotion ? { duration: 0 } : { duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
         >
           <BaseCampSVG />
         </motion.div>
