@@ -19,15 +19,18 @@ interface DogProps {
   bodyScale?: number;
   /** Make it an NPC — shows idle animations instead of player-driven ones */
   npc?: boolean;
+  /** Override base Y rotation (radians). NPC dogs use this to face a direction. */
+  facingYaw?: number;
 }
 
 export const Dog = forwardRef<DogHandle, DogProps>(({
   moving, running,
-  furColor  = "#f5f0e5",
+  furColor   = "#f5f0e5",
   innerColor = "#e8ddc8",
-  earStyle  = "floppy",
-  bodyScale = 1,
-  npc = false,
+  earStyle   = "floppy",
+  bodyScale  = 1,
+  npc        = false,
+  facingYaw  = 0,
 }, ref) => {
   const groupRef   = useRef<THREE.Group>(null);
   const bodyGroup  = useRef<THREE.Group>(null);
@@ -150,7 +153,7 @@ export const Dog = forwardRef<DogHandle, DogProps>(({
   return (
     // Root group: position/rotation controlled by player controller
     // Rotated 180° so dog faces -Z (matching movement direction)
-    <group ref={groupRef} rotation={[0, Math.PI, 0]}>
+    <group ref={groupRef} rotation={[0, Math.PI + facingYaw, 0]}>
       <group ref={bodyGroup} scale={s}>
 
         {/* ── Torso ── */}

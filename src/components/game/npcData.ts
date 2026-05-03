@@ -5,6 +5,8 @@ export interface NpcConfig {
   name: string;
   breed: string;
   position: [number, number, number];
+  /** Yaw (radians) so the dog faces inward toward the park center */
+  facingYaw: number;
   furColor: string;
   innerColor: string;
   earStyle: "floppy" | "pointy";
@@ -14,12 +16,18 @@ export interface NpcConfig {
   qa: QA[];
 }
 
+/** Compute the yaw so the dog's snout faces toward the world origin. */
+function yawTowardOrigin(pos: [number, number, number]): number {
+  return Math.atan2(-pos[0], -pos[2]);
+}
+
 export const NPC_DOGS: NpcConfig[] = [
   {
     id: "about",
     name: "Bruno",
     breed: "Golden Retriever",
     position: [9, 0, -5],
+    facingYaw: yawTowardOrigin([9, 0, -5]),
     furColor: "#c8852a",
     innerColor: "#a86520",
     earStyle: "floppy",
@@ -54,6 +62,7 @@ export const NPC_DOGS: NpcConfig[] = [
     name: "Shadow",
     breed: "Black Labrador",
     position: [-9, 0, -5],
+    facingYaw: yawTowardOrigin([-9, 0, -5]),
     furColor: "#1a1a1a",
     innerColor: "#2d2d2d",
     earStyle: "floppy",
@@ -88,6 +97,7 @@ export const NPC_DOGS: NpcConfig[] = [
     name: "Luna",
     breed: "Siberian Husky",
     position: [0, 0, -13],
+    facingYaw: yawTowardOrigin([0, 0, -13]),
     furColor: "#d8dce8",
     innerColor: "#e8eaf0",
     earStyle: "pointy",
@@ -122,6 +132,7 @@ export const NPC_DOGS: NpcConfig[] = [
     name: "Pixel",
     breed: "Dalmatian",
     position: [14, 0, 1],
+    facingYaw: yawTowardOrigin([14, 0, 1]),
     furColor: "#f0f0f0",
     innerColor: "#e0ddd8",
     earStyle: "floppy",

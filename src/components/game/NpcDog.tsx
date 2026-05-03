@@ -24,6 +24,7 @@ export default function NpcDog({ npc, isNear }: NpcDogProps) {
         earStyle={npc.earStyle}
         bodyScale={npc.bodyScale}
         npc={true}
+        facingYaw={npc.facingYaw}
       />
 
       {/* Dalmatian spots overlay — only for Pixel */}

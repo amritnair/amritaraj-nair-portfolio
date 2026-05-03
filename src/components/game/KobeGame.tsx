@@ -7,30 +7,206 @@ import { World } from "./World";
 import { NPC_DOGS, type NpcConfig, type QA } from "./npcData";
 import { useControls } from "./useControls";
 
-/* ── Gradient sky ─────────────────────────────────────────────────── */
-function GradientSky() {
+/* ── Helpers ──────────────────────────────────────────────────────── */
+function lerpHex(a: string, b: string, t: number): string {
+  const h = (s: string) => [
+    parseInt(s.slice(1,3),16),
+    parseInt(s.slice(3,5),16),
+    parseInt(s.slice(5,7),16),
+  ];
+  const [ar,ag,ab] = h(a), [br,bg,bb] = h(b);
+  const r = Math.round(ar + (br-ar)*t);
+  const g = Math.round(ag + (bg-ag)*t);
+  const bv = Math.round(ab + (bb-ab)*t);
+  return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${bv.toString(16).padStart(2,'0')}`;
+}
+
+// Sky palette keyed by day fraction (0=midnight, 0.25=dawn, 0.5=noon, 0.75=dusk, 1=midnight)
+const SKY_KEYS = [
+  { t:0.00, zenith:"#05060f", horiz:"#0a0c22" },
+  { t:0.18, zenith:"#0a0c22", horiz:"#15104a" },
+  { t:0.25, zenith:"#1c1460", horiz:"#c83820" }, // sunrise
+  { t:0.30, zenith:"#1e3a7a", horiz:"#e06a18" },
+  { t:0.40, zenith:"#1a55a8", horiz:"#5ba8e0" }, // mid-morning
+  { t:0.50, zenith:"#0e3d8a", horiz:"#4a90d4" }, // noon
+  { t:0.60, zenith:"#1a4a90", horiz:"#60a0d8" },
+  { t:0.70, zenith:"#1e2a70", horiz:"#d07030" }, // late afternoon
+  { t:0.75, zenith:"#1a1260", horiz:"#c83820" }, // sunset
+  { t:0.82, zenith:"#0d0c30", horiz:"#3a1860" },
+  { t:1.00, zenith:"#05060f", horiz:"#0a0c22" },
+];
+
+function sampleSky(t: number): { zenith: string; horiz: string } {
+  const keys = SKY_KEYS;
+  for (let i = 0; i < keys.length - 1; i++) {
+    if (t >= keys[i].t && t <= keys[i+1].t) {
+      const alpha = (t - keys[i].t) / (keys[i+1].t - keys[i].t);
+      return {
+        zenith: lerpHex(keys[i].zenith, keys[i+1].zenith, alpha),
+        horiz:  lerpHex(keys[i].horiz,  keys[i+1].horiz,  alpha),
+      };
+    }
+  }
+  return keys[keys.length-1];
+}
+
+/* ── Day/night cycle ──────────────────────────────────────────────── */
+// Full day = 120 real seconds. Start at dawn (t=0.22).
+const DAY_DURATION = 120;
+const DAY_START    = 0.22;
+
+function DayNightCycle() {
   const { scene } = useThree();
+
+  // Canvas texture for sky gradient
+  const skyCanvas = useRef<HTMLCanvasElement>(document.createElement("canvas"));
+  const skyTex    = useRef<THREE.CanvasTexture | null>(null);
+  const dayTime   = useRef(DAY_START);
+
+  // Light refs
+  const sunLight  = useRef<THREE.DirectionalLight>(null);
+  const ambLight  = useRef<THREE.AmbientLight>(null);
+  const hemiLight = useRef<THREE.HemisphereLight>(null);
+  const fogRef    = useRef<THREE.Fog | null>(null);
+
+  // Sun / moon mesh refs
+  const sunMesh  = useRef<THREE.Mesh>(null);
+  const moonMesh = useRef<THREE.Mesh>(null);
+  const sunGlow  = useRef<THREE.PointLight>(null);
+
   useEffect(() => {
-    const canvas = document.createElement("canvas");
-    canvas.width = 4; canvas.height = 512;
-    const ctx = canvas.getContext("2d")!;
-    const g = ctx.createLinearGradient(0, 0, 0, 512);
-    g.addColorStop(0.00, "#080a1c");
-    g.addColorStop(0.15, "#150d40");
-    g.addColorStop(0.32, "#6b1f7a");
-    g.addColorStop(0.50, "#b83240");
-    g.addColorStop(0.64, "#e05a18");
-    g.addColorStop(0.78, "#f59020");
-    g.addColorStop(0.90, "#fdd06a");
-    g.addColorStop(1.00, "#ffe8a0");
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, 4, 512);
-    const tex = new THREE.CanvasTexture(canvas);
+    const c = skyCanvas.current;
+    c.width = 4; c.height = 512;
+    const tex = new THREE.CanvasTexture(c);
     tex.mapping = THREE.EquirectangularReflectionMapping;
+    skyTex.current = tex;
     scene.background = tex;
-    return () => { tex.dispose(); scene.background = null; };
+    scene.fog = new THREE.Fog("#b84820", 40, 150);
+    fogRef.current = scene.fog as THREE.Fog;
+    return () => { tex.dispose(); scene.background = null; scene.fog = null; };
   }, [scene]);
-  return null;
+
+  useFrame((_, delta) => {
+    dayTime.current = (dayTime.current + delta / DAY_DURATION) % 1;
+    const t = dayTime.current;
+
+    // Sun angle: rises at t=0.25, sets at t=0.75
+    const sunAngle = (t - 0.25) * Math.PI * 2;
+    const sunX = Math.cos(sunAngle) * 85;
+    const sunY = Math.sin(sunAngle) * 70;
+    const sunZ = -15;
+    const sunElev = Math.max(0, sunY / 70); // 0 at horizon, 1 at zenith
+
+    // Moon is opposite
+    const moonX = -sunX * 0.9;
+    const moonY = -sunY * 0.9;
+    const moonVisible = moonY > -5;
+
+    // Update sun/moon meshes
+    if (sunMesh.current) {
+      sunMesh.current.position.set(sunX, sunY, sunZ);
+      const sunScale = sunElev > 0 ? THREE.MathUtils.lerp(1.2, 0.85, sunElev) : 0.001;
+      sunMesh.current.scale.setScalar(sunScale);
+      const sunMat = sunMesh.current.material as THREE.MeshBasicMaterial;
+      const sunColor = sunElev < 0.15
+        ? lerpHex("#ff5500", "#ffd060", sunElev / 0.15)
+        : "#fffce0";
+      sunMat.color.set(sunColor);
+    }
+    if (sunGlow.current) {
+      sunGlow.current.position.set(sunX, sunY, sunZ);
+      sunGlow.current.intensity = sunElev > 0 ? sunElev * 1.6 : 0;
+      sunGlow.current.color.set(sunElev < 0.2 ? "#ff7020" : "#fff8e0");
+    }
+    if (moonMesh.current) {
+      moonMesh.current.position.set(moonX, moonY, sunZ);
+      moonMesh.current.visible = moonVisible;
+      moonMesh.current.scale.setScalar(moonVisible ? 0.72 : 0.001);
+    }
+
+    // Dynamic sky texture
+    if (skyTex.current) {
+      const { zenith, horiz } = sampleSky(t);
+      const ctx = skyCanvas.current.getContext("2d")!;
+      const g = ctx.createLinearGradient(0, 0, 0, 512);
+      g.addColorStop(0,    zenith);
+      g.addColorStop(0.55, lerpHex(zenith, horiz, 0.6));
+      g.addColorStop(1,    horiz);
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, 4, 512);
+      skyTex.current.needsUpdate = true;
+    }
+
+    // Sun directional light — follows sun position
+    if (sunLight.current) {
+      sunLight.current.position.set(sunX, sunY, sunZ);
+      sunLight.current.intensity = sunElev > 0
+        ? THREE.MathUtils.lerp(0, 2.2, Math.min(sunElev * 2, 1))
+        : 0;
+      const warmth = sunElev < 0.25 ? lerpHex("#ff6a10", "#ffcc80", sunElev / 0.25) : "#fff5cc";
+      sunLight.current.color.set(warmth);
+    }
+
+    // Ambient — dim at night, bright at day, warm at dawn/dusk
+    if (ambLight.current) {
+      const isDay = sunElev > 0;
+      ambLight.current.intensity = isDay
+        ? THREE.MathUtils.lerp(0.12, 0.75, Math.min(sunElev * 2, 1))
+        : 0.08;
+      const ambColor = isDay
+        ? (sunElev < 0.2 ? lerpHex("#803010", "#ffddaa", sunElev / 0.2) : "#ffe8cc")
+        : "#1a2040";
+      ambLight.current.color.set(ambColor);
+    }
+
+    // Hemisphere light — sky/ground colors shift with time
+    if (hemiLight.current) {
+      const skyC = sunElev > 0 ? lerpHex("#2244aa", "#88aaff", sunElev) : "#060810";
+      hemiLight.current.color.set(skyC);
+      hemiLight.current.intensity = sunElev > 0
+        ? THREE.MathUtils.lerp(0.1, 0.6, sunElev)
+        : 0.06;
+    }
+
+    // Fog color tracks horizon
+    if (fogRef.current) {
+      const { horiz } = sampleSky(t);
+      fogRef.current.color.set(horiz);
+      fogRef.current.near = 35;
+      fogRef.current.far  = 140;
+    }
+  });
+
+  return (
+    <>
+      <ambientLight ref={ambLight} intensity={0.4} />
+      <directionalLight
+        ref={sunLight}
+        position={[30, 40, -15]}
+        intensity={1.8}
+        castShadow
+        shadow-mapSize={[2048, 2048]}
+        shadow-camera-far={80}
+        shadow-camera-left={-30} shadow-camera-right={30}
+        shadow-camera-top={30}  shadow-camera-bottom={-30}
+      />
+      <hemisphereLight ref={hemiLight} args={["#88aaff", "#2a4818", 0.5]} />
+
+      {/* Sun disc */}
+      <mesh ref={sunMesh} position={[30, 40, -15]}>
+        <sphereGeometry args={[3.2, 16, 12]} />
+        <meshBasicMaterial color="#fffce0" />
+      </mesh>
+      {/* Sun corona glow */}
+      <pointLight ref={sunGlow} position={[30, 40, -15]} intensity={1.2} color="#fff5d0" distance={220} decay={1.5} />
+
+      {/* Moon disc */}
+      <mesh ref={moonMesh} position={[-30, -40, -15]}>
+        <sphereGeometry args={[2.4, 16, 12]} />
+        <meshBasicMaterial color="#dde8f8" />
+      </mesh>
+    </>
+  );
 }
 
 /* ── Player controller ────────────────────────────────────────────── */
@@ -146,23 +322,8 @@ function GameScene({ onNearNpc }: { onNearNpc: (id: string | null) => void }) {
 
   return (
     <>
-      <GradientSky />
+      <DayNightCycle />
       <Stars radius={90} depth={50} count={1400} factor={3} fade />
-      <fog attach="fog" args={["#b84820", 40, 150]} />
-
-      <ambientLight intensity={0.65} color="#ffcc88" />
-      <directionalLight
-        position={[18, 24, 10]}
-        intensity={2.0}
-        color="#ffaa60"
-        castShadow
-        shadow-mapSize={[2048, 2048]}
-        shadow-camera-far={80}
-        shadow-camera-left={-30} shadow-camera-right={30}
-        shadow-camera-top={30}  shadow-camera-bottom={-30}
-      />
-      <hemisphereLight args={["#ff8844", "#2d5020", 0.55]} />
-      <directionalLight position={[-12, 6, -18]} intensity={0.35} color="#7755bb" />
 
       <World nearbyNpcId={nearNpc} />
       <Dog ref={dogRef} moving={moving} running={running} />
