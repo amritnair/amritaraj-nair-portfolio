@@ -2,7 +2,6 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Stars } from "@react-three/drei";
 import { Physics, RigidBody, CapsuleCollider, type RapierRigidBody, useRapier } from "@react-three/rapier";
-import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
 // @ts-ignore — low-level default export accepts an optional URL
 import initRapierWasm from "@dimforge/rapier3d-compat/rapier_wasm3d";
 
@@ -16,6 +15,7 @@ import { Dog, DogHandle } from "./Dog";
 import { World } from "./World";
 import { NPC_DOGS, type NpcConfig, type QA } from "./npcData";
 import { useControls } from "./useControls";
+import { GROUND_Y } from "./zeldaStyle";
 
 /* ═══════════════════════════════════════════════════════════════════
    SKY / DAY-NIGHT CYCLE
@@ -256,10 +256,13 @@ function PhysicsKobe({
     // Dog faces movement direction
     if (isMoving) {
       const targetYaw = Math.atan2(velXZ.current.x, velXZ.current.y);
-      dogYaw.current = damp(dogYaw.current, targetYaw, 12);
+      dogYaw.current = damp(dogYaw.current, targetYaw, 14);
     }
     const dog = dogRef.current?.group;
-    if (dog) { dog.position.copy(worldPos); dog.rotation.y = dogYaw.current; }
+    if (dog) {
+      dog.position.set(worldPos.x, worldPos.y, worldPos.z);
+      dog.rotation.set(0, dogYaw.current + Math.PI, 0);
+    }
 
     // Smooth spring camera follow
     camShake.current = damp(camShake.current, isRunning ? 0.012 : 0, 5);
@@ -287,8 +290,8 @@ function PhysicsKobe({
   });
 
   return (
-    <RigidBody ref={bodyRef} type="kinematicPosition" position={[0, 1, 5]} colliders={false}>
-      <CapsuleCollider args={[0.32, 0.42]} position={[0, 0.74, 0]} />
+    <RigidBody ref={bodyRef} type="kinematicPosition" position={[0, GROUND_Y, 5]} colliders={false}>
+      <CapsuleCollider args={[0.3, 0.4]} position={[0, 0, 0]} />
     </RigidBody>
   );
 }
@@ -316,17 +319,11 @@ function GameScene({
       <DayNightCycle />
       <Stars radius={90} depth={50} count={1400} factor={3} fade />
 
-      <Physics gravity={[0, -20, 0]}>
+      <Physics gravity={[0, -20, 0]} timeStep="vary">
         <World nearbyNpcId={nearNpc} onBoneFound={onBoneFound} />
         <Dog ref={dogRef} moving={moving} running={running} />
         <PhysicsKobe dogRef={dogRef} onNearNpc={handleNear} onMovingChange={handleMoving} />
       </Physics>
-
-      {/* Bloom postprocessing */}
-      <EffectComposer>
-        <Bloom luminanceThreshold={0.85} luminanceSmoothing={0.9} intensity={0.35} radius={0.4} />
-        <Vignette offset={0.4} darkness={0.25} />
-      </EffectComposer>
     </>
   );
 }

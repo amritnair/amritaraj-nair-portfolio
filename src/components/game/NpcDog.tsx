@@ -4,7 +4,7 @@ import { Dog } from "./Dog";
 import type { DogHandle } from "./Dog";
 import type { NpcConfig } from "./npcData";
 import { Signpost } from "./World";
-import { Stylized } from "./zeldaStyle";
+import { Stylized, GROUND_Y } from "./zeldaStyle";
 
 interface NpcDogProps {
   npc: NpcConfig;
@@ -17,7 +17,7 @@ export default function NpcDog({ npc, isNear }: NpcDogProps) {
   const signZ = npc.position[2] + Math.cos(npc.facingYaw) * 1.8;
 
   return (
-    <group position={npc.position}>
+    <group position={[npc.position[0], GROUND_Y, npc.position[2]]}>
       <Dog
         ref={dogRef}
         moving={false}
@@ -65,7 +65,7 @@ export default function NpcDog({ npc, isNear }: NpcDogProps) {
         color={isNear ? npc.accentColor : "#fff8e8"}
         anchorX="center"
         anchorY="middle"
-       
+        outlineWidth={0.012}
         outlineColor="#1a2818"
       >
         {npc.name}
@@ -76,7 +76,7 @@ export default function NpcDog({ npc, isNear }: NpcDogProps) {
         color="#d8e8c8"
         anchorX="center"
         anchorY="middle"
-       
+        outlineWidth={0.008}
         outlineColor="#1a2818"
       >
         {npc.breed}
@@ -89,7 +89,7 @@ export default function NpcDog({ npc, isNear }: NpcDogProps) {
           color="#ffe880"
           anchorX="center"
           anchorY="middle"
-         
+          outlineWidth={0.01}
           outlineColor="#1a2818"
         >
           ▼ Press E
