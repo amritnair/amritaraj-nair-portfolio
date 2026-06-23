@@ -3,6 +3,8 @@ import { Text } from "@react-three/drei";
 import { Dog } from "./Dog";
 import type { DogHandle } from "./Dog";
 import type { NpcConfig } from "./npcData";
+import { Signpost } from "./World";
+import { Stylized } from "./zeldaStyle";
 
 interface NpcDogProps {
   npc: NpcConfig;
@@ -11,10 +13,11 @@ interface NpcDogProps {
 
 export default function NpcDog({ npc, isNear }: NpcDogProps) {
   const dogRef = useRef<DogHandle>(null);
+  const signX = npc.position[0] + Math.sin(npc.facingYaw) * 1.8;
+  const signZ = npc.position[2] + Math.cos(npc.facingYaw) * 1.8;
 
   return (
     <group position={npc.position}>
-      {/* The dog mesh */}
       <Dog
         ref={dogRef}
         moving={false}
@@ -27,71 +30,69 @@ export default function NpcDog({ npc, isNear }: NpcDogProps) {
         facingYaw={npc.facingYaw}
       />
 
-      {/* Dalmatian spots overlay — only for Pixel */}
       {npc.id === "contact" && (
         <>
           {[
-            [0.1, 0.55, 0.18], [-0.12, 0.50, 0.22], [0.08, 0.42, -0.05],
-            [-0.05, 0.60, 0.08], [0.18, 0.44, 0.0], [-0.18, 0.38, -0.1],
+            [0.1, 0.58, 0.18], [-0.12, 0.52, 0.22], [0.08, 0.44, -0.05],
+            [-0.05, 0.64, 0.08], [0.18, 0.46, 0.0], [-0.18, 0.4, -0.1],
           ].map(([x, y, z], i) => (
-            <mesh key={i} position={[x, y, z]} scale={0.06 + (i % 3) * 0.02}>
-              <sphereGeometry args={[1, 8, 6]} />
-              <meshStandardMaterial color="#111" roughness={0.9} />
-            </mesh>
+            <group key={i} position={[x, y, z]} scale={0.06 + (i % 3) * 0.02}>
+              <Stylized color="#1a1410">
+                <sphereGeometry args={[1, 6, 6]} />
+              </Stylized>
+            </group>
           ))}
         </>
       )}
 
-      {/* Husky eye markings — only for Luna */}
       {npc.id === "resume" && (
         <>
-          <mesh position={[0.09, 0.84, 0.50]} scale={[0.07, 0.07, 0.03]}>
-            <sphereGeometry args={[1, 8, 6]} />
-            <meshStandardMaterial color="#8a7a6a" roughness={0.9} />
-          </mesh>
-          <mesh position={[-0.09, 0.84, 0.50]} scale={[0.07, 0.07, 0.03]}>
-            <sphereGeometry args={[1, 8, 6]} />
-            <meshStandardMaterial color="#8a7a6a" roughness={0.9} />
-          </mesh>
+          {([0.09, -0.09] as const).map((sx, i) => (
+            <group key={i} position={[sx, 0.88, 0.52]} scale={[0.07, 0.07, 0.03]}>
+              <Stylized color="#8a7a6a">
+                <sphereGeometry args={[1, 6, 6]} />
+              </Stylized>
+            </group>
+          ))}
         </>
       )}
 
-      {/* Name tag — floats above */}
+      <Signpost x={signX - npc.position[0]} z={signZ - npc.position[2]} color={npc.accentColor} label={npc.name} />
+
       <Text
-        position={[0, 1.65, 0]}
-        fontSize={0.18}
-        color={isNear ? npc.accentColor : "rgba(255,255,255,0.75)"}
+        position={[0, 1.75, 0]}
+        fontSize={0.2}
+        color={isNear ? npc.accentColor : "#fff8e8"}
         anchorX="center"
         anchorY="middle"
-        outlineWidth={0.012}
-        outlineColor="#000"
+       
+        outlineColor="#1a2818"
       >
         {npc.name}
       </Text>
       <Text
-        position={[0, 1.42, 0]}
-        fontSize={0.11}
-        color="rgba(200,200,200,0.7)"
+        position={[0, 1.5, 0]}
+        fontSize={0.12}
+        color="#d8e8c8"
         anchorX="center"
         anchorY="middle"
-        outlineWidth={0.008}
-        outlineColor="#000"
+       
+        outlineColor="#1a2818"
       >
         {npc.breed}
       </Text>
 
-      {/* Prompt when near */}
       {isNear && (
         <Text
-          position={[0, 1.9, 0]}
-          fontSize={0.15}
-          color={npc.accentColor}
+          position={[0, 2.05, 0]}
+          fontSize={0.16}
+          color="#ffe880"
           anchorX="center"
           anchorY="middle"
-          outlineWidth={0.01}
-          outlineColor="#000"
+         
+          outlineColor="#1a2818"
         >
-          Press E to talk
+          ▼ Press E
         </Text>
       )}
     </group>

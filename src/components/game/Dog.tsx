@@ -1,6 +1,7 @@
 import { useRef, forwardRef, useImperativeHandle } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import { Stylized, damp } from "./zeldaStyle";
 
 export interface DogHandle {
   group: THREE.Group | null;
@@ -9,17 +10,11 @@ export interface DogHandle {
 interface DogProps {
   moving: boolean;
   running: boolean;
-  /** Base fur color */
   furColor?: string;
-  /** Inner/belly/paw color */
   innerColor?: string;
-  /** Ear type */
   earStyle?: "floppy" | "pointy";
-  /** Body scale multiplier */
   bodyScale?: number;
-  /** Make it an NPC — shows idle animations instead of player-driven ones */
   npc?: boolean;
-  /** Override base Y rotation (radians). NPC dogs use this to face a direction. */
   facingYaw?: number;
 }
 
@@ -37,286 +32,290 @@ export const Dog = forwardRef<DogHandle, DogProps>(({
   const headGroup  = useRef<THREE.Group>(null);
   const earL       = useRef<THREE.Group>(null);
   const earR       = useRef<THREE.Group>(null);
-  // Each leg: Group so pivot is from shoulder/hip
   const fl = useRef<THREE.Group>(null);
   const fr = useRef<THREE.Group>(null);
   const bl = useRef<THREE.Group>(null);
   const br = useRef<THREE.Group>(null);
   const tailGroup  = useRef<THREE.Group>(null);
 
-  // Springs for secondary motion
-  const earLRot  = useRef(0);
-  const earRRot  = useRef(0);
-  const tailCurl = useRef(0.5);
-
+  const legPhase   = useRef({ fl: 0, fr: 0, bl: 0, br: 0 });
+  const legLift    = useRef({ fl: 0, fr: 0, bl: 0, br: 0 });
+  const earLRot    = useRef(0);
+  const earRRot    = useRef(0);
+  const tailCurl   = useRef(0.5);
+  const bodyBob    = useRef(0);
+  const bodyLean   = useRef(0);
+  const headYaw    = useRef(0);
+  const headPitch  = useRef(0);
   useImperativeHandle(ref, () => ({ get group() { return groupRef.current; } }));
 
   useFrame(({ clock }, delta) => {
     const t = clock.elapsedTime;
-    const freq = running ? 10 : 5.8;
+    const freq = running ? 9.5 : 5.5;
+    const dt = Math.min(delta, 0.05);
 
     if (npc) {
-      // Idle: slight sway, constant tail wag, random head look
       if (bodyGroup.current) {
-        bodyGroup.current.position.y = Math.sin(t * 1.6) * 0.014;
-        bodyGroup.current.rotation.z = Math.sin(t * 0.8) * 0.02;
+        bodyGroup.current.position.y = damp(bodyGroup.current.position.y, Math.sin(t * 1.4) * 0.018, 4, dt);
+        bodyGroup.current.rotation.z = damp(bodyGroup.current.rotation.z, Math.sin(t * 0.7) * 0.025, 3, dt);
       }
       if (tailGroup.current) {
-        tailGroup.current.rotation.z = 0.5 + Math.sin(t * 6) * 0.5;
+        const target = 0.5 + Math.sin(t * 5) * 0.45;
+        tailGroup.current.rotation.z = damp(tailGroup.current.rotation.z, target, 6, dt);
       }
       if (headGroup.current) {
-        headGroup.current.rotation.y = Math.sin(t * 0.5) * 0.3;
-        headGroup.current.rotation.x = Math.sin(t * 0.7) * 0.05;
+        headGroup.current.rotation.y = damp(headGroup.current.rotation.y, Math.sin(t * 0.45) * 0.35, 2.5, dt);
+        headGroup.current.rotation.x = damp(headGroup.current.rotation.x, Math.sin(t * 0.6) * 0.06, 3, dt);
       }
       return;
     }
 
-    // ── 4-beat walk cycle: each leg offset by 0.25 * 2π ──
-    // Walk order: FL → BR → FR → BL (classic dog walk)
-    const phFL = Math.sin(t * freq + 0);
-    const phBR = Math.sin(t * freq + Math.PI * 0.5);
-    const phFR = Math.sin(t * freq + Math.PI);
-    const phBL = Math.sin(t * freq + Math.PI * 1.5);
+    const lift = moving ? (running ? 0.14 : 0.08) : 0;
+    const swing = moving ? (running ? 0.75 : 0.55) : 0;
 
-    // Paw lift: only during forward swing (positive phase)
-    const lift = moving ? (running ? 0.12 : 0.07) : 0;
-    const swing = moving ? (running ? 0.7 : 0.52) : 0;
+    const phases = {
+      fl: Math.sin(t * freq),
+      br: Math.sin(t * freq + Math.PI * 0.5),
+      fr: Math.sin(t * freq + Math.PI),
+      bl: Math.sin(t * freq + Math.PI * 1.5),
+    };
 
-    if (fl.current) {
-      fl.current.rotation.x = phFL * swing;
-      fl.current.position.y = Math.max(0, phFL) * lift;
-    }
-    if (br.current) {
-      br.current.rotation.x = phBR * swing;
-      br.current.position.y = Math.max(0, phBR) * lift;
-    }
-    if (fr.current) {
-      fr.current.rotation.x = phFR * swing;
-      fr.current.position.y = Math.max(0, phFR) * lift;
-    }
-    if (bl.current) {
-      bl.current.rotation.x = phBL * swing;
-      bl.current.position.y = Math.max(0, phBL) * lift;
-    }
+    const legs = { fl, fr, bl, br } as const;
+    (Object.keys(legs) as (keyof typeof legs)[]).forEach(key => {
+      const leg = legs[key];
+      const ph = phases[key];
+      const targetRot = ph * swing;
+      const targetLift = Math.max(0, ph) * lift;
+      legPhase.current[key] = damp(legPhase.current[key], targetRot, 14, dt);
+      legLift.current[key] = damp(legLift.current[key], targetLift, 16, dt);
+      if (leg.current) {
+        leg.current.rotation.x = legPhase.current[key];
+        leg.current.position.y = legLift.current[key];
+      }
+    });
 
-    // Body: bounce on double-support, counter-twist shoulders vs hips, lean into run
     if (bodyGroup.current) {
       if (moving) {
-        const bounce = (Math.cos(t * freq * 2) * 0.5 + 0.5) * (running ? 0.07 : 0.045);
-        bodyGroup.current.position.y = bounce;
-        // Counter-twist: shoulders swing against hips
-        bodyGroup.current.rotation.y = Math.sin(t * freq) * 0.06;
-        // Side sway (weight shift)
-        bodyGroup.current.rotation.z = Math.sin(t * freq) * 0.04;
-        // Forward lean when running
-        bodyGroup.current.rotation.x = running ? -0.08 : THREE.MathUtils.lerp(bodyGroup.current.rotation.x, 0, delta * 4);
+        const bounceTarget = (Math.cos(t * freq * 2) * 0.5 + 0.5) * (running ? 0.08 : 0.05);
+        bodyBob.current = damp(bodyBob.current, bounceTarget, 10, dt);
+        bodyGroup.current.position.y = bodyBob.current;
+        bodyGroup.current.rotation.y = damp(bodyGroup.current.rotation.y, Math.sin(t * freq) * 0.05, 8, dt);
+        bodyGroup.current.rotation.z = damp(bodyGroup.current.rotation.z, Math.sin(t * freq) * 0.035, 8, dt);
+        const leanTarget = running ? -0.1 : 0;
+        bodyLean.current = damp(bodyLean.current, leanTarget, 6, dt);
+        bodyGroup.current.rotation.x = bodyLean.current;
       } else {
-        // Breathing
-        bodyGroup.current.position.y = THREE.MathUtils.lerp(bodyGroup.current.position.y, Math.sin(t * 1.7) * 0.012, delta * 3);
-        bodyGroup.current.rotation.y = THREE.MathUtils.lerp(bodyGroup.current.rotation.y, 0, delta * 4);
-        bodyGroup.current.rotation.z = THREE.MathUtils.lerp(bodyGroup.current.rotation.z, 0, delta * 4);
-        bodyGroup.current.rotation.x = THREE.MathUtils.lerp(bodyGroup.current.rotation.x, 0, delta * 4);
+        bodyBob.current = damp(bodyBob.current, Math.sin(t * 1.5) * 0.015, 3, dt);
+        bodyGroup.current.position.y = bodyBob.current;
+        bodyGroup.current.rotation.y = damp(bodyGroup.current.rotation.y, 0, 5, dt);
+        bodyGroup.current.rotation.z = damp(bodyGroup.current.rotation.z, 0, 5, dt);
+        bodyLean.current = damp(bodyLean.current, 0, 5, dt);
+        bodyGroup.current.rotation.x = bodyLean.current;
       }
     }
 
-    // Head: bobs with stride, idle look-around
     if (headGroup.current) {
       if (moving) {
-        headGroup.current.rotation.x = THREE.MathUtils.lerp(headGroup.current.rotation.x, Math.sin(t * freq * 0.5) * 0.07, delta * 8);
-        headGroup.current.rotation.y = THREE.MathUtils.lerp(headGroup.current.rotation.y, 0, delta * 5);
+        headPitch.current = damp(headPitch.current, Math.sin(t * freq * 0.5) * 0.08, 8, dt);
+        headYaw.current = damp(headYaw.current, 0, 6, dt);
       } else {
-        headGroup.current.rotation.y = THREE.MathUtils.lerp(headGroup.current.rotation.y, Math.sin(t * 0.55) * 0.28, delta * 2);
-        headGroup.current.rotation.x = THREE.MathUtils.lerp(headGroup.current.rotation.x, Math.sin(t * 0.9) * 0.05, delta * 2);
+        headYaw.current = damp(headYaw.current, Math.sin(t * 0.5) * 0.3, 2, dt);
+        headPitch.current = damp(headPitch.current, Math.sin(t * 0.8) * 0.05, 2.5, dt);
       }
+      headGroup.current.rotation.y = headYaw.current;
+      headGroup.current.rotation.x = headPitch.current;
     }
 
-    // Ear secondary motion — spring lags behind head
-    const headYaw = headGroup.current?.rotation.y ?? 0;
-    earLRot.current = THREE.MathUtils.lerp(earLRot.current, headYaw * 0.4 + (running ? Math.sin(t * freq) * 0.18 : 0), delta * 6);
-    earRRot.current = THREE.MathUtils.lerp(earRRot.current, headYaw * 0.4 - (running ? Math.sin(t * freq) * 0.18 : 0), delta * 6);
-    if (earL.current) earL.current.rotation.z = 0.52 + earLRot.current;
-    if (earR.current) earR.current.rotation.z = -0.52 - earRRot.current;
+    const hYaw = headGroup.current?.rotation.y ?? 0;
+    earLRot.current = damp(earLRot.current, hYaw * 0.35 + (running ? Math.sin(t * freq) * 0.15 : 0), 7, dt);
+    earRRot.current = damp(earRRot.current, hYaw * 0.35 - (running ? Math.sin(t * freq) * 0.15 : 0), 7, dt);
+    if (earL.current) earL.current.rotation.z = 0.55 + earLRot.current;
+    if (earR.current) earR.current.rotation.z = -0.55 - earRRot.current;
 
-    // Tail: spring wag, energetic when moving
-    const targetCurl = moving ? (running ? 0.9 + Math.sin(t * 14) * 0.55 : 0.6 + Math.sin(t * 9) * 0.45) : 0.4 + Math.sin(t * 3.5) * 0.28;
-    tailCurl.current = THREE.MathUtils.lerp(tailCurl.current, targetCurl, delta * 8);
+    const targetCurl = moving
+      ? (running ? 0.85 + Math.sin(t * 12) * 0.5 : 0.55 + Math.sin(t * 8) * 0.4)
+      : 0.35 + Math.sin(t * 3) * 0.25;
+    tailCurl.current = damp(tailCurl.current, targetCurl, 7, dt);
     if (tailGroup.current) {
       tailGroup.current.rotation.z = tailCurl.current;
-      tailGroup.current.rotation.y = Math.sin(t * (moving ? 9 : 3)) * 0.22;
+      tailGroup.current.rotation.y = damp(
+        tailGroup.current.rotation.y,
+        Math.sin(t * (moving ? 8 : 2.5)) * 0.25,
+        6, dt
+      );
     }
   });
 
-  const dark = "#111";
-  const pink = "#e07070";
+  const dark = "#1a1410";
+  const pink = "#e87878";
   const s = bodyScale;
 
+  const ToonEye = ({ side }: { side: 1 | -1 }) => (
+    <group position={[side * -0.095, 0.065, 0.19]}>
+      <Stylized color="#f8f4e8">
+        <sphereGeometry args={[0.038, 8, 8]} />
+      </Stylized>
+      <group position={[0, 0, 0.02]}>
+        <Stylized color="#3a2010">
+          <sphereGeometry args={[0.026, 8, 8]} />
+        </Stylized>
+      </group>
+      <group position={[side * -0.008, 0.012, 0.038]}>
+        <mesh>
+          <sphereGeometry args={[0.009, 6, 6]} />
+          <meshBasicMaterial color="white" />
+        </mesh>
+      </group>
+    </group>
+  );
+
   return (
-    // Root group: position/rotation controlled by player controller
-    // Rotated 180° so dog faces -Z (matching movement direction)
     <group ref={groupRef} rotation={[0, Math.PI + facingYaw, 0]}>
       <group ref={bodyGroup} scale={s}>
 
-        {/* ── Torso ── */}
-        <mesh position={[0, 0.40, 0]} scale={[1, 0.87, 1.25]} castShadow>
-          <sphereGeometry args={[0.28, 16, 12]} />
-          <meshStandardMaterial color={furColor} roughness={0.88} />
-        </mesh>
-        {/* rump */}
-        <mesh position={[0, 0.37, -0.24]} scale={[0.88, 0.80, 0.88]} castShadow>
-          <sphereGeometry args={[0.24, 12, 10]} />
-          <meshStandardMaterial color={furColor} roughness={0.88} />
-        </mesh>
-        {/* chest puff */}
-        <mesh position={[0, 0.44, 0.24]} scale={[0.82, 0.82, 0.68]}>
-          <sphereGeometry args={[0.22, 10, 8]} />
-          <meshStandardMaterial color={innerColor} roughness={0.92} />
-        </mesh>
+        {/* Torso — chunky Wind Waker proportions */}
+        <Stylized color={furColor} castShadow>
+          <sphereGeometry args={[0.3, 10, 8]} />
+        </Stylized>
+        <group position={[0, -0.02, -0.26]} scale={[0.9, 0.85, 0.9]}>
+          <Stylized color={furColor} castShadow>
+            <sphereGeometry args={[0.26, 8, 8]} />
+          </Stylized>
+        </group>
+        <group position={[0, 0.06, 0.26]} scale={[0.85, 0.8, 0.7]}>
+          <Stylized color={innerColor}>
+            <sphereGeometry args={[0.24, 8, 8]} />
+          </Stylized>
+        </group>
 
-        {/* ── Neck ── */}
-        <mesh position={[0, 0.60, 0.22]} rotation={[0.45, 0, 0]} castShadow>
-          <cylinderGeometry args={[0.10, 0.13, 0.24, 10]} />
-          <meshStandardMaterial color={furColor} roughness={0.9} />
-        </mesh>
+        {/* Neck */}
+        <group position={[0, 0.58, 0.24]} rotation={[0.5, 0, 0]}>
+          <Stylized color={furColor} castShadow>
+            <cylinderGeometry args={[0.11, 0.14, 0.22, 8]} />
+          </Stylized>
+        </group>
 
-        {/* ── Head ── */}
+        {/* Head — oversized for Zelda charm */}
         <group ref={headGroup} position={[0, 0.77, 0.35]}>
-          {/* skull */}
-          <mesh castShadow>
-            <sphereGeometry args={[0.195, 16, 12]} />
-            <meshStandardMaterial color={furColor} roughness={0.88} />
-          </mesh>
-          {/* brow puff */}
-          <mesh position={[0, 0.10, 0.07]}>
-            <sphereGeometry args={[0.114, 10, 8]} />
-            <meshStandardMaterial color={furColor} roughness={0.92} />
-          </mesh>
-          {/* cheek puffs */}
-          <mesh position={[ 0.13, -0.02, 0.09]} scale={[1, 0.9, 0.85]}>
-            <sphereGeometry args={[0.10, 10, 8]} />
-            <meshStandardMaterial color={furColor} roughness={0.9} />
-          </mesh>
-          <mesh position={[-0.13, -0.02, 0.09]} scale={[1, 0.9, 0.85]}>
-            <sphereGeometry args={[0.10, 10, 8]} />
-            <meshStandardMaterial color={furColor} roughness={0.9} />
-          </mesh>
-
-          {/* Snout */}
-          <mesh position={[0, -0.038, 0.177]} scale={[1, 0.82, 0.90]}>
-            <sphereGeometry args={[0.100, 12, 9]} />
-            <meshStandardMaterial color={innerColor} roughness={0.80} />
-          </mesh>
-          {/* Nose tip */}
-          <mesh position={[0, -0.004, 0.270]}>
-            <sphereGeometry args={[0.033, 10, 8]} />
-            <meshStandardMaterial color={dark} roughness={0.2} metalness={0.1} />
-          </mesh>
-          <mesh position={[0.012, 0.007, 0.298]}>
-            <sphereGeometry args={[0.008, 6, 6]} />
-            <meshStandardMaterial color="white" roughness={0.05} />
-          </mesh>
-
-          {/* Eyes */}
+          <Stylized color={furColor} castShadow>
+            <sphereGeometry args={[0.21, 10, 8]} />
+          </Stylized>
+          <group position={[0, 0.12, 0.06]}>
+            <Stylized color={furColor}>
+              <sphereGeometry args={[0.12, 8, 8]} />
+            </Stylized>
+          </group>
           {([-1, 1] as const).map(side => (
-            <group key={side} position={[side * -0.083, 0.055, 0.172]}>
-              {/* iris */}
-              <mesh>
-                <sphereGeometry args={[0.031, 12, 10]} />
-                <meshStandardMaterial color="#5c3210" roughness={0.2} />
-              </mesh>
-              {/* pupil */}
-              <mesh position={[0, 0, 0.016]}>
-                <sphereGeometry args={[0.020, 10, 8]} />
-                <meshStandardMaterial color={dark} roughness={0.1} />
-              </mesh>
-              {/* shine */}
-              <mesh position={[side * -0.010, 0.012, 0.028]}>
-                <sphereGeometry args={[0.008, 6, 6]} />
-                <meshStandardMaterial color="white" roughness={0.05} />
-              </mesh>
+            <group key={side} position={[side * -0.14, -0.02, 0.08]}>
+              <Stylized color={furColor}>
+                <sphereGeometry args={[0.1, 8, 8]} />
+              </Stylized>
             </group>
           ))}
 
+          {/* Snout */}
+          <group position={[0, -0.04, 0.2]} scale={[1, 0.85, 0.95]}>
+            <Stylized color={innerColor}>
+              <sphereGeometry args={[0.11, 8, 8]} />
+            </Stylized>
+          </group>
+          <group position={[0, 0, 0.3]}>
+            <Stylized color={dark}>
+              <sphereGeometry args={[0.036, 8, 8]} />
+            </Stylized>
+          </group>
+
+          <ToonEye side={1} />
+          <ToonEye side={-1} />
+
           {/* Tongue */}
-          <mesh position={[0, -0.092, 0.248]} rotation={[0.35, 0, 0]} scale={[1, 0.68, 0.55]}>
-            <sphereGeometry args={[0.048, 10, 7]} />
-            <meshStandardMaterial color={pink} roughness={0.55} />
-          </mesh>
+          <group position={[0, -0.1, 0.27]} rotation={[0.4, 0, 0]} scale={[1, 0.7, 0.6]}>
+            <Stylized color={pink}>
+              <sphereGeometry args={[0.05, 8, 6]} />
+            </Stylized>
+          </group>
 
           {/* Ears */}
           {earStyle === "floppy" ? (
             <>
-              <group ref={earL} position={[ 0.175, 0.09, -0.06]}>
-                <mesh rotation={[0.1, 0, 0]} scale={[0.68, 1.15, 0.58]} castShadow>
-                  <sphereGeometry args={[0.11, 10, 8]} />
-                  <meshStandardMaterial color={innerColor} roughness={0.88} />
-                </mesh>
+              <group ref={earL} position={[0.19, 0.1, -0.05]}>
+                <group rotation={[0.1, 0, 0]} scale={[0.7, 1.2, 0.6]}>
+                  <Stylized color={innerColor} castShadow>
+                    <sphereGeometry args={[0.12, 8, 8]} />
+                  </Stylized>
+                </group>
               </group>
-              <group ref={earR} position={[-0.175, 0.09, -0.06]}>
-                <mesh rotation={[0.1, 0, 0]} scale={[0.68, 1.15, 0.58]} castShadow>
-                  <sphereGeometry args={[0.11, 10, 8]} />
-                  <meshStandardMaterial color={innerColor} roughness={0.88} />
-                </mesh>
+              <group ref={earR} position={[-0.19, 0.1, -0.05]}>
+                <group rotation={[0.1, 0, 0]} scale={[0.7, 1.2, 0.6]}>
+                  <Stylized color={innerColor} castShadow>
+                    <sphereGeometry args={[0.12, 8, 8]} />
+                  </Stylized>
+                </group>
               </group>
             </>
           ) : (
             <>
-              <group ref={earL} position={[ 0.145, 0.18, -0.05]}>
-                <mesh rotation={[0, 0, 0.2]} castShadow>
-                  <coneGeometry args={[0.075, 0.22, 8]} />
-                  <meshStandardMaterial color={furColor} roughness={0.88} />
-                </mesh>
+              <group ref={earL} position={[0.15, 0.2, -0.04]}>
+                <group rotation={[0, 0, 0.25]}>
+                  <Stylized color={furColor} castShadow>
+                    <coneGeometry args={[0.08, 0.24, 6]} />
+                  </Stylized>
+                </group>
               </group>
-              <group ref={earR} position={[-0.145, 0.18, -0.05]}>
-                <mesh rotation={[0, 0, -0.2]} castShadow>
-                  <coneGeometry args={[0.075, 0.22, 8]} />
-                  <meshStandardMaterial color={furColor} roughness={0.88} />
-                </mesh>
+              <group ref={earR} position={[-0.15, 0.2, -0.04]}>
+                <group rotation={[0, 0, -0.25]}>
+                  <Stylized color={furColor} castShadow>
+                    <coneGeometry args={[0.08, 0.24, 6]} />
+                  </Stylized>
+                </group>
               </group>
             </>
           )}
         </group>
 
-        {/* ── Legs ── */}
+        {/* Legs — shorter, stubbier */}
         {[
-          { ref: fl, x:  0.155, z: 0.14, label: "fl" },
-          { ref: fr, x: -0.155, z: 0.14, label: "fr" },
-          { ref: bl, x:  0.145, z: -0.18, label: "bl" },
-          { ref: br, x: -0.145, z: -0.18, label: "br" },
+          { ref: fl, x:  0.16, z: 0.15 },
+          { ref: fr, x: -0.16, z: 0.15 },
+          { ref: bl, x:  0.15, z: -0.2 },
+          { ref: br, x: -0.15, z: -0.2 },
         ].map(({ ref: legRef, x, z }) => (
-          <group key={`${x}${z}`} ref={legRef} position={[x, 0.27, z]}>
-            <mesh position={[0, -0.17, 0]} castShadow>
-              <capsuleGeometry args={[0.052, 0.22, 6, 8]} />
-              <meshStandardMaterial color={furColor} roughness={0.9} />
-            </mesh>
-            {/* lower leg */}
-            <mesh position={[0, -0.31, 0.04]} rotation={[0.3, 0, 0]} castShadow>
-              <capsuleGeometry args={[0.042, 0.14, 6, 8]} />
-              <meshStandardMaterial color={furColor} roughness={0.9} />
-            </mesh>
-            {/* paw */}
-            <mesh position={[0, -0.40, 0.06]} scale={[1.1, 0.72, 1.2]}>
-              <sphereGeometry args={[0.062, 10, 8]} />
-              <meshStandardMaterial color={innerColor} roughness={0.68} />
-            </mesh>
+          <group key={`${x}${z}`} ref={legRef} position={[x, 0.24, z]}>
+            <group position={[0, -0.14, 0]} scale={[1, 0.85, 1]}>
+              <Stylized color={furColor} castShadow>
+                <capsuleGeometry args={[0.055, 0.2, 6, 8]} />
+              </Stylized>
+            </group>
+            <group position={[0, -0.28, 0.03]} rotation={[0.25, 0, 0]}>
+              <Stylized color={furColor} castShadow>
+                <capsuleGeometry args={[0.045, 0.12, 6, 8]} />
+              </Stylized>
+            </group>
+            <group position={[0, -0.36, 0.05]} scale={[1.15, 0.75, 1.25]}>
+              <Stylized color={innerColor}>
+                <sphereGeometry args={[0.065, 8, 8]} />
+              </Stylized>
+            </group>
           </group>
         ))}
 
-        {/* ── Tail ── */}
-        <group ref={tailGroup} position={[0, 0.46, -0.39]}>
-          <mesh rotation={[-0.42, 0, 0.4]} castShadow>
-            <capsuleGeometry args={[0.040, 0.21, 6, 8]} />
-            <meshStandardMaterial color={furColor} roughness={0.9} />
-          </mesh>
-          {/* curl segment */}
-          <mesh position={[0.07, 0.17, -0.07]} rotation={[-0.2, 0, 0.6]}>
-            <capsuleGeometry args={[0.032, 0.12, 6, 8]} />
-            <meshStandardMaterial color={furColor} roughness={0.9} />
-          </mesh>
-          {/* tip puff */}
-          <mesh position={[0.11, 0.27, -0.09]}>
-            <sphereGeometry args={[0.055, 10, 8]} />
-            <meshStandardMaterial color="white" roughness={0.92} />
-          </mesh>
+        {/* Tail */}
+        <group ref={tailGroup} position={[0, 0.48, -0.42]}>
+          <group rotation={[-0.45, 0, 0.45]}>
+            <Stylized color={furColor} castShadow>
+              <capsuleGeometry args={[0.042, 0.22, 6, 8]} />
+            </Stylized>
+          </group>
+          <group position={[0.08, 0.18, -0.08]} rotation={[-0.2, 0, 0.65]}>
+            <Stylized color={furColor}>
+              <capsuleGeometry args={[0.034, 0.14, 6, 8]} />
+            </Stylized>
+          </group>
+          <group position={[0.12, 0.3, -0.1]}>
+            <Stylized color="#fff8f0">
+              <sphereGeometry args={[0.06, 8, 8]} />
+            </Stylized>
+          </group>
         </group>
 
       </group>
