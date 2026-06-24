@@ -4,22 +4,22 @@ import * as THREE from "three";
 export const GROUND_Y = 0.74;
 
 export const Z = {
-  grass:      "#5cb848",
-  grassDark:  "#449838",
-  grassLight: "#70cc58",
-  dirt:       "#c8a870",
-  dirtDark:   "#a08050",
-  wood:       "#8a5830",
-  woodDark:   "#6a4020",
-  bark:       "#5c3a1e",
-  rock:       "#9a9488",
-  rockDark:   "#706860",
-  rockLight:  "#b0a898",
-  foliage1:   "#3a7830",
-  foliage2:   "#4a9038",
-  foliage3:   "#5aa848",
-  foliage4:   "#6ac050",
-  flower:     ["#e8c040", "#e06068", "#50b888", "#58a0c8", "#e0a0b8"] as const,
+  grass:      "#4a7c3f",
+  grassDark:  "#3a6632",
+  grassLight: "#5d9450",
+  dirt:       "#9a8060",
+  dirtDark:   "#7a6848",
+  wood:       "#6b4a30",
+  woodDark:   "#523820",
+  bark:       "#4a3828",
+  rock:       "#7a7570",
+  rockDark:   "#5a5550",
+  rockLight:  "#9a9590",
+  foliage1:   "#3d6b38",
+  foliage2:   "#4a7a42",
+  foliage3:   "#5a8a50",
+  foliage4:   "#6a9a5a",
+  flower:     ["#d4a830", "#c06060", "#48a070", "#5088a8", "#c890a0"] as const,
 };
 
 export function damp(current: number, target: number, lambda: number, delta: number) {
@@ -42,13 +42,12 @@ interface MeshProps {
   children: ReactNode;
 }
 
-/** Plain lit mesh — always renders outside physics bodies */
 export function M({
   color,
   emissive,
   emissiveIntensity = 0,
-  roughness = 0.78,
-  metalness = 0,
+  roughness = 0.88,
+  metalness = 0.02,
   transparent,
   opacity = 1,
   castShadow,
@@ -75,10 +74,10 @@ export function M({
         emissiveIntensity={emissiveIntensity}
         transparent={transparent}
         opacity={opacity}
+        envMapIntensity={0.35}
       />
     </mesh>
   );
 }
 
-/** @deprecated use M */
 export const Stylized = M;

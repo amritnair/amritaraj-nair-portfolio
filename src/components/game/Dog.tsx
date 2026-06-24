@@ -143,13 +143,13 @@ export const Dog = forwardRef<DogHandle, DogProps>(({
       <group ref={liftRef}>
         <group ref={swingRef}>
           <M color={furColor} castShadow position={[0, -0.14, 0]}>
-            <capsuleGeometry args={[0.05, 0.2, 6, 8]} />
+            <capsuleGeometry args={[0.05, 0.2, 8, 16]} />
           </M>
           <M color={furColor} castShadow position={[0, -0.3, 0.03]} rotation={[0.2, 0, 0]}>
-            <capsuleGeometry args={[0.04, 0.12, 6, 8]} />
+            <capsuleGeometry args={[0.04, 0.12, 8, 16]} />
           </M>
-          <M color={innerColor} position={[0, -0.38, 0.05]}>
-            <sphereGeometry args={[0.06, 8, 8]} />
+          <M color={innerColor} position={[0, -0.38, 0.05]} roughness={0.75}>
+            <sphereGeometry args={[0.06, 16, 16]} />
           </M>
         </group>
       </group>
@@ -160,7 +160,7 @@ export const Dog = forwardRef<DogHandle, DogProps>(({
     <group ref={groupRef} rotation={[0, Math.PI + facingYaw, 0]}>
       <group ref={bodyGroup} scale={bodyScale}>
         <M color={furColor} castShadow position={[0, 0.42, 0]} scale={[1, 0.88, 1.2]}>
-          <sphereGeometry args={[0.28, 12, 10]} />
+          <sphereGeometry args={[0.28, 24, 20]} />
         </M>
         <M color={furColor} castShadow position={[0, 0.38, -0.22]} scale={[0.88, 0.8, 0.88]}>
           <sphereGeometry args={[0.24, 10, 8]} />
@@ -175,7 +175,7 @@ export const Dog = forwardRef<DogHandle, DogProps>(({
 
         <group ref={headGroup} position={[0, 0.74, 0.32]}>
           <M color={furColor} castShadow>
-            <sphereGeometry args={[0.2, 12, 10]} />
+            <sphereGeometry args={[0.2, 24, 20]} />
           </M>
           <M color={innerColor} position={[0, -0.03, 0.17]}>
             <sphereGeometry args={[0.1, 10, 8]} />
@@ -201,13 +201,13 @@ export const Dog = forwardRef<DogHandle, DogProps>(({
           {earStyle === "floppy" ? (
             <>
               <group ref={earL} position={[0.17, 0.08, -0.05]}>
-                <M color={innerColor} castShadow scale={[0.68, 1.1, 0.58]}>
-                  <sphereGeometry args={[0.11, 8, 8]} />
+                <M color={innerColor} castShadow scale={[0.68, 1.1, 0.58]} roughness={0.9}>
+                  <sphereGeometry args={[0.11, 16, 14]} />
                 </M>
               </group>
               <group ref={earR} position={[-0.17, 0.08, -0.05]}>
-                <M color={innerColor} castShadow scale={[0.68, 1.1, 0.58]}>
-                  <sphereGeometry args={[0.11, 8, 8]} />
+                <M color={innerColor} castShadow scale={[0.68, 1.1, 0.58]} roughness={0.9}>
+                  <sphereGeometry args={[0.11, 16, 14]} />
                 </M>
               </group>
             </>
@@ -233,11 +233,11 @@ export const Dog = forwardRef<DogHandle, DogProps>(({
         <Leg x={-0.14} z={-0.18} swingRef={brSwing} liftRef={brLift} />
 
         <group ref={tailGroup} position={[0, 0.46, -0.38]}>
-          <M color={furColor} castShadow position={[0.04, 0.08, -0.04]} rotation={[-0.4, 0, 0.5]}>
-            <capsuleGeometry args={[0.038, 0.2, 6, 8]} />
+          <M color={furColor} castShadow position={[0.04, 0.08, -0.04]} rotation={[-0.4, 0, 0.5]} roughness={0.92}>
+            <capsuleGeometry args={[0.038, 0.2, 8, 16]} />
           </M>
-          <M color="#fff8f0" position={[0.1, 0.24, -0.08]}>
-            <sphereGeometry args={[0.055, 8, 8]} />
+          <M color="#fff8f0" position={[0.1, 0.24, -0.08]} roughness={0.88}>
+            <sphereGeometry args={[0.055, 16, 14]} />
           </M>
         </group>
       </group>

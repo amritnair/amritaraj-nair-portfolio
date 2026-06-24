@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Stars } from "@react-three/drei";
-import { Physics, RigidBody, CapsuleCollider, type RapierRigidBody, useRapier } from "@react-three/rapier";
+import { Physics, RigidBody, CapsuleCollider, type RapierRigidBody } from "@react-three/rapier";
 // @ts-ignore — low-level default export accepts an optional URL
 import initRapierWasm from "@dimforge/rapier3d-compat/rapier_wasm3d";
 
@@ -12,7 +12,7 @@ const rapierReady: Promise<unknown> = initRapierWasm(
 );
 import * as THREE from "three";
 import { Dog, DogHandle } from "./Dog";
-import { WorldEnvironment, WorldColliders } from "./World";
+import { WorldEnvironment, WorldColliders, resolveObstacles } from "./World";
 import { NPC_DOGS, type NpcConfig, type QA } from "./npcData";
 import { useControls } from "./useControls";
 import { GROUND_Y } from "./zeldaStyle";
@@ -176,37 +176,24 @@ function PhysicsKobe({
   onNearNpc: (id: string | null) => void;
   onMovingChange: (m: boolean, r: boolean) => void;
 }) {
-  const keys      = useControls();
+  const keys = useControls();
   const { camera } = useThree();
-  const { world } = useRapier();
 
-  const bodyRef     = useRef<RapierRigidBody>(null);
-  const controllerRef = useRef<ReturnType<typeof world.createCharacterController> | null>(null);
-
-  const dogYaw    = useRef(0);
+  const bodyRef = useRef<RapierRigidBody>(null);
+  const dogYaw    = useRef(Math.PI);
   const camYaw    = useRef(0);
-  const camPitch  = useRef(0.40);
-  const camPos    = useRef(new THREE.Vector3(0, 3, 9));
+  const camPitch  = useRef(0.35);
+  const camPos    = useRef(new THREE.Vector3(0, GROUND_Y + 2.8, 12));
   const camShake  = useRef(0);
   const prevNear  = useRef<string | null>(null);
   const velXZ     = useRef(new THREE.Vector2());
-
-  useEffect(() => {
-    const c = world.createCharacterController(0.02);
-    c.setUp({ x: 0, y: 1, z: 0 });
-    c.setMaxSlopeClimbAngle(0.8);
-    c.setMinSlopeSlideAngle(0.4);
-    c.enableAutostep(0.45, 0.2, true);
-    c.enableSnapToGround(0.5);
-    controllerRef.current = c;
-    return () => { if (controllerRef.current) world.removeCharacterController(controllerRef.current); };
-  }, [world]);
+  const ready     = useRef(false);
 
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
       if (!document.pointerLockElement) return;
-      camYaw.current  -= e.movementX * 0.0038;
-      camPitch.current = THREE.MathUtils.clamp(camPitch.current - e.movementY * 0.0028, 0.08, 0.82);
+      camYaw.current  -= e.movementX * 0.003;
+      camPitch.current = THREE.MathUtils.clamp(camPitch.current - e.movementY * 0.0022, 0.12, 0.72);
     };
     document.addEventListener("mousemove", onMove);
     return () => document.removeEventListener("mousemove", onMove);
@@ -214,12 +201,13 @@ function PhysicsKobe({
 
   useFrame((_, delta) => {
     const body = bodyRef.current;
-    const controller = controllerRef.current;
-    if (!body || !controller) return;
+    if (!body) return;
+
+    const dt = Math.min(delta, 0.033);
+    const damp = (c: number, t: number, l: number) => THREE.MathUtils.lerp(c, t, 1 - Math.exp(-l * dt));
 
     const k = keys.current;
-    const maxSpeed = k.run ? 8 : 4;
-
+    const maxSpeed = k.run ? 7 : 3.5;
     const moveX = (k.right ? 1 : 0) - (k.left ? 1 : 0);
     const moveZ = (k.backward ? 1 : 0) - (k.forward ? 1 : 0);
     const wantsMove = moveX !== 0 || moveZ !== 0;
@@ -227,63 +215,60 @@ function PhysicsKobe({
     const dir = new THREE.Vector3(moveX, 0, moveZ);
     if (wantsMove) dir.normalize().applyEuler(new THREE.Euler(0, camYaw.current, 0));
 
-    const dt = Math.min(delta, 0.05);
-    const damp = (c: number, t: number, l: number) => THREE.MathUtils.lerp(c, t, 1 - Math.exp(-l * dt));
-
     const targetVel = new THREE.Vector2(dir.x, dir.z).multiplyScalar(maxSpeed);
-    velXZ.current.x = damp(velXZ.current.x, targetVel.x, wantsMove ? 8 : 12);
-    velXZ.current.y = damp(velXZ.current.y, targetVel.y, wantsMove ? 8 : 12);
+    velXZ.current.x = damp(velXZ.current.x, targetVel.x, wantsMove ? 10 : 14);
+    velXZ.current.y = damp(velXZ.current.y, targetVel.y, wantsMove ? 10 : 14);
 
-    // Gravity + movement
-    const movement = { x: velXZ.current.x * delta, y: -12 * delta, z: velXZ.current.y * delta };
-
-    const collider = body.collider(0);
-    controller.computeColliderMovement(collider, movement, undefined, undefined);
-    const corrected = controller.computedMovement();
     const pos = body.translation();
-    const clamped = {
-      x: THREE.MathUtils.clamp(pos.x + corrected.x, -23, 23),
-      y: pos.y + corrected.y,
-      z: THREE.MathUtils.clamp(pos.z + corrected.z, -23, 23),
-    };
-    body.setNextKinematicTranslation(clamped);
+    let nx = pos.x + velXZ.current.x * dt;
+    let nz = pos.z + velXZ.current.y * dt;
+    [nx, nz] = resolveObstacles(nx, nz);
+    nx = THREE.MathUtils.clamp(nx, -22, 22);
+    nz = THREE.MathUtils.clamp(nz, -22, 22);
 
-    const worldPos = new THREE.Vector3(clamped.x, clamped.y, clamped.z);
-    const isMoving  = velXZ.current.length() > 0.12;
+    // Flat world — lock Y so gravity can never launch the player
+    body.setNextKinematicTranslation({ x: nx, y: GROUND_Y, z: nz });
+
+    const worldPos = new THREE.Vector3(nx, GROUND_Y, nz);
+    const isMoving  = velXZ.current.length() > 0.08;
     const isRunning = k.run && isMoving;
     onMovingChange(isMoving, isRunning);
 
-    // Dog faces movement direction
     if (isMoving) {
-      const targetYaw = Math.atan2(velXZ.current.x, velXZ.current.y);
-      dogYaw.current = damp(dogYaw.current, targetYaw, 14);
+      dogYaw.current = damp(dogYaw.current, Math.atan2(velXZ.current.x, velXZ.current.y), 12);
     }
+
     const dog = dogRef.current?.group;
     if (dog) {
-      dog.position.set(worldPos.x, worldPos.y, worldPos.z);
+      dog.position.copy(worldPos);
       dog.rotation.set(0, dogYaw.current + Math.PI, 0);
     }
 
-    // Smooth spring camera follow
-    camShake.current = damp(camShake.current, isRunning ? 0.012 : 0, 5);
-    const dist  = 6.2;
+    camShake.current = damp(camShake.current, isRunning ? 0.008 : 0, 5);
+    const dist = 5.5;
     const hDist = dist * Math.cos(camPitch.current);
-    const shake = { x: (Math.random() - 0.5) * camShake.current, y: (Math.random() - 0.5) * camShake.current };
     const targetCam = new THREE.Vector3(
-      worldPos.x + Math.sin(camYaw.current) * hDist + shake.x,
-      worldPos.y + dist * Math.sin(camPitch.current) + 0.7 + shake.y,
+      worldPos.x + Math.sin(camYaw.current) * hDist,
+      worldPos.y + dist * Math.sin(camPitch.current) + 0.5,
       worldPos.z + Math.cos(camYaw.current) * hDist,
     );
-    camPos.current.x = damp(camPos.current.x, targetCam.x, 5.5);
-    camPos.current.y = damp(camPos.current.y, targetCam.y, 5.5);
-    camPos.current.z = damp(camPos.current.z, targetCam.z, 5.5);
-    camera.position.copy(camPos.current);
-    camera.lookAt(worldPos.x, worldPos.y + 0.75, worldPos.z);
 
-    // NPC proximity
+    // Snap camera on first frame to avoid fly-away on load
+    if (!ready.current) {
+      camPos.current.copy(targetCam);
+      ready.current = true;
+    } else {
+      camPos.current.x = damp(camPos.current.x, targetCam.x, 6);
+      camPos.current.y = damp(camPos.current.y, targetCam.y, 6);
+      camPos.current.z = damp(camPos.current.z, targetCam.z, 6);
+    }
+
+    camera.position.copy(camPos.current);
+    camera.lookAt(worldPos.x, worldPos.y + 0.6, worldPos.z);
+
     const near = NPC_DOGS.find(n => {
       const dx = worldPos.x - n.position[0], dz = worldPos.z - n.position[2];
-      return dx*dx + dz*dz < 9;
+      return dx * dx + dz * dz < 9;
     });
     const nearId = near?.id ?? null;
     if (nearId !== prevNear.current) { prevNear.current = nearId; onNearNpc(nearId); }
@@ -291,7 +276,7 @@ function PhysicsKobe({
 
   return (
     <RigidBody ref={bodyRef} type="kinematicPosition" position={[0, GROUND_Y, 5]} colliders={false}>
-      <CapsuleCollider args={[0.3, 0.4]} position={[0, 0, 0]} />
+      <CapsuleCollider args={[0.28, 0.35]} />
     </RigidBody>
   );
 }
@@ -322,7 +307,7 @@ function GameScene({
       {/* Visuals outside physics — guarantees meshes always render */}
       <WorldEnvironment nearbyNpcId={nearNpc} onBoneFound={onBoneFound} />
 
-      <Physics gravity={[0, -20, 0]} timeStep="vary">
+      <Physics gravity={[0, 0, 0]}>
         <WorldColliders />
         <Dog ref={dogRef} moving={moving} running={running} />
         <PhysicsKobe dogRef={dogRef} onNearNpc={handleNear} onMovingChange={handleMoving} />
@@ -475,7 +460,7 @@ export default function KobeGame() {
       <Canvas
         shadows
         camera={{ position:[0,3,9], fov:62, near:0.1, far:250 }}
-        gl={{ antialias:true, toneMapping:THREE.ACESFilmicToneMapping, toneMappingExposure:1.15 }}
+        gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.05 }}
         onClick={() => { if (!locked) wrapRef.current?.requestPointerLock(); }}
       >
         {wasmReady && <GameScene onNearNpc={setNearId} onBoneFound={handleBone} />}
