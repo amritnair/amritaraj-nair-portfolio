@@ -180,7 +180,7 @@ function PhysicsKobe({
   const { camera } = useThree();
 
   const bodyRef = useRef<RapierRigidBody>(null);
-  const dogYaw    = useRef(Math.PI);
+  const dogYaw    = useRef(Math.PI); // face into the park (-Z) at spawn
   const camYaw    = useRef(0);
   const camPitch  = useRef(0.35);
   const camPos    = useRef(new THREE.Vector3(0, GROUND_Y + 2.8, 12));
@@ -241,7 +241,8 @@ function PhysicsKobe({
     const dog = dogRef.current?.group;
     if (dog) {
       dog.position.copy(worldPos);
-      dog.rotation.set(0, dogYaw.current + Math.PI, 0);
+      // Mesh faces +Z; atan2(vx, vz) aligns snout with velocity — no extra PI
+      dog.rotation.set(0, dogYaw.current, 0);
     }
 
     camShake.current = damp(camShake.current, isRunning ? 0.008 : 0, 5);
