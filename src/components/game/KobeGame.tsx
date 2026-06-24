@@ -12,7 +12,7 @@ const rapierReady: Promise<unknown> = initRapierWasm(
 );
 import * as THREE from "three";
 import { Dog, DogHandle } from "./Dog";
-import { World } from "./World";
+import { WorldEnvironment, WorldColliders } from "./World";
 import { NPC_DOGS, type NpcConfig, type QA } from "./npcData";
 import { useControls } from "./useControls";
 import { GROUND_Y } from "./zeldaStyle";
@@ -73,7 +73,7 @@ function DayNightCycle() {
     const tex = new THREE.CanvasTexture(c);
     tex.mapping = THREE.EquirectangularReflectionMapping;
     skyTex.current = tex; scene.background = tex;
-    scene.fog = new THREE.Fog("#88b8d8", 45, 140);
+    scene.fog = new THREE.Fog("#88b8d8", 60, 180);
     return () => { tex.dispose(); scene.background = null; scene.fog = null; };
   }, [scene]);
 
@@ -317,10 +317,13 @@ function GameScene({
   return (
     <>
       <DayNightCycle />
-      <Stars radius={90} depth={50} count={1400} factor={3} fade />
+      <Stars radius={90} depth={50} count={800} factor={2} fade />
+
+      {/* Visuals outside physics — guarantees meshes always render */}
+      <WorldEnvironment nearbyNpcId={nearNpc} onBoneFound={onBoneFound} />
 
       <Physics gravity={[0, -20, 0]} timeStep="vary">
-        <World nearbyNpcId={nearNpc} onBoneFound={onBoneFound} />
+        <WorldColliders />
         <Dog ref={dogRef} moving={moving} running={running} />
         <PhysicsKobe dogRef={dogRef} onNearNpc={handleNear} onMovingChange={handleMoving} />
       </Physics>

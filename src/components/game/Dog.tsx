@@ -1,7 +1,7 @@
 import { useRef, forwardRef, useImperativeHandle } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { Stylized, damp } from "./zeldaStyle";
+import { M, damp } from "./zeldaStyle";
 
 export interface DogHandle {
   group: THREE.Group | null;
@@ -142,15 +142,15 @@ export const Dog = forwardRef<DogHandle, DogProps>(({
     <group position={[x, LEG_PIVOT_Y, z]}>
       <group ref={liftRef}>
         <group ref={swingRef}>
-          <Stylized color={furColor} castShadow position={[0, -0.14, 0]}>
+          <M color={furColor} castShadow position={[0, -0.14, 0]}>
             <capsuleGeometry args={[0.05, 0.2, 6, 8]} />
-          </Stylized>
-          <Stylized color={furColor} castShadow position={[0, -0.3, 0.03]} rotation={[0.2, 0, 0]}>
+          </M>
+          <M color={furColor} castShadow position={[0, -0.3, 0.03]} rotation={[0.2, 0, 0]}>
             <capsuleGeometry args={[0.04, 0.12, 6, 8]} />
-          </Stylized>
-          <Stylized color={innerColor} position={[0, -0.38, 0.05]}>
+          </M>
+          <M color={innerColor} position={[0, -0.38, 0.05]}>
             <sphereGeometry args={[0.06, 8, 8]} />
-          </Stylized>
+          </M>
         </group>
       </group>
     </group>
@@ -159,69 +159,69 @@ export const Dog = forwardRef<DogHandle, DogProps>(({
   return (
     <group ref={groupRef} rotation={[0, Math.PI + facingYaw, 0]}>
       <group ref={bodyGroup} scale={bodyScale}>
-        <Stylized color={furColor} castShadow position={[0, 0.42, 0]} scale={[1, 0.88, 1.2]}>
+        <M color={furColor} castShadow position={[0, 0.42, 0]} scale={[1, 0.88, 1.2]}>
           <sphereGeometry args={[0.28, 12, 10]} />
-        </Stylized>
-        <Stylized color={furColor} castShadow position={[0, 0.38, -0.22]} scale={[0.88, 0.8, 0.88]}>
+        </M>
+        <M color={furColor} castShadow position={[0, 0.38, -0.22]} scale={[0.88, 0.8, 0.88]}>
           <sphereGeometry args={[0.24, 10, 8]} />
-        </Stylized>
-        <Stylized color={innerColor} position={[0, 0.44, 0.22]} scale={[0.82, 0.8, 0.65]}>
+        </M>
+        <M color={innerColor} position={[0, 0.44, 0.22]} scale={[0.82, 0.8, 0.65]}>
           <sphereGeometry args={[0.22, 10, 8]} />
-        </Stylized>
+        </M>
 
-        <Stylized color={furColor} castShadow position={[0, 0.58, 0.2]} rotation={[0.45, 0, 0]}>
+        <M color={furColor} castShadow position={[0, 0.58, 0.2]} rotation={[0.45, 0, 0]}>
           <cylinderGeometry args={[0.1, 0.13, 0.22, 10]} />
-        </Stylized>
+        </M>
 
         <group ref={headGroup} position={[0, 0.74, 0.32]}>
-          <Stylized color={furColor} castShadow>
+          <M color={furColor} castShadow>
             <sphereGeometry args={[0.2, 12, 10]} />
-          </Stylized>
-          <Stylized color={innerColor} position={[0, -0.03, 0.17]}>
+          </M>
+          <M color={innerColor} position={[0, -0.03, 0.17]}>
             <sphereGeometry args={[0.1, 10, 8]} />
-          </Stylized>
-          <Stylized color={dark} position={[0, 0.01, 0.26]}>
+          </M>
+          <M color={dark} position={[0, 0.01, 0.26]}>
             <sphereGeometry args={[0.032, 8, 8]} />
-          </Stylized>
+          </M>
           {([-1, 1] as const).map(side => (
             <group key={side} position={[side * -0.085, 0.05, 0.16]}>
-              <Stylized color="#5c3210">
+              <M color="#5c3210">
                 <sphereGeometry args={[0.028, 8, 8]} />
-              </Stylized>
+              </M>
               <mesh position={[side * -0.008, 0.01, 0.024]}>
                 <sphereGeometry args={[0.008, 6, 6]} />
                 <meshBasicMaterial color="white" />
               </mesh>
             </group>
           ))}
-          <Stylized color={pink} position={[0, -0.08, 0.24]} rotation={[0.35, 0, 0]} scale={[1, 0.65, 0.5]}>
+          <M color={pink} position={[0, -0.08, 0.24]} rotation={[0.35, 0, 0]} scale={[1, 0.65, 0.5]}>
             <sphereGeometry args={[0.045, 8, 6]} />
-          </Stylized>
+          </M>
 
           {earStyle === "floppy" ? (
             <>
               <group ref={earL} position={[0.17, 0.08, -0.05]}>
-                <Stylized color={innerColor} castShadow scale={[0.68, 1.1, 0.58]}>
+                <M color={innerColor} castShadow scale={[0.68, 1.1, 0.58]}>
                   <sphereGeometry args={[0.11, 8, 8]} />
-                </Stylized>
+                </M>
               </group>
               <group ref={earR} position={[-0.17, 0.08, -0.05]}>
-                <Stylized color={innerColor} castShadow scale={[0.68, 1.1, 0.58]}>
+                <M color={innerColor} castShadow scale={[0.68, 1.1, 0.58]}>
                   <sphereGeometry args={[0.11, 8, 8]} />
-                </Stylized>
+                </M>
               </group>
             </>
           ) : (
             <>
               <group ref={earL} position={[0.14, 0.16, -0.04]} rotation={[0, 0, 0.2]}>
-                <Stylized color={furColor} castShadow>
+                <M color={furColor} castShadow>
                   <coneGeometry args={[0.075, 0.22, 8]} />
-                </Stylized>
+                </M>
               </group>
               <group ref={earR} position={[-0.14, 0.16, -0.04]} rotation={[0, 0, -0.2]}>
-                <Stylized color={furColor} castShadow>
+                <M color={furColor} castShadow>
                   <coneGeometry args={[0.075, 0.22, 8]} />
-                </Stylized>
+                </M>
               </group>
             </>
           )}
@@ -233,12 +233,12 @@ export const Dog = forwardRef<DogHandle, DogProps>(({
         <Leg x={-0.14} z={-0.18} swingRef={brSwing} liftRef={brLift} />
 
         <group ref={tailGroup} position={[0, 0.46, -0.38]}>
-          <Stylized color={furColor} castShadow position={[0.04, 0.08, -0.04]} rotation={[-0.4, 0, 0.5]}>
+          <M color={furColor} castShadow position={[0.04, 0.08, -0.04]} rotation={[-0.4, 0, 0.5]}>
             <capsuleGeometry args={[0.038, 0.2, 6, 8]} />
-          </Stylized>
-          <Stylized color="#fff8f0" position={[0.1, 0.24, -0.08]}>
+          </M>
+          <M color="#fff8f0" position={[0.1, 0.24, -0.08]}>
             <sphereGeometry args={[0.055, 8, 8]} />
-          </Stylized>
+          </M>
         </group>
       </group>
     </group>

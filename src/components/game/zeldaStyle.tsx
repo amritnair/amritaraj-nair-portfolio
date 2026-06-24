@@ -4,34 +4,29 @@ import * as THREE from "three";
 export const GROUND_Y = 0.74;
 
 export const Z = {
-  grass:      "#4e9638",
-  grassDark:  "#3a7830",
-  grassLight: "#62a848",
-  dirt:       "#b89868",
-  dirtDark:   "#907850",
-  wood:       "#7a5030",
-  woodDark:   "#5c3a20",
-  bark:       "#4a3218",
-  rock:       "#8a8278",
-  rockDark:   "#686058",
-  rockLight:  "#a8a098",
-  foliage1:   "#2a5828",
-  foliage2:   "#3a7030",
-  foliage3:   "#4a8838",
-  foliage4:   "#5a9848",
-  flower:     ["#d4a840", "#c86068", "#48a878", "#5090b0", "#d8a0b8"] as const,
+  grass:      "#5cb848",
+  grassDark:  "#449838",
+  grassLight: "#70cc58",
+  dirt:       "#c8a870",
+  dirtDark:   "#a08050",
+  wood:       "#8a5830",
+  woodDark:   "#6a4020",
+  bark:       "#5c3a1e",
+  rock:       "#9a9488",
+  rockDark:   "#706860",
+  rockLight:  "#b0a898",
+  foliage1:   "#3a7830",
+  foliage2:   "#4a9038",
+  foliage3:   "#5aa848",
+  foliage4:   "#6ac050",
+  flower:     ["#e8c040", "#e06068", "#50b888", "#58a0c8", "#e0a0b8"] as const,
 };
 
 export function damp(current: number, target: number, lambda: number, delta: number) {
   return THREE.MathUtils.lerp(current, target, 1 - Math.exp(-lambda * delta));
 }
 
-/** Place a box so its bottom sits on y=0 in local space */
-export function boxBottomY(height: number) {
-  return height / 2;
-}
-
-interface StylizedProps {
+interface MeshProps {
   color: string;
   emissive?: string;
   emissiveIntensity?: number;
@@ -47,11 +42,12 @@ interface StylizedProps {
   children: ReactNode;
 }
 
-export function Stylized({
+/** Plain lit mesh — always renders outside physics bodies */
+export function M({
   color,
   emissive,
   emissiveIntensity = 0,
-  roughness = 0.82,
+  roughness = 0.78,
   metalness = 0,
   transparent,
   opacity = 1,
@@ -61,7 +57,7 @@ export function Stylized({
   rotation,
   scale,
   children,
-}: StylizedProps) {
+}: MeshProps) {
   return (
     <mesh
       position={position}
@@ -83,3 +79,6 @@ export function Stylized({
     </mesh>
   );
 }
+
+/** @deprecated use M */
+export const Stylized = M;

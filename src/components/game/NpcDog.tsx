@@ -4,7 +4,7 @@ import { Dog } from "./Dog";
 import type { DogHandle } from "./Dog";
 import type { NpcConfig } from "./npcData";
 import { Signpost } from "./World";
-import { Stylized, GROUND_Y } from "./zeldaStyle";
+import { M, GROUND_Y } from "./zeldaStyle";
 
 interface NpcDogProps {
   npc: NpcConfig;
@@ -37,9 +37,9 @@ export default function NpcDog({ npc, isNear }: NpcDogProps) {
             [-0.05, 0.64, 0.08], [0.18, 0.46, 0.0], [-0.18, 0.4, -0.1],
           ].map(([x, y, z], i) => (
             <group key={i} position={[x, y, z]} scale={0.06 + (i % 3) * 0.02}>
-              <Stylized color="#1a1410">
+              <M color="#1a1410">
                 <sphereGeometry args={[1, 6, 6]} />
-              </Stylized>
+              </M>
             </group>
           ))}
         </>
@@ -49,9 +49,9 @@ export default function NpcDog({ npc, isNear }: NpcDogProps) {
         <>
           {([0.09, -0.09] as const).map((sx, i) => (
             <group key={i} position={[sx, 0.88, 0.52]} scale={[0.07, 0.07, 0.03]}>
-              <Stylized color="#8a7a6a">
+              <M color="#8a7a6a">
                 <sphereGeometry args={[1, 6, 6]} />
-              </Stylized>
+              </M>
             </group>
           ))}
         </>
