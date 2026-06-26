@@ -27,21 +27,19 @@ function PlayScreen({ onPlay }: { onPlay: () => void }) {
     >
       <motion.img
         src={`${BASE}sunnyland/sprites/title-screen.png`}
-        alt="Kobe's Adventure"
+        alt="Kobe's Journey"
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        style={{ imageRendering: "pixelated", marginBottom: 24, scale: 2.2 }}
+        style={{ imageRendering: "pixelated", marginBottom: 20, scale: 2.2 }}
       />
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.3 }}
-        style={{ textAlign: "center", ...pixel }}
-      >
-        <p style={{ fontSize: 8, color: "#f8f8f8", textShadow: "2px 2px 0 #383838", marginBottom: 32, letterSpacing: "0.08em" }}>
-          AMRIT NAIR · PORTFOLIO
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} style={{ textAlign: "center", ...pixel }}>
+        <p style={{ fontSize: 9, color: "#f8f8f8", textShadow: "2px 2px 0 #383838", marginBottom: 8 }}>
+          KOBE'S JOURNEY
+        </p>
+        <p style={{ fontSize: 6, color: "rgba(255,255,255,0.85)", textShadow: "1px 1px 0 #383838", marginBottom: 28, lineHeight: 2, maxWidth: 340 }}>
+          Discover who Amrit is — not just what he's accomplished.
         </p>
 
         <motion.button
@@ -66,9 +64,9 @@ function PlayScreen({ onPlay }: { onPlay: () => void }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: [0.4, 1, 0.4] }}
           transition={{ delay: 0.6, duration: 1.2, repeat: Infinity }}
-          style={{ fontSize: 7, color: "#f8f8f8", marginTop: 28, textShadow: "1px 1px 0 #383838" }}
+          style={{ fontSize: 7, color: "#f8f8f8", marginTop: 28, textShadow: "1px 1px 0 #383838", lineHeight: 2 }}
         >
-          WASD · SHIFT RUN · E TALK
+          WASD · E TALK · J JOURNAL
         </motion.p>
       </motion.div>
 
@@ -88,13 +86,7 @@ export default function GamePortfolio() {
         {!playing ? (
           <PlayScreen key="play" onPlay={() => setPlaying(true)} />
         ) : (
-          <motion.div
-            key="game"
-            className="w-full h-screen"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.35 }}
-          >
+          <motion.div key="game" className="w-full h-screen" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }}>
             <Suspense fallback={<LoadingScreen />}>
               <PixelGame />
             </Suspense>

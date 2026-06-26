@@ -1,14 +1,24 @@
 import Phaser from "phaser";
-import { NPC_DOGS } from "../npcData";
-import { BONE_TILE, MAP_H, MAP_W, OBSTACLES, T, TILE, tileToWorld } from "../mapData";
+import { NPC_DOGS, REGIONS } from "../narrative";
+import { MAP_H, MAP_W, OBSTACLES, T, TILE, tileToWorld } from "../mapData";
 
 const BASE = import.meta.env.BASE_URL;
-const TALK_RADIUS = 44;
+const TALK_RADIUS = 48;
 
 export interface GameCallbacks {
   onNearNpc: (id: string | null) => void;
-  onBoneFound: () => void;
 }
+
+const REGION_TILES: Record<string, number[]> = {
+  barkwood:   [T.GRASS, T.GRASS2],
+  aggie:      [T.DIRT, T.PATH3],
+  innovation: [T.PATH, T.PATH2],
+  healing:    [T.GRASS3, T.GRASS4],
+  discovery:  [T.GRASS2, T.GRASS3],
+  workshop:   [T.PATH3, T.DIRT],
+  hackathon:  [T.PATH2, T.PATH],
+  downtown:   [T.GRASS4, T.GRASS],
+};
 
 export class PortfolioScene extends Phaser.Scene {
   private player!: Phaser.Physics.Arcade.Sprite;
@@ -16,8 +26,6 @@ export class PortfolioScene extends Phaser.Scene {
   private keys!: Record<string, Phaser.Input.Keyboard.Key>;
   private callbacks!: GameCallbacks;
   private npcSprites: { id: string; sprite: Phaser.GameObjects.Sprite }[] = [];
-  private bone?: Phaser.GameObjects.Sprite;
-  private boneCollected = false;
   private running = false;
 
   constructor() {
@@ -36,7 +44,6 @@ export class PortfolioScene extends Phaser.Scene {
     this.load.image("bush", `${BASE}sunnyland/environment/bush.png`);
     this.load.image("sign", `${BASE}sunnyland/environment/sign.png`);
     this.load.image("house", `${BASE}sunnyland/environment/house.png`);
-    this.load.image("gem", `${BASE}sunnyland/sprites/gem.png`);
     this.load.atlas("sprites", `${BASE}sunnyland/atlas/atlas.png`, `${BASE}sunnyland/atlas/atlas.json`);
     this.load.audio("bgm", `${BASE}sunnyland/sound/platformer_level03_loop.ogg`);
   }
@@ -48,26 +55,32 @@ export class PortfolioScene extends Phaser.Scene {
     const worldW = MAP_W * TILE;
     const worldH = MAP_H * TILE;
 
-    // Parallax sky layers
-    const bg = this.add.tileSprite(worldW / 2, worldH / 2 - 40, worldW + 200, worldH, "bg-back").setScrollFactor(0.2).setDepth(-10);
-    const mid = this.add.tileSprite(worldW / 2, worldH / 2, worldW + 100, worldH, "bg-mid").setScrollFactor(0.35).setDepth(-9);
-    bg.setDisplaySize(worldW + 200, 180);
-    mid.setDisplaySize(worldW + 100, 120);
+    this.add.tileSprite(worldW / 2, worldH / 2 - 40, worldW + 200, worldH, "bg-back").setScrollFactor(0.2).setDepth(-10).setDisplaySize(worldW + 200, 180);
+    this.add.tileSprite(worldW / 2, worldH / 2, worldW + 100, worldH, "bg-mid").setScrollFactor(0.35).setDepth(-9).setDisplaySize(worldW + 100, 120);
 
     const map = this.make.tilemap({ tileWidth: TILE, tileHeight: TILE, width: MAP_W, height: MAP_H });
     const tiles = map.addTilesetImage("tileset", "tileset", TILE, TILE, 0, 0)!;
     const ground = map.createBlankLayer("ground", tiles, 0, 0)!;
-    ground.setDepth(0);
 
-    const grass = [T.GRASS, T.GRASS2, T.GRASS3, T.GRASS4];
+    const defaultGrass = [T.GRASS, T.GRASS2, T.GRASS3, T.GRASS4];
     for (let y = 0; y < MAP_H; y++) {
       for (let x = 0; x < MAP_W; x++) {
-        const v = grass[(x * 3 + y * 7) % grass.length];
-        ground.putTileAt(v, x, y);
+        ground.putTileAt(defaultGrass[(x * 3 + y * 7) % defaultGrass.length], x, y);
       }
     }
 
-    // Cross paths
+    // Paint each region with distinct ground feel
+    REGIONS.forEach(region => {
+      const [x1, y1, x2, y2] = region.bounds;
+      const palette = REGION_TILES[region.id] ?? defaultGrass;
+      for (let y = y1; y <= y2; y++) {
+        for (let x = x1; x <= x2; x++) {
+          ground.putTileAt(palette[(x + y) % palette.length], x, y);
+        }
+      }
+    });
+
+    // Connecting paths between regions
     const cx = Math.floor(MAP_W / 2);
     const cy = Math.floor(MAP_H / 2);
     for (let x = 3; x < MAP_W - 3; x++) {
@@ -77,35 +90,37 @@ export class PortfolioScene extends Phaser.Scene {
       for (let dx = -1; dx <= 1; dx++) ground.putTileAt(T.PATH2, cx + dx, y);
     }
 
-    // Small pond (dirt patch)
-    for (let y = 6; y <= 9; y++) {
-      for (let x = 6; x <= 10; x++) ground.putTileAt(T.DIRT, x, y);
-    }
-
-    // Park border path ring
-    for (let x = 2; x < MAP_W - 2; x++) {
-      ground.putTileAt(T.PATH3, x, 2);
-      ground.putTileAt(T.PATH3, x, MAP_H - 3);
-    }
-    for (let y = 2; y < MAP_H - 2; y++) {
-      ground.putTileAt(T.PATH3, 2, y);
-      ground.putTileAt(T.PATH3, MAP_W - 3, y);
-    }
-
-    // Decorations + collision
     const obstacles = this.physics.add.staticGroup();
     OBSTACLES.forEach(([tx, ty]) => {
       const { x, y } = tileToWorld(tx, ty);
-      const tree = this.add.image(x, y - 20, "tree").setDepth(y).setOrigin(0.5, 1);
-      tree.setScale(0.85);
+      this.add.image(x, y - 20, "tree").setDepth(y).setOrigin(0.5, 1).setScale(0.85);
       const body = obstacles.create(x, y - 8, "") as Phaser.Physics.Arcade.Sprite;
       body.setDisplaySize(20, 16).setVisible(false);
       body.refreshBody();
     });
 
-    // Welcome house near spawn
-    this.add.image(tileToWorld(26, 30).x, tileToWorld(26, 30).y - 4, "house")
-      .setOrigin(0.5, 1).setDepth(tileToWorld(26, 30).y).setScale(0.9);
+    // Region title signs
+    REGIONS.forEach(region => {
+      const [x1, , x2, y1] = region.bounds;
+      const midX = ((x1 + x2) / 2) * TILE + TILE / 2;
+      const midY = y1 * TILE - 4;
+      this.add.text(midX, midY, region.name, {
+        fontFamily: "Press Start 2P",
+        fontSize: "6px",
+        color: region.accent,
+        backgroundColor: "#f8f8f8cc",
+        padding: { x: 5, y: 3 },
+      }).setOrigin(0.5).setDepth(midY + 100);
+      this.add.text(midX, midY + 12, region.subtitle, {
+        fontFamily: "Press Start 2P",
+        fontSize: "5px",
+        color: "#555",
+      }).setOrigin(0.5).setDepth(midY + 100);
+    });
+
+    // Barkwood home
+    const home = tileToWorld(26, 30);
+    this.add.image(home.x, home.y - 4, "house").setOrigin(0.5, 1).setDepth(home.y).setScale(0.9);
 
     // NPCs
     NPC_DOGS.forEach(npc => {
@@ -126,7 +141,10 @@ export class PortfolioScene extends Phaser.Scene {
         ease: "Sine.easeInOut",
       });
 
-      this.add.image(wx + 14, wy - 18, "sign").setDepth(wy + 2).setScale(1.1);
+      if (!npc.elder) {
+        this.add.image(wx + 14, wy - 18, "sign").setDepth(wy + 2).setScale(1.1);
+      }
+
       this.add.text(wx, wy - 32, npc.name, {
         fontFamily: "Press Start 2P",
         fontSize: "7px",
@@ -138,14 +156,11 @@ export class PortfolioScene extends Phaser.Scene {
       this.npcSprites.push({ id: npc.id, sprite });
     });
 
-    // Hidden bone (gem sprite)
-    const bonePos = tileToWorld(BONE_TILE[0], BONE_TILE[1]);
-    this.bone = this.add.sprite(bonePos.x, bonePos.y - 4, "sprites", "gem/gem-1").setDepth(bonePos.y + 1).setScale(1.4);
-    this.tweens.add({ targets: this.bone, angle: 8, duration: 600, yoyo: true, repeat: -1 });
-
-    // Player (Kobe) — Sunnyland hero
-    const spawn = tileToWorld(26, 30);
+    // Kobe — white maltipoo (tinted hero, smaller)
+    const spawn = tileToWorld(26, 32);
     this.player = this.physics.add.sprite(spawn.x, spawn.y, "sprites", "player/idle/player-idle-1");
+    this.player.setTint(0xf6f4f0);
+    this.player.setScale(0.82);
     this.player.setDepth(spawn.y + 1);
     this.player.setCollideWorldBounds(true);
     this.player.body!.setSize(14, 18).setOffset(9, 14);
@@ -178,11 +193,9 @@ export class PortfolioScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.player, true, 0.12, 0.12);
     this.physics.world.setBounds(0, 0, worldW, worldH);
 
-    if (!this.sound.get("bgm")) {
-      try {
-        this.sound.add("bgm", { loop: true, volume: 0.2 }).play();
-      } catch { /* autoplay blocked */ }
-    }
+    try {
+      if (!this.sound.get("bgm")) this.sound.add("bgm", { loop: true, volume: 0.18 }).play();
+    } catch { /* autoplay blocked */ }
   }
 
   update() {
@@ -194,18 +207,14 @@ export class PortfolioScene extends Phaser.Scene {
     const down  = this.cursors.down.isDown  || this.keys.S.isDown;
     this.running = this.keys.SHIFT.isDown;
 
-    const speed = this.running ? 130 : 75;
+    const speed = this.running ? 130 : 78;
     let vx = 0;
     let vy = 0;
     if (left)  vx = -speed;
     if (right) vx = speed;
     if (up)    vy = -speed;
     if (down)  vy = speed;
-
-    if (vx !== 0 && vy !== 0) {
-      vx *= 0.707;
-      vy *= 0.707;
-    }
+    if (vx !== 0 && vy !== 0) { vx *= 0.707; vy *= 0.707; }
 
     this.player.setVelocity(vx, vy);
     this.player.setDepth(this.player.y);
@@ -219,7 +228,6 @@ export class PortfolioScene extends Phaser.Scene {
       this.player.anims.play("idle", true);
     }
 
-    // NPC proximity
     let nearId: string | null = null;
     let best = TALK_RADIUS;
     for (const { id, sprite } of this.npcSprites) {
@@ -227,16 +235,5 @@ export class PortfolioScene extends Phaser.Scene {
       if (d < best) { best = d; nearId = id; }
     }
     this.callbacks.onNearNpc(nearId);
-
-    // Bone pickup
-    if (this.bone && !this.boneCollected) {
-      const d = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.bone.x, this.bone.y);
-      if (d < 20) {
-        this.boneCollected = true;
-        this.bone.destroy();
-        this.bone = undefined;
-        this.callbacks.onBoneFound();
-      }
-    }
   }
 }
