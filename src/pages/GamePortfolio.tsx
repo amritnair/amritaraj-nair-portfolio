@@ -1,13 +1,85 @@
-import { useState, lazy, Suspense } from "react";
+import { useState, lazy, Suspense, type CSSProperties, type ReactNode } from "react";
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
 const PixelGame = lazy(() => import("@/components/game/PixelGame"));
 
 const BASE = import.meta.env.BASE_URL;
-const pixel: React.CSSProperties = {
+const PDF_URL = `${BASE}Amritaraj_Nair_Resume.pdf`;
+const GITHUB_URL = "https://github.com/amritnair";
+const LINKEDIN_URL = "https://linkedin.com/in/amritaraj-nair-227063313";
+
+const pixel: CSSProperties = {
   fontFamily: "'Press Start 2P', monospace",
   imageRendering: "pixelated",
 };
+
+const btnBase: CSSProperties = {
+  ...pixel,
+  fontSize: 7,
+  padding: "10px 14px",
+  border: "3px solid #383838",
+  cursor: "pointer",
+  textDecoration: "none",
+  display: "inline-block",
+  textAlign: "center",
+  boxShadow: "4px 4px 0 #383838",
+  lineHeight: 1.6,
+};
+
+function PixelButton({
+  children,
+  onClick,
+  href,
+  to,
+  download,
+  primary,
+  external,
+}: {
+  children: ReactNode;
+  onClick?: () => void;
+  href?: string;
+  to?: string;
+  download?: boolean;
+  primary?: boolean;
+  external?: boolean;
+}) {
+  const style: CSSProperties = {
+    ...btnBase,
+    background: primary ? "#f8f8f8" : "#d8e8ff",
+    color: "#282828",
+    fontSize: primary ? 10 : 7,
+    padding: primary ? "14px 32px" : btnBase.padding,
+  };
+
+  if (to) {
+    return (
+      <Link to={to} style={style}>
+        {children}
+      </Link>
+    );
+  }
+
+  if (href) {
+    return (
+      <a
+        href={href}
+        download={download || undefined}
+        target={external ? "_blank" : undefined}
+        rel={external ? "noopener noreferrer" : undefined}
+        style={style}
+      >
+        {children}
+      </a>
+    );
+  }
+
+  return (
+    <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} onClick={onClick} style={style}>
+      {children}
+    </motion.button>
+  );
+}
 
 function LoadingScreen() {
   return (
@@ -38,33 +110,33 @@ function PlayScreen({ onPlay }: { onPlay: () => void }) {
         <p style={{ fontSize: 9, color: "#f8f8f8", textShadow: "2px 2px 0 #383838", marginBottom: 8 }}>
           KOBE'S JOURNEY
         </p>
-        <p style={{ fontSize: 6, color: "rgba(255,255,255,0.85)", textShadow: "1px 1px 0 #383838", marginBottom: 28, lineHeight: 2, maxWidth: 340 }}>
+        <p style={{ fontSize: 6, color: "rgba(255,255,255,0.85)", textShadow: "1px 1px 0 #383838", marginBottom: 24, lineHeight: 2, maxWidth: 360 }}>
           Discover who Amrit is — not just what he's accomplished.
         </p>
 
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={onPlay}
-          style={{
-            fontSize: 10,
-            padding: "14px 32px",
-            background: "#f8f8f8",
-            color: "#282828",
-            border: "4px solid #383838",
-            boxShadow: "6px 6px 0 #383838",
-            cursor: "pointer",
-            ...pixel,
-          }}
-        >
-          START
-        </motion.button>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 20 }}>
+          <PixelButton primary onClick={onPlay}>
+            START GAME
+          </PixelButton>
+
+          <div style={{ width: "100%", maxWidth: 340 }}>
+            <p style={{ fontSize: 6, color: "rgba(255,255,255,0.7)", marginBottom: 12, lineHeight: 2 }}>
+              — or skip the adventure —
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              <PixelButton to="/resume">VIEW RESUME</PixelButton>
+              <PixelButton href={PDF_URL} download>DOWNLOAD PDF</PixelButton>
+              <PixelButton href={GITHUB_URL} external>GITHUB</PixelButton>
+              <PixelButton href={LINKEDIN_URL} external>LINKEDIN</PixelButton>
+            </div>
+          </div>
+        </div>
 
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: [0.4, 1, 0.4] }}
           transition={{ delay: 0.6, duration: 1.2, repeat: Infinity }}
-          style={{ fontSize: 7, color: "#f8f8f8", marginTop: 28, textShadow: "1px 1px 0 #383838", lineHeight: 2 }}
+          style={{ fontSize: 7, color: "#f8f8f8", marginTop: 24, textShadow: "1px 1px 0 #383838", lineHeight: 2 }}
         >
           WASD · E TALK · J JOURNAL
         </motion.p>
