@@ -20,5 +20,18 @@ export default defineConfig(() => ({
   },
   optimizeDeps: {
     exclude: ["@dimforge/rapier3d-compat"],
+    // Pre-bundle the whole 3D stack. If any of it is discovered lazily instead,
+    // Vite re-optimizes mid-load and the page ends up with two copies of React.
+    include: [
+      "three",
+      "react",
+      "react-dom",
+      "react/jsx-runtime",
+      "@react-three/fiber",
+      "@react-three/drei",
+      "@react-three/rapier",
+      "@react-three/postprocessing",
+      "postprocessing",
+    ],
   },
 }));

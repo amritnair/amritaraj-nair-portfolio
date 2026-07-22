@@ -1,170 +1,127 @@
-import { useState, lazy, Suspense, type CSSProperties, type ReactNode } from "react";
+import { Suspense, lazy, useEffect, useMemo, useState } from "react";
+import { Canvas } from "@react-three/fiber";
+import { ACESFilmicToneMapping } from "three";
 import { Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import Intro from "@/world/ui/Intro";
+import Hud from "@/world/ui/Hud";
+import Panel from "@/world/ui/Panel";
+import TouchControls from "@/world/ui/TouchControls";
+import { useKeyboardControls } from "@/world/controls";
+import { useWorld } from "@/world/store";
 
-const PixelGame = lazy(() => import("@/components/game/PixelGame"));
+const World = lazy(() => import("@/world/World"));
 
-const BASE = import.meta.env.BASE_URL;
-const PDF_URL = `${BASE}Amritaraj_Nair_Resume.pdf`;
-const GITHUB_URL = "https://github.com/amritnair";
-const LINKEDIN_URL = "https://linkedin.com/in/amritaraj-nair-227063313";
-
-const pixel: CSSProperties = {
-  fontFamily: "'Press Start 2P', monospace",
-  imageRendering: "pixelated",
-};
-
-const btnBase: CSSProperties = {
-  ...pixel,
-  fontSize: 7,
-  padding: "10px 14px",
-  border: "3px solid #383838",
-  cursor: "pointer",
-  textDecoration: "none",
-  display: "inline-block",
-  textAlign: "center",
-  boxShadow: "4px 4px 0 #383838",
-  lineHeight: 1.6,
-};
-
-function PixelButton({
-  children,
-  onClick,
-  href,
-  to,
-  download,
-  primary,
-  external,
-}: {
-  children: ReactNode;
-  onClick?: () => void;
-  href?: string;
-  to?: string;
-  download?: boolean;
-  primary?: boolean;
-  external?: boolean;
-}) {
-  const style: CSSProperties = {
-    ...btnBase,
-    background: primary ? "#f8f8f8" : "#d8e8ff",
-    color: "#282828",
-    fontSize: primary ? 10 : 7,
-    padding: primary ? "14px 32px" : btnBase.padding,
-  };
-
-  if (to) {
-    return (
-      <Link to={to} style={style}>
-        {children}
-      </Link>
+function hasWebGL() {
+  try {
+    const canvas = document.createElement("canvas");
+    return Boolean(
+      window.WebGLRenderingContext && (canvas.getContext("webgl2") || canvas.getContext("webgl")),
     );
+  } catch {
+    return false;
   }
-
-  if (href) {
-    return (
-      <a
-        href={href}
-        download={download || undefined}
-        target={external ? "_blank" : undefined}
-        rel={external ? "noopener noreferrer" : undefined}
-        style={style}
-      >
-        {children}
-      </a>
-    );
-  }
-
-  return (
-    <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} onClick={onClick} style={style}>
-      {children}
-    </motion.button>
-  );
-}
-
-function LoadingScreen() {
-  return (
-    <div className="w-full h-screen flex flex-col items-center justify-center" style={{ background: "#2060c0", ...pixel }}>
-      <p style={{ color: "#f8f8f8", fontSize: 10, letterSpacing: "0.1em" }}>LOADING...</p>
-    </div>
-  );
-}
-
-function PlayScreen({ onPlay }: { onPlay: () => void }) {
-  return (
-    <motion.div
-      className="w-full h-screen flex flex-col items-center justify-center relative overflow-hidden select-none"
-      style={{ background: "linear-gradient(180deg, #58a8e8 0%, #88d0f0 45%, #58c858 75%, #389838 100%)" }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.4 }}
-    >
-      <motion.img
-        src={`${BASE}sunnyland/sprites/title-screen.png`}
-        alt="Kobe's Journey"
-        initial={{ opacity: 0, y: -8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        style={{ imageRendering: "pixelated", marginBottom: 20, scale: 2.2 }}
-      />
-
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} style={{ textAlign: "center", ...pixel }}>
-        <p style={{ fontSize: 9, color: "#f8f8f8", textShadow: "2px 2px 0 #383838", marginBottom: 8 }}>
-          KOBE'S JOURNEY
-        </p>
-        <p style={{ fontSize: 6, color: "rgba(255,255,255,0.85)", textShadow: "1px 1px 0 #383838", marginBottom: 24, lineHeight: 2, maxWidth: 360 }}>
-          Discover who Amrit is — not just what he's accomplished.
-        </p>
-
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 20 }}>
-          <PixelButton primary onClick={onPlay}>
-            START GAME
-          </PixelButton>
-
-          <div style={{ width: "100%", maxWidth: 340 }}>
-            <p style={{ fontSize: 6, color: "rgba(255,255,255,0.7)", marginBottom: 12, lineHeight: 2 }}>
-              — or skip the adventure —
-            </p>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-              <PixelButton to="/resume">VIEW RESUME</PixelButton>
-              <PixelButton href={PDF_URL} download>DOWNLOAD PDF</PixelButton>
-              <PixelButton href={GITHUB_URL} external>GITHUB</PixelButton>
-              <PixelButton href={LINKEDIN_URL} external>LINKEDIN</PixelButton>
-            </div>
-          </div>
-        </div>
-
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: [0.4, 1, 0.4] }}
-          transition={{ delay: 0.6, duration: 1.2, repeat: Infinity }}
-          style={{ fontSize: 7, color: "#f8f8f8", marginTop: 24, textShadow: "1px 1px 0 #383838", lineHeight: 2 }}
-        >
-          WASD · E TALK · J JOURNAL
-        </motion.p>
-      </motion.div>
-
-      <p style={{ position: "absolute", bottom: 12, fontSize: 6, color: "rgba(255,255,255,0.5)", ...pixel }}>
-        ART: SUNNYLAND BY ANSIMUZ (CC0)
-      </p>
-    </motion.div>
-  );
 }
 
 export default function GamePortfolio() {
-  const [playing, setPlaying] = useState(false);
+  const started = useWorld((s) => s.started);
+  const [supported, setSupported] = useState(true);
+  const [contextLost, setContextLost] = useState(false);
+  useKeyboardControls();
+
+  useEffect(() => setSupported(hasWebGL()), []);
+
+  // A GPU reset or a long spell in a background tab can kill the WebGL context.
+  // Without this the world silently freezes mid-drive with no explanation.
+  useEffect(() => {
+    const canvas = document.querySelector("canvas");
+    if (!canvas) return;
+    const lost = (event: Event) => {
+      event.preventDefault();
+      setContextLost(true);
+    };
+    const restored = () => setContextLost(false);
+    canvas.addEventListener("webglcontextlost", lost);
+    canvas.addEventListener("webglcontextrestored", restored);
+    return () => {
+      canvas.removeEventListener("webglcontextlost", lost);
+      canvas.removeEventListener("webglcontextrestored", restored);
+    };
+  }, [supported]);
+
+  // Coarse pointers and small screens get fewer stars and no shadow pass.
+  const quality = useMemo<"high" | "low">(() => {
+    if (typeof window === "undefined") return "high";
+    const coarse = window.matchMedia("(pointer: coarse)").matches;
+    return coarse || window.innerWidth < 900 ? "low" : "high";
+  }, []);
+
+  if (!supported) return <NoWebGL />;
 
   return (
-    <div className="w-full h-screen overflow-hidden" style={{ background: "#181818" }}>
-      <AnimatePresence mode="wait">
-        {!playing ? (
-          <PlayScreen key="play" onPlay={() => setPlaying(true)} />
-        ) : (
-          <motion.div key="game" className="w-full h-screen" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }}>
-            <Suspense fallback={<LoadingScreen />}>
-              <PixelGame />
-            </Suspense>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+    <main className="relative h-[100dvh] w-full overflow-hidden bg-[#160f34] text-white">
+      <Canvas
+        shadows={quality === "high"}
+        dpr={quality === "high" ? [1, 1.75] : [1, 1.3]}
+        gl={{
+          antialias: false,
+          powerPreference: "high-performance",
+          toneMapping: ACESFilmicToneMapping,
+        }}
+        camera={{ fov: 55, near: 0.5, far: 500, position: [0, 12, 46] }}
+      >
+        <Suspense fallback={null}>
+          <World quality={quality} />
+        </Suspense>
+      </Canvas>
+
+      {contextLost && (
+        <div className="pointer-events-auto fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-[#0d0a24]/95 px-6 text-center backdrop-blur">
+          <p className="text-sm text-[#b9b2e8]">The graphics context was lost.</p>
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className="rounded-full bg-gradient-to-r from-[#5b4bff] to-[#c341ff] px-7 py-3 text-xs font-bold uppercase tracking-[0.2em]"
+          >
+            Reload the world
+          </button>
+        </div>
+      )}
+
+      {!started && <Intro />}
+      {started && (
+        <>
+          <Hud />
+          <Panel />
+          <TouchControls />
+        </>
+      )}
+
+      {started && (
+        <Link
+          to="/resume"
+          className="pointer-events-auto fixed bottom-1 left-1/2 z-20 hidden -translate-x-1/2 text-[0.6rem] uppercase tracking-[0.2em] text-[#6b649b] transition hover:text-white sm:block"
+        >
+          Prefer a plain résumé? →
+        </Link>
+      )}
+    </main>
+  );
+}
+
+function NoWebGL() {
+  return (
+    <main className="flex min-h-[100dvh] flex-col items-center justify-center gap-4 bg-[#160f34] px-6 text-center text-white">
+      <h1 className="text-3xl font-black">Amritaraj Nair</h1>
+      <p className="max-w-md text-sm text-[#b9b2e8]">
+        This portfolio is a 3D driving world, and your browser doesn&apos;t support WebGL. The
+        written version has everything.
+      </p>
+      <Link
+        to="/resume"
+        className="rounded-full bg-gradient-to-r from-[#5b4bff] to-[#c341ff] px-7 py-3 text-xs font-bold uppercase tracking-[0.2em]"
+      >
+        Read the résumé
+      </Link>
+    </main>
   );
 }
