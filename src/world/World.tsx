@@ -12,7 +12,7 @@ import { PALETTE } from "./palette";
 import { PROFILE, UPCOMING, ZONES } from "./content";
 import { worldStore } from "./store";
 
-export default function World({ quality }: { quality: "high" | "low" }) {
+export default function World() {
   const inside = useRef<string | null>(null);
 
   // Zone entry is a distance check rather than a physics sensor — one cheap
@@ -21,7 +21,9 @@ export default function World({ quality }: { quality: "high" | "low" }) {
     let found: string | null = null;
     for (const zone of ZONES) {
       const [zx, zz] = zone.position;
-      if (Math.hypot(position.x - zx, position.z - zz) < zone.radius) {
+      // Must clear the pylon ring at radius + 4: approach a pylon head-on and
+      // the car stops against it, so a tighter trigger is unreachable.
+      if (Math.hypot(position.x - zx, position.z - zz) < zone.radius + 9) {
         found = zone.id;
         break;
       }
@@ -44,8 +46,8 @@ export default function World({ quality }: { quality: "high" | "low" }) {
         position={[48, 70, 28]}
         intensity={1.9}
         color={PALETTE.moon}
-        castShadow={quality === "high"}
-        shadow-mapSize={[2048, 2048]}
+        castShadow
+        shadow-mapSize={[4096, 4096]}
         shadow-camera-near={1}
         shadow-camera-far={220}
         shadow-camera-left={-90}
@@ -55,14 +57,7 @@ export default function World({ quality }: { quality: "high" | "low" }) {
         shadow-bias={-0.0006}
       />
 
-      <Stars
-        radius={260}
-        depth={70}
-        count={quality === "high" ? 3500 : 1200}
-        factor={5}
-        fade
-        speed={0.6}
-      />
+      <Stars radius={260} depth={70} count={4200} factor={5} fade speed={0.6} />
       <Environment preset="night" />
       <Moon />
 
@@ -88,7 +83,7 @@ export default function World({ quality }: { quality: "high" | "low" }) {
 
       <EffectComposer multisampling={0}>
         <Bloom
-          intensity={quality === "high" ? 1.15 : 0.7}
+          intensity={1.25}
           luminanceThreshold={0.75}
           luminanceSmoothing={0.28}
           mipmapBlur
@@ -102,8 +97,8 @@ export default function World({ quality }: { quality: "high" | "low" }) {
 }
 
 /**
- * Hold the *horizontal* field of view constant. Without this a phone in
- * portrait sees a keyhole of the world and the districts read as clutter.
+ * Hold the *horizontal* field of view constant so the framing survives any
+ * window shape — a short, wide browser window shouldn't crop the districts.
  */
 function AdaptiveFov() {
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;

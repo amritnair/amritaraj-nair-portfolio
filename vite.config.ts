@@ -10,7 +10,7 @@ export default defineConfig(() => ({
   base: "/amritaraj-nair-portfolio/",
   server: {
     host: "::",
-    port: 8080,
+    port: 5173,
   },
   plugins: [react(), wasm(), topLevelAwait()],
   resolve: {

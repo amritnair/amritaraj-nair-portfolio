@@ -25,10 +25,10 @@ export default function Panel() {
   return (
     <aside
       key={zone.id}
-      className="pointer-events-auto fixed inset-x-0 bottom-0 z-30 max-h-[64vh] animate-in slide-in-from-bottom overflow-y-auto border-t border-white/10 bg-[#0d0a24]/94 backdrop-blur-xl sm:inset-y-0 sm:right-0 sm:left-auto sm:max-h-none sm:w-[27rem] sm:border-l sm:border-t-0 sm:slide-in-from-right"
+      className="pointer-events-auto fixed inset-y-0 right-0 z-30 w-[28rem] max-w-[38vw] animate-in slide-in-from-right overflow-y-auto border-l border-white/10 bg-[#0b0820]/[0.97] backdrop-blur-xl"
       style={{ boxShadow: `inset 4px 0 0 -1px ${zone.color}` }}
     >
-      <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-white/10 bg-[#0d0a24]/95 px-5 py-4 backdrop-blur">
+      <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-white/10 bg-[#0b0820] px-5 py-4">
         <div>
           <h2 className="text-2xl font-black tracking-tight text-white">{zone.sign}</h2>
           <p className="mt-0.5 text-xs uppercase tracking-[0.18em]" style={{ color: zone.glow }}>

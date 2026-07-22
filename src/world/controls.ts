@@ -32,22 +32,8 @@ const KEY_MAP: Record<string, keyof Controls> = {
   KeyR: "reset",
 };
 
-/** Touch buttons write here; merged with the keyboard when read. */
-export const touch = { forward: 0, backward: 0, left: 0, right: 0 };
-
-export function setTouch(key: keyof typeof touch, value: number) {
-  touch[key] = value;
-}
-
 export function readControls(): Controls {
-  return {
-    forward: Math.max(controls.forward, touch.forward),
-    backward: Math.max(controls.backward, touch.backward),
-    left: Math.max(controls.left, touch.left),
-    right: Math.max(controls.right, touch.right),
-    brake: controls.brake,
-    reset: controls.reset,
-  };
+  return controls;
 }
 
 export function useKeyboardControls() {

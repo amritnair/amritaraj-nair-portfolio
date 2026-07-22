@@ -49,14 +49,14 @@ export default function Hud() {
         <button
           type="button"
           onClick={() => worldStore.openPanel(activeZone)}
-          className="pointer-events-auto fixed bottom-44 left-1/2 z-20 -translate-x-1/2 animate-pulse rounded-full border border-white/20 bg-[#0d0a24]/85 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-white backdrop-blur sm:bottom-8"
+          className="pointer-events-auto fixed bottom-8 left-1/2 z-20 -translate-x-1/2 animate-pulse rounded-full border border-white/20 bg-[#0d0a24]/85 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-white backdrop-blur "
         >
           Reopen {ZONE_BY_ID[activeZone].sign}
         </button>
       )}
 
       {!activeZone && visited.length === 0 && (
-        <div className="pointer-events-none fixed bottom-44 left-1/2 z-20 w-max -translate-x-1/2 rounded-full border border-white/10 bg-[#0d0a24]/70 px-5 py-2 text-[0.68rem] uppercase tracking-[0.2em] text-[#b9b2e8] backdrop-blur sm:bottom-8">
+        <div className="pointer-events-none fixed bottom-8 left-1/2 z-20 w-max -translate-x-1/2 rounded-full border border-white/10 bg-[#0d0a24]/70 px-5 py-2 text-[0.68rem] uppercase tracking-[0.2em] text-[#b9b2e8] backdrop-blur ">
           Follow a glowing road
         </div>
       )}
@@ -68,6 +68,7 @@ export default function Hud() {
 function Minimap() {
   const dot = useRef<SVGGElement>(null);
   const visited = useWorld((s) => s.visited);
+  const panelOpen = useWorld((s) => s.openZone !== null);
 
   useEffect(() => {
     let frame = 0;
@@ -88,7 +89,10 @@ function Minimap() {
   }, []);
 
   return (
-    <div className="pointer-events-none fixed bottom-4 right-4 z-20 hidden rounded-2xl border border-white/10 bg-[#0d0a24]/70 p-2 backdrop-blur sm:block">
+    <div
+      className="pointer-events-none fixed bottom-4 right-4 z-20 rounded-2xl border border-white/10 bg-[#0d0a24]/70 p-2 backdrop-blur transition-transform duration-300"
+      style={{ transform: panelOpen ? "translateX(min(-28rem, -38vw))" : "none" }}
+    >
       <svg width={MAP} height={MAP} viewBox={`0 0 ${MAP} ${MAP}`} aria-label="Island map">
         <circle
           cx={MAP / 2}
@@ -159,7 +163,7 @@ function Speedo() {
   }, []);
 
   return (
-    <div className="pointer-events-none fixed bottom-4 left-4 z-20 hidden rounded-xl border border-white/10 bg-[#0d0a24]/70 px-4 py-2.5 backdrop-blur sm:block">
+    <div className="pointer-events-none fixed bottom-4 left-4 z-20 rounded-xl border border-white/10 bg-[#0d0a24]/70 px-4 py-2.5 backdrop-blur">
       <div className="flex items-baseline gap-1.5">
         <span ref={value} className="font-mono text-2xl font-black tabular-nums text-white">
           0
