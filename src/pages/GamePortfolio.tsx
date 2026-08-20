@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import Intro from "@/world/ui/Intro";
 import Hud from "@/world/ui/Hud";
 import Panel from "@/world/ui/Panel";
+import Garage from "@/world/ui/Garage";
 import { useKeyboardControls } from "@/world/controls";
 import { useWorld } from "@/world/store";
 
@@ -120,6 +121,7 @@ export default function GamePortfolio() {
         <>
           <Hud />
           <Panel />
+          <Garage />
           <Link
             to="/resume"
             className="pointer-events-auto fixed bottom-1 left-1/2 z-20 -translate-x-1/2 text-[0.6rem] uppercase tracking-[0.2em] text-[#6b649b] transition hover:text-white"

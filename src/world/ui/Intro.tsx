@@ -47,11 +47,13 @@ export default function Intro() {
           {PROFILE.tagline}
         </p>
 
-        <div className="mx-auto mt-6 grid max-w-md grid-cols-2 gap-2 text-left font-mono text-[0.7rem] text-[#8f88bd] sm:grid-cols-4">
+        <div className="mx-auto mt-6 grid max-w-lg grid-cols-3 gap-2 text-left font-mono text-[0.7rem] text-[#8f88bd] sm:grid-cols-6">
           {[
             ["W / ↑", "Drive"],
             ["S / ↓", "Reverse"],
-            ["A D / ← →", "Steer"],
+            ["A D", "Steer"],
+            ["SPACE", "Drift"],
+            ["G", "Garage"],
             ["R", "Respawn"],
           ].map(([key, label]) => (
             <div key={key} className="rounded-md border border-white/10 bg-white/[0.04] px-2 py-2">

@@ -6,6 +6,8 @@ import { Environment, Stars } from "@react-three/drei";
 import { EffectComposer, Bloom, Vignette, SMAA } from "@react-three/postprocessing";
 import Island from "./Island";
 import Highways from "./Highways";
+import Speedway from "./Speedway";
+import Ores from "./Ores";
 import District, { CrateStack, Ramp, TrophyPins } from "./District";
 import BlockText from "./BlockText";
 import Car from "./Car";
@@ -15,6 +17,11 @@ import { worldStore } from "./store";
 
 export default function World() {
   const inside = useRef<string | null>(null);
+
+  // Pull last session's banked points and chosen paint before anything renders.
+  useEffect(() => {
+    worldStore.hydrateGarage();
+  }, []);
 
   // Zone entry is a distance check rather than a physics sensor — one cheap
   // test per frame, and it can't be missed by a fast-moving car tunnelling.
@@ -80,10 +87,15 @@ export default function World() {
         <Ramp position={[56, 0]} rotation={Math.PI / 2} />
         <Ramp position={[0, 50]} rotation={Math.PI} />
 
+        {/* Inside Physics: the ring, its ramps and the speedway are real road. */}
+        <Highways />
+        <Speedway />
+
         <Car onMove={handleMove} />
       </Physics>
 
-      <Highways />
+      <Ores />
+
       <Beacons />
 
       <EffectComposer multisampling={0}>

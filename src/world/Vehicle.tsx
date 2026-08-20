@@ -1,12 +1,14 @@
-import { useRef } from "react";
+import { createContext, useContext, useRef } from "react";
 import * as THREE from "three";
-import { NEON } from "./palette";
+import { PAINTS, type Paint } from "./garage";
 
 /**
  * The player's car: a low-slung light-runner. Almost all of its read comes
  * from emissive trim rather than form — in a night world lit mostly by bloom,
  * a dark wedge with bright edges is legible from across the island in a way
  * that a detailed but unlit model never is.
+ *
+ * Paint and body kit are chosen in the garage; both are applied here.
  */
 export type VehicleRig = {
   /** Front-left, front-right, back-left, back-right. */
@@ -26,10 +28,18 @@ export const useVehicleRig = () =>
     thrusterLight: null,
   });
 
-const SHELL = "#10122c";
-const SHELL_LIGHT = "#1b1f45";
-const TRIM = NEON.cyan;
-const ACCENT = NEON.magenta;
+/**
+ * Paint travels by context rather than props: every strip and panel needs it,
+ * and threading colours through six levels of nested geometry would bury the
+ * shapes in plumbing.
+ */
+const PaintContext = createContext<Paint>(PAINTS[0]);
+const usePaint = () => useContext(PaintContext);
+
+/** Lightened shell colour, for shoulders and secondary panels. */
+function lighten(hex: string, amount = 0.14) {
+  return `#${new THREE.Color(hex).lerp(new THREE.Color("#ffffff"), amount).getHexString()}`;
+}
 
 type AnimateArgs = {
   /** Signed forward speed, world units/sec. */
@@ -38,11 +48,12 @@ type AnimateArgs = {
   throttle: number;
   brake: boolean;
   delta: number;
+  paint: Paint;
 };
 
 export function animateVehicle(
   rig: VehicleRig,
-  { speed, steer, throttle, brake, delta }: AnimateArgs,
+  { speed, steer, throttle, brake, delta, paint }: AnimateArgs,
 ) {
   const spin = speed * delta * 2.2;
   rig.wheels.forEach((wheel) => {
@@ -55,16 +66,18 @@ export function animateVehicle(
     if (hub) hub.rotation.y = THREE.MathUtils.lerp(hub.rotation.y, steer * 0.42, steerRate);
   });
 
-  // Thrusters flare on power and glow red-hot under braking.
+  // Thrusters flare on power and burn red under braking — which doubles as the
+  // drift tell, since the handbrake is how you break traction.
   const load = brake ? 1 : Math.max(throttle, 0);
   const target = 3 + load * 9 + Math.min(Math.abs(speed) / 26, 1) * 4;
   const rate = 1 - Math.pow(0.004, delta);
+  const glow = brake ? "#ff2a5f" : paint.trim;
   rig.thrusters.forEach((mesh) => {
     if (!mesh) return;
     const material = mesh.material as THREE.MeshStandardMaterial;
     material.emissiveIntensity = THREE.MathUtils.lerp(material.emissiveIntensity, target, rate);
-    material.color.set(brake ? "#ff3b6b" : TRIM);
-    material.emissive.set(brake ? "#ff2a5f" : TRIM);
+    material.color.set(glow);
+    material.emissive.set(glow);
   });
   if (rig.thrusterLight) {
     rig.thrusterLight.intensity = THREE.MathUtils.lerp(
@@ -72,7 +85,7 @@ export function animateVehicle(
       8 + load * 26,
       rate,
     );
-    rig.thrusterLight.color.set(brake ? "#ff2a5f" : TRIM);
+    rig.thrusterLight.color.set(glow);
   }
 }
 
@@ -80,7 +93,7 @@ export function animateVehicle(
 function Strip({
   position,
   args,
-  color = TRIM,
+  color,
   intensity = 4,
   rotation,
 }: {
@@ -90,12 +103,14 @@ function Strip({
   intensity?: number;
   rotation?: [number, number, number];
 }) {
+  const paint = usePaint();
+  const hue = color ?? paint.trim;
   return (
     <mesh position={position} rotation={rotation}>
       <boxGeometry args={args} />
       <meshStandardMaterial
-        color={color}
-        emissive={color}
+        color={hue}
+        emissive={hue}
         emissiveIntensity={intensity}
         toneMapped={false}
       />
@@ -103,38 +118,63 @@ function Strip({
   );
 }
 
-export function VehicleShell({ rig }: { rig: React.MutableRefObject<VehicleRig> }) {
+export function VehicleShell({
+  rig,
+  paint,
+  design,
+}: {
+  rig: React.MutableRefObject<VehicleRig>;
+  paint: Paint;
+  design: string;
+}) {
   return (
-    <group>
+    <PaintContext.Provider value={paint}>
+      <group>
+        <Hull />
+        <Trim />
+        <Thrusters rig={rig} />
+        <Lights />
+        <Wheels rig={rig} covered={design === "hover"} />
+        <BodyKit design={design} />
+      </group>
+    </PaintContext.Provider>
+  );
+}
+
+function Hull() {
+  const paint = usePaint();
+  const panel = lighten(paint.shell);
+
+  return (
+    <>
       {/* Main hull — wide, flat and low. */}
       <mesh castShadow receiveShadow position={[0, 0.02, 0]}>
         <boxGeometry args={[1.96, 0.44, 4.0]} />
-        <meshStandardMaterial color={SHELL} roughness={0.28} metalness={0.75} flatShading />
+        <meshStandardMaterial color={paint.shell} roughness={0.28} metalness={0.75} flatShading />
       </mesh>
       {/* Nose, stepped down and narrowed so the front reads as a blade. */}
       <mesh castShadow position={[0, -0.06, -2.14]}>
         <boxGeometry args={[1.62, 0.28, 0.72]} />
-        <meshStandardMaterial color={SHELL} roughness={0.3} metalness={0.7} flatShading />
+        <meshStandardMaterial color={paint.shell} roughness={0.3} metalness={0.7} flatShading />
       </mesh>
       <mesh castShadow position={[0, -0.13, -2.62]}>
         <boxGeometry args={[1.24, 0.16, 0.42]} />
-        <meshStandardMaterial color={SHELL_LIGHT} roughness={0.3} metalness={0.7} flatShading />
+        <meshStandardMaterial color={panel} roughness={0.3} metalness={0.7} flatShading />
       </mesh>
       {/* Shoulders over the rear wheels. */}
       {[-0.94, 0.94].map((x) => (
         <mesh key={x} castShadow position={[x, 0.16, 1.28]}>
           <boxGeometry args={[0.42, 0.5, 1.5]} />
-          <meshStandardMaterial color={SHELL_LIGHT} roughness={0.3} metalness={0.7} flatShading />
+          <meshStandardMaterial color={panel} roughness={0.3} metalness={0.7} flatShading />
         </mesh>
       ))}
-
       {/* Canopy: a single tinted wedge, no frame — frames read as clutter at
           this scale and kill the silhouette. */}
       <mesh castShadow position={[0, 0.42, -0.16]} rotation={[0.06, 0, 0]}>
         <boxGeometry args={[1.32, 0.46, 1.9]} />
         <meshStandardMaterial
           color="#0d1b3a"
-          emissive={TRIM}
+          emissive={paint.trim}
           emissiveIntensity={0.35}
           roughness={0.06}
           metalness={0.9}
@@ -142,21 +182,30 @@ export function VehicleShell({ rig }: { rig: React.MutableRefObject<VehicleRig> 
           opacity={0.86}
         />
       </mesh>
+    </>
+  );
+}
 
+function Trim() {
+  const paint = usePaint();
+  return (
+    <>
       {/* Flank strips — the line that says "light-runner". */}
       {[-1.0, 1.0].map((x) => (
         <Strip key={x} position={[x, 0.06, 0.1]} args={[0.06, 0.1, 3.5]} />
       ))}
-      {/* Belly seam and nose blade */}
-      <Strip position={[0, -0.2, 0.1]} args={[1.3, 0.06, 3.2]} intensity={2.4} color={ACCENT} />
+      <Strip position={[0, -0.2, 0.1]} args={[1.3, 0.06, 3.2]} intensity={2.4} color={paint.accent} />
       <Strip position={[0, -0.13, -2.82]} args={[1.16, 0.09, 0.09]} intensity={7} />
-      {/* Spine running back to the tail */}
-      <Strip position={[0, 0.25, 1.5]} args={[0.9, 0.07, 0.07]} intensity={5} color={ACCENT} />
+      <Strip position={[0, 0.25, 1.5]} args={[0.9, 0.07, 0.07]} intensity={5} color={paint.accent} />
+      <Strip position={[0, 0.16, 2.0]} args={[1.7, 0.12, 0.08]} intensity={6} color={paint.accent} />
+    </>
+  );
+}
 
-      {/* Tail light bar */}
-      <Strip position={[0, 0.16, 2.0]} args={[1.7, 0.12, 0.08]} intensity={6} color={ACCENT} />
-
-      {/* Thrusters */}
+function Thrusters({ rig }: { rig: React.MutableRefObject<VehicleRig> }) {
+  const paint = usePaint();
+  return (
+    <>
       {[-0.52, 0.52].map((x, i) => (
         <mesh
           key={x}
@@ -166,8 +215,8 @@ export function VehicleShell({ rig }: { rig: React.MutableRefObject<VehicleRig> 
         >
           <cylinderGeometry args={[0.26, 0.26, 0.12, 12]} />
           <meshStandardMaterial
-            color={TRIM}
-            emissive={TRIM}
+            color={paint.trim}
+            emissive={paint.trim}
             emissiveIntensity={4}
             toneMapped={false}
           />
@@ -178,11 +227,17 @@ export function VehicleShell({ rig }: { rig: React.MutableRefObject<VehicleRig> 
         distance={14}
         decay={2}
         intensity={10}
-        color={TRIM}
+        color={paint.trim}
         ref={(el) => (rig.current.thrusterLight = el)}
       />
+    </>
+  );
+}
 
-      {/* Headlights, plus the cone that actually lights the road. */}
+function Lights() {
+  const paint = usePaint();
+  return (
+    <>
       {[-0.5, 0.5].map((x) => (
         <mesh key={x} position={[x, -0.06, -2.48]}>
           <boxGeometry args={[0.34, 0.12, 0.1]} />
@@ -204,14 +259,110 @@ export function VehicleShell({ rig }: { rig: React.MutableRefObject<VehicleRig> 
         color="#d8f2ff"
       />
       {/* Underglow — the car sits in its own pool of light. */}
-      <pointLight position={[0, -0.4, 0]} distance={9} decay={2} intensity={9} color={ACCENT} />
-
-      <Wheels rig={rig} />
-    </group>
+      <pointLight position={[0, -0.4, 0]} distance={9} decay={2} intensity={9} color={paint.accent} />
+    </>
   );
 }
 
-function Wheels({ rig }: { rig: React.MutableRefObject<VehicleRig> }) {
+/**
+ * The unlockable body kits. Each is additive geometry on the same hull, so a
+ * kit can never break the silhouette the physics collider assumes.
+ */
+function BodyKit({ design }: { design: string }) {
+  const paint = usePaint();
+
+  if (design === "stripe") {
+    return (
+      <>
+        {[-0.34, 0.34].map((x) => (
+          <mesh key={x} position={[x, 0.25, -0.1]}>
+            <boxGeometry args={[0.26, 0.04, 3.9]} />
+            <meshStandardMaterial
+              color={paint.trim}
+              emissive={paint.trim}
+              emissiveIntensity={2.6}
+              toneMapped={false}
+            />
+          </mesh>
+        ))}
+      </>
+    );
+  }
+
+  if (design === "wing") {
+    return (
+      <>
+        {[-0.78, 0.78].map((x) => (
+          <mesh key={x} castShadow position={[x, 0.5, 1.86]}>
+            <boxGeometry args={[0.12, 0.5, 0.3]} />
+            <meshStandardMaterial color={lighten(paint.shell)} roughness={0.4} metalness={0.6} />
+          </mesh>
+        ))}
+        <mesh castShadow position={[0, 0.76, 1.9]}>
+          <boxGeometry args={[2.1, 0.1, 0.6]} />
+          <meshStandardMaterial color={paint.shell} roughness={0.35} metalness={0.7} flatShading />
+        </mesh>
+        <Strip position={[0, 0.82, 1.9]} args={[2.0, 0.05, 0.12]} intensity={5} />
+      </>
+    );
+  }
+
+  if (design === "hover") {
+    return (
+      <>
+        {/* Skirt: a continuous glowing lip around the base. */}
+        {[
+          { position: [0, -0.24, -1.6] as [number, number, number], args: [1.9, 0.1, 0.12] },
+          { position: [0, -0.24, 1.8] as [number, number, number], args: [1.9, 0.1, 0.12] },
+          { position: [-1.0, -0.24, 0.1] as [number, number, number], args: [0.12, 0.1, 3.6] },
+          { position: [1.0, -0.24, 0.1] as [number, number, number], args: [0.12, 0.1, 3.6] },
+        ].map((bar, i) => (
+          <Strip
+            key={i}
+            position={bar.position}
+            args={bar.args as [number, number, number]}
+            color={paint.accent}
+            intensity={4}
+          />
+        ))}
+      </>
+    );
+  }
+
+  if (design === "spike") {
+    return (
+      <>
+        {/* Roof fin */}
+        <mesh castShadow position={[0, 0.78, 0.5]}>
+          <boxGeometry args={[0.1, 0.42, 1.3]} />
+          <meshStandardMaterial color={paint.shell} roughness={0.35} metalness={0.7} flatShading />
+        </mesh>
+        <Strip position={[0, 0.99, 0.5]} args={[0.06, 0.06, 1.2]} intensity={6} />
+        {/* Nose canards */}
+        {[-1.0, 1.0].map((x) => (
+          <mesh key={x} castShadow position={[x, -0.08, -2.0]} rotation={[0, 0, x > 0 ? -0.2 : 0.2]}>
+            <boxGeometry args={[0.5, 0.07, 0.5]} />
+            <meshStandardMaterial color={lighten(paint.shell)} roughness={0.4} metalness={0.6} />
+          </mesh>
+        ))}
+        {[-1.05, 1.05].map((x) => (
+          <Strip key={x} position={[x, -0.05, -2.16]} args={[0.42, 0.05, 0.06]} intensity={5} />
+        ))}
+      </>
+    );
+  }
+
+  return null;
+}
+
+function Wheels({
+  rig,
+  covered,
+}: {
+  rig: React.MutableRefObject<VehicleRig>;
+  covered: boolean;
+}) {
+  const paint = usePaint();
   const mounts: [number, number, number][] = [
     [-1.02, -0.3, -1.32],
     [1.02, -0.3, -1.32],
@@ -230,21 +381,16 @@ function Wheels({ rig }: { rig: React.MutableRefObject<VehicleRig> }) {
           }}
         >
           <group ref={(el) => (rig.current.wheels[index] = el)}>
-            {/* Tyre */}
             <mesh castShadow rotation={[0, 0, Math.PI / 2]}>
               <cylinderGeometry args={[0.54, 0.54, 0.36, 14]} />
               <meshStandardMaterial color="#0c0e1f" roughness={0.9} flatShading />
             </mesh>
             {/* Glowing rim, lightcycle-style, on the outboard face only. */}
-            <mesh
-              rotation={[Math.PI / 2, 0, 0]}
-              position={[x > 0 ? 0.19 : -0.19, 0, 0]}
-              scale={[1, 1, 1]}
-            >
+            <mesh rotation={[Math.PI / 2, 0, 0]} position={[x > 0 ? 0.19 : -0.19, 0, 0]}>
               <torusGeometry args={[0.34, 0.055, 8, 20]} />
               <meshStandardMaterial
-                color={TRIM}
-                emissive={TRIM}
+                color={paint.trim}
+                emissive={paint.trim}
                 emissiveIntensity={4.5}
                 toneMapped={false}
               />
@@ -254,6 +400,20 @@ function Wheels({ rig }: { rig: React.MutableRefObject<VehicleRig> }) {
               <meshStandardMaterial color="#8fa8ff" metalness={0.9} roughness={0.2} flatShading />
             </mesh>
           </group>
+
+          {/* Wheel covers don't spin with the wheel, so they sit outside the
+              spinning group. */}
+          {covered && (
+            <mesh rotation={[0, 0, Math.PI / 2]} position={[x > 0 ? 0.3 : -0.3, 0, 0]}>
+              <cylinderGeometry args={[0.6, 0.6, 0.06, 12]} />
+              <meshStandardMaterial
+                color={lighten(paint.shell, 0.2)}
+                metalness={0.8}
+                roughness={0.25}
+                flatShading
+              />
+            </mesh>
+          )}
         </group>
       ))}
     </>

@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { ISLAND_RADIUS } from "../Island";
 import { PROFILE, ZONE_BY_ID, ZONES } from "../content";
 import { telemetry, useWorld, worldStore } from "../store";
+import { ORES } from "../Ores";
 
 const MAP = 132;
 const toMap = (v: number) => MAP / 2 + (v / ISLAND_RADIUS) * (MAP / 2 - 8);
@@ -44,6 +45,10 @@ export default function Hud() {
 
       <Minimap />
       <Speedo />
+      <DriftMeter />
+      <GarageButton />
+      <RaceTimer />
+      <LapBanner />
 
       {activeZone && !openZone && (
         <button
@@ -61,6 +66,158 @@ export default function Hud() {
         </div>
       )}
     </>
+  );
+}
+
+/**
+ * Live drift chain. Like the speedo, this is driven straight off telemetry on
+ * its own rAF — a chain updates every frame, and a React render per frame for
+ * a number that's only on screen while sliding is a bad trade.
+ */
+function DriftMeter() {
+  const wrap = useRef<HTMLDivElement>(null);
+  const chain = useRef<HTMLSpanElement>(null);
+  const multiplier = useRef<HTMLSpanElement>(null);
+  const bar = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let frame = 0;
+    const tick = () => {
+      const showing = telemetry.driftChain > 0;
+      if (wrap.current) {
+        wrap.current.style.opacity = showing ? "1" : "0";
+        wrap.current.style.transform = `translate(-50%, ${showing ? "0" : "0.6rem"})`;
+      }
+      if (showing) {
+        if (chain.current) chain.current.textContent = String(Math.round(telemetry.driftChain));
+        if (multiplier.current) multiplier.current.textContent = `x${telemetry.driftMultiplier}`;
+        if (bar.current) bar.current.style.transform = `scaleX(${telemetry.driftAngle})`;
+      }
+      frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  return (
+    <div
+      ref={wrap}
+      className="pointer-events-none fixed left-1/2 top-24 z-20 w-max rounded-2xl border border-[#31d8ff]/40 bg-[#0d0a24]/80 px-6 py-3 text-center backdrop-blur transition-all duration-200"
+      style={{ opacity: 0, transform: "translate(-50%, 0.6rem)" }}
+    >
+      <div className="font-mono text-[0.58rem] uppercase tracking-[0.32em] text-[#31d8ff]">
+        Drift
+      </div>
+      <div className="mt-0.5 flex items-baseline justify-center gap-2">
+        <span ref={chain} className="font-mono text-3xl font-black tabular-nums text-white">
+          0
+        </span>
+        <span ref={multiplier} className="font-mono text-base font-black text-[#ff5fd2]">
+          x1
+        </span>
+      </div>
+      <div className="mx-auto mt-1.5 h-1 w-32 overflow-hidden rounded-full bg-white/10">
+        <div
+          ref={bar}
+          className="h-full w-full origin-left rounded-full bg-gradient-to-r from-[#31d8ff] to-[#ff5fd2]"
+          style={{ transform: "scaleX(0)" }}
+        />
+      </div>
+    </div>
+  );
+}
+
+/** Lap clock — only on screen while a speedway lap is actually running. */
+function RaceTimer() {
+  const wrap = useRef<HTMLDivElement>(null);
+  const clock = useRef<HTMLSpanElement>(null);
+  const gates = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    let frame = 0;
+    const tick = () => {
+      if (wrap.current) wrap.current.style.opacity = telemetry.raceRunning ? "1" : "0";
+      if (telemetry.raceRunning) {
+        if (clock.current) clock.current.textContent = telemetry.raceTime.toFixed(2);
+        if (gates.current) {
+          gates.current.textContent = `${telemetry.raceCheckpoint}/${telemetry.raceTotal}`;
+        }
+      }
+      frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  return (
+    <div
+      ref={wrap}
+      className="pointer-events-none fixed left-1/2 top-6 z-20 w-max -translate-x-1/2 rounded-2xl border border-[#7dffd0]/40 bg-[#0d0a24]/80 px-6 py-2.5 text-center backdrop-blur transition-opacity duration-200"
+      style={{ opacity: 0 }}
+    >
+      <div className="font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[#7dffd0]">
+        Lap
+      </div>
+      <span ref={clock} className="font-mono text-2xl font-black tabular-nums text-white">
+        0.00
+      </span>
+      <span ref={gates} className="ml-2 font-mono text-xs text-[#8f88bd]">
+        0/3
+      </span>
+    </div>
+  );
+}
+
+/** Announces a finished lap, then gets out of the way. */
+function LapBanner() {
+  const lastLap = useWorld((s) => s.lastLap);
+
+  useEffect(() => {
+    if (!lastLap) return;
+    const timer = setTimeout(() => worldStore.clearLapBanner(), 4500);
+    return () => clearTimeout(timer);
+  }, [lastLap]);
+
+  if (!lastLap) return null;
+
+  return (
+    <div className="pointer-events-none fixed left-1/2 top-1/3 z-30 w-max -translate-x-1/2 rounded-2xl border border-[#7dffd0]/50 bg-[#0d0a24]/90 px-8 py-5 text-center backdrop-blur">
+      <div className="font-mono text-[0.6rem] uppercase tracking-[0.35em] text-[#7dffd0]">
+        {lastLap.best ? "New best lap" : "Lap complete"}
+      </div>
+      <div className="mt-1 font-mono text-4xl font-black tabular-nums text-white">
+        {lastLap.time.toFixed(2)}s
+      </div>
+      <div className="mt-1 font-mono text-sm font-bold text-[#ff5fd2]">
+        +{lastLap.reward.toLocaleString()} pts
+      </div>
+    </div>
+  );
+}
+
+/** Entry point to the design screen, with the running points total on it. */
+function GarageButton() {
+  const points = useWorld((s) => s.garage.points);
+  const ores = useWorld((s) => s.garage.ores.length);
+  const panelOpen = useWorld((s) => s.openZone !== null);
+
+  return (
+    <button
+      type="button"
+      onClick={() => worldStore.toggleGarage()}
+      className="pointer-events-auto fixed right-4 top-24 z-20 rounded-xl border border-white/10 bg-[#0d0a24]/70 px-4 py-2.5 text-right backdrop-blur transition hover:border-[#31d8ff]/50"
+      style={{ transform: panelOpen ? "translateX(min(-28rem, -38vw))" : "none" }}
+    >
+      <div className="font-mono text-[0.6rem] uppercase tracking-widest text-[#31d8ff]">
+        Garage · G
+      </div>
+      <div className="font-mono text-lg font-black tabular-nums leading-tight text-white">
+        {points.toLocaleString()}
+      </div>
+      <div className="font-mono text-[0.55rem] uppercase tracking-widest text-[#6f68a0]">
+        ◈ {ores}/{ORES.length} ore
+      </div>
+    </button>
   );
 }
 

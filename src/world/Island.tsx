@@ -5,8 +5,9 @@ import { Instance, Instances } from "@react-three/drei";
 import { RigidBody, CuboidCollider, CylinderCollider } from "@react-three/rapier";
 import { PALETTE, makeRandom } from "./palette";
 import { ZONES } from "./content";
+import { ISLAND_RADIUS, onRampCorridor } from "./layout";
 
-export const ISLAND_RADIUS = 118;
+export { ISLAND_RADIUS };
 
 type Scatter = { position: [number, number, number]; scale: number; rotation: number };
 
@@ -20,6 +21,8 @@ function isClear(x: number, z: number, pad: number) {
     const t = THREE.MathUtils.clamp((x * zx + z * zz) / (zx * zx + zz * zz || 1), 0, 1);
     if (Math.hypot(x - zx * t, z - zz * t) < 8 + pad) return false;
   }
+  // Nothing may stand where a highway ramp lands, or trees grow through it.
+  if (onRampCorridor(x, z, pad)) return false;
   return true;
 }
 

@@ -3,7 +3,8 @@ import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { RigidBody, CuboidCollider, type RapierRigidBody } from "@react-three/rapier";
 import { readControls } from "./controls";
-import { telemetry, worldStore } from "./store";
+import { telemetry, useWorld, worldStore } from "./store";
+import { PAINT_BY_ID, PAINTS } from "./garage";
 import { VehicleShell, animateVehicle, useVehicleRig } from "./Vehicle";
 
 /** Just inside the plaza ring, nose pointed at the title. */
@@ -14,6 +15,13 @@ const REVERSE_ACCELERATION = 26;
 const MAX_SPEED = 26;
 const TURN_RATE = 2.5;
 const GRIP = 0.86;
+
+/** Sideways speed, in units/sec, below which you are simply driving. */
+const DRIFT_ENTRY = 3.4;
+/** You have to be actually moving for a slide to count. */
+const DRIFT_MIN_SPEED = 7;
+/** Grace period before a chain banks, so a brief straightening doesn't end it. */
+const DRIFT_GRACE = 0.75;
 
 // Scratch objects — allocating inside useFrame would churn the GC every frame.
 const forward = new THREE.Vector3();
@@ -32,12 +40,65 @@ const visualForward = new THREE.Vector3();
 const camOffsetUp = new THREE.Vector3(0, 5.6, 0);
 const camLookUp = new THREE.Vector3(0, 1.2, 0);
 
+type DriftState = { chain: number; held: number; lapsed: number };
+
+/**
+ * Scores a slide. Points accrue while the car is moving sideways fast enough,
+ * scaled by how sideways it is and by a multiplier that climbs the longer the
+ * chain is held. Straightening out for longer than the grace period banks the
+ * chain and resets the multiplier — which is what makes a long, linked drift
+ * worth more than the same seconds spread over several short ones.
+ */
+function scoreDrift(
+  drift: DriftState,
+  { lateral, speed, delta }: { lateral: number; speed: number; delta: number },
+) {
+  const sliding = lateral > DRIFT_ENTRY && speed > DRIFT_MIN_SPEED;
+
+  if (sliding) {
+    drift.held += delta;
+    drift.lapsed = 0;
+    // Multiplier climbs a step per second held, capped so a single endless
+    // donut can't outscore actually driving the island.
+    const multiplier = Math.min(1 + Math.floor(drift.held), 8);
+    drift.chain += lateral * speed * 0.12 * multiplier * delta;
+    telemetry.driftMultiplier = multiplier;
+    telemetry.driftAngle = Math.min(lateral / 12, 1);
+    telemetry.driftActive = true;
+  } else if (drift.chain > 0) {
+    drift.lapsed += delta;
+    telemetry.driftAngle = Math.max(telemetry.driftAngle - delta * 2, 0);
+    if (drift.lapsed >= DRIFT_GRACE) {
+      worldStore.bankDrift(drift.chain);
+      drift.chain = 0;
+      drift.held = 0;
+      drift.lapsed = 0;
+      telemetry.driftMultiplier = 1;
+      telemetry.driftActive = false;
+    }
+  } else {
+    telemetry.driftActive = false;
+    telemetry.driftMultiplier = 1;
+    telemetry.driftAngle = Math.max(telemetry.driftAngle - delta * 2, 0);
+  }
+
+  telemetry.driftChain = drift.chain;
+}
+
 export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void }) {
   const body = useRef<RapierRigidBody>(null);
   const chassis = useRef<THREE.Group>(null);
   const rig = useVehicleRig();
+  // Paint and kit come from the garage; re-reading them per frame would mean a
+  // store subscription in the render loop, so they ride in as render state.
+  const garage = useWorld((s) => s.garage);
+  const paint = PAINT_BY_ID[garage.paint] ?? PAINTS[0];
+  const paintRef = useRef(paint);
+  paintRef.current = paint;
   const cameraReady = useRef(false);
   const smoothedLook = useRef(new THREE.Vector3());
+  /** Live drift chain: points banked so far and how long since it lapsed. */
+  const drift = useRef({ chain: 0, held: 0, lapsed: 0 });
 
   const reset = () => {
     const rb = body.current;
@@ -78,9 +139,11 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
     impulse.copy(right).multiplyScalar(-alongRight * gripLoss * mass);
     rb.applyImpulse(impulse, true);
 
-    // Rolling resistance and handbrake.
+    // Rolling resistance and handbrake. Braking *on* the throttle is a drift,
+    // not a stop, so it barely scrubs speed — otherwise a slide dies before it
+    // has scored anything. Braking off the throttle still stops the car hard.
     if (throttle === 0 || input.brake) {
-      const drag = input.brake ? 3.2 : 0.9;
+      const drag = input.brake ? (throttle > 0 ? 0.75 : 3.2) : 0.9;
       impulse.copy(forward).multiplyScalar(-alongForward * drag * mass * delta);
       rb.applyImpulse(impulse, true);
     }
@@ -93,7 +156,10 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
     // forward is blocked, so speed stays zero, so you can never turn away.
     const steerFactor = throttle !== 0 ? Math.max(speedFactor, 0.4) : speedFactor;
     const direction = alongForward < -0.4 ? -1 : 1;
-    rb.setAngvel({ x: 0, y: steer * TURN_RATE * steerFactor * direction, z: 0 }, true);
+    // The handbrake sharpens the turn-in; without it you can break traction but
+    // never rotate far enough to hold a slide.
+    const turnRate = TURN_RATE * (input.brake ? 1.4 : 1);
+    rb.setAngvel({ x: 0, y: steer * turnRate * steerFactor * direction, z: 0 }, true);
 
     const translation = rb.translation();
     carPosition.set(translation.x, translation.y, translation.z);
@@ -106,6 +172,12 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
     telemetry.speed = Math.abs(alongForward);
     worldStore.setSpeed(telemetry.speed);
     onMove?.(carPosition);
+
+    scoreDrift(drift.current, {
+      lateral: Math.abs(alongRight),
+      speed: Math.abs(alongForward),
+      delta,
+    });
 
     // The shell banks into a turn and squats under power. Wheels, hubs and
     // thrusters are animated one level down.
@@ -126,6 +198,7 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
       throttle,
       brake: input.brake,
       delta,
+      paint: paintRef.current,
     });
 
     // Chase camera: sits behind the car's heading, eases into place. It reads
@@ -180,7 +253,7 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
     >
       <CuboidCollider args={[1.0, 0.5, 2.05]} density={2.6} />
       <group ref={chassis}>
-        <VehicleShell rig={rig} />
+        <VehicleShell rig={rig} paint={paint} design={garage.design} />
       </group>
     </RigidBody>
   );
