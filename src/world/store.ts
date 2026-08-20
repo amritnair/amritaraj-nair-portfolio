@@ -22,6 +22,16 @@ export type WorldState = {
   garage: GarageState;
   /** Set briefly after a lap so the HUD can announce it. */
   lastLap: { time: number; reward: number; best: boolean } | null;
+  /** Set briefly after a landing, same idea. */
+  lastTrick: { air: number; spins: number; reward: number } | null;
+  /**
+   * What the player chose when they arrived on the circuit. The race clock
+   * only runs in "race"; "cruise" keeps the loop as a road. Reset to
+   * "undecided" on leaving, so the choice is offered again next time up.
+   */
+  circuitMode: "undecided" | "race" | "cruise";
+  /** True while the choice is on screen. */
+  circuitPrompt: boolean;
 };
 
 let state: WorldState = {
@@ -35,6 +45,9 @@ let state: WorldState = {
   garageOpen: false,
   garage: DEFAULT_GARAGE,
   lastLap: null,
+  lastTrick: null,
+  circuitMode: "undecided",
+  circuitPrompt: false,
 };
 
 const listeners = new Set<() => void>();
@@ -62,6 +75,10 @@ export const telemetry = {
   raceTime: 0,
   raceCheckpoint: 0,
   raceTotal: 3,
+  /** Live jump state, written every frame while the wheels are off the road. */
+  airborne: false,
+  airTime: 0,
+  airSpin: 0,
 };
 
 function set(patch: Partial<WorldState>) {
@@ -94,6 +111,30 @@ export const worldStore = {
   },
   toggleGarage: () => set({ garageOpen: !state.garageOpen }),
   clearLapBanner: () => set({ lastLap: null }),
+  clearTrickBanner: () => set({ lastTrick: null }),
+
+  /** Called when the car first reaches the circuit deck. */
+  askCircuitMode() {
+    if (state.circuitMode !== "undecided" || state.circuitPrompt) return;
+    set({ circuitPrompt: true });
+  },
+  chooseCircuitMode(mode: "race" | "cruise") {
+    set({ circuitMode: mode, circuitPrompt: false });
+  },
+  /** Called when the car drops off the circuit — offer the choice again. */
+  leaveCircuit() {
+    if (state.circuitMode === "undecided" && !state.circuitPrompt) return;
+    set({ circuitMode: "undecided", circuitPrompt: false });
+  },
+
+  /** A landed jump: airtime plus whole rotations. */
+  landTrick(air: number, spins: number) {
+    const reward = Math.round(air * 900 + spins * 1600);
+    if (reward <= 0) return;
+    const garage = { ...state.garage, points: state.garage.points + reward };
+    saveGarage(garage);
+    set({ garage, lastTrick: { air, spins, reward } });
+  },
   closeGarage: () => set({ garageOpen: false }),
 
   /** Called once on mount — reads whatever the last session banked. */

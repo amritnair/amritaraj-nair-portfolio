@@ -49,6 +49,9 @@ export default function Hud() {
       <GarageButton />
       <RaceTimer />
       <LapBanner />
+      <AirMeter />
+      <TrickBanner />
+      <CircuitPrompt />
 
       {activeZone && !openZone && (
         <button
@@ -123,6 +126,120 @@ function DriftMeter() {
           style={{ transform: "scaleX(0)" }}
         />
       </div>
+    </div>
+  );
+}
+
+/** Live hangtime, on screen only while the wheels are off the road. */
+function AirMeter() {
+  const wrap = useRef<HTMLDivElement>(null);
+  const time = useRef<HTMLSpanElement>(null);
+  const spin = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    let frame = 0;
+    const tick = () => {
+      if (wrap.current) wrap.current.style.opacity = telemetry.airborne ? "1" : "0";
+      if (telemetry.airborne) {
+        if (time.current) time.current.textContent = `${telemetry.airTime.toFixed(2)}s`;
+        const spins = Math.floor(telemetry.airSpin / (Math.PI * 2));
+        if (spin.current) spin.current.textContent = spins > 0 ? `${spins * 360}°` : "";
+      }
+      frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  return (
+    <div
+      ref={wrap}
+      className="pointer-events-none fixed left-1/2 top-40 z-20 w-max -translate-x-1/2 rounded-2xl border border-[#ff9f2f]/50 bg-[#0d0a24]/80 px-6 py-2.5 text-center backdrop-blur transition-opacity duration-150"
+      style={{ opacity: 0 }}
+    >
+      <div className="font-mono text-[0.55rem] uppercase tracking-[0.32em] text-[#ff9f2f]">Air</div>
+      <div className="flex items-baseline justify-center gap-2">
+        <span ref={time} className="font-mono text-2xl font-black tabular-nums text-white">
+          0.00s
+        </span>
+        <span ref={spin} className="font-mono text-base font-black text-[#7dffd0]" />
+      </div>
+    </div>
+  );
+}
+
+/** Announces a landed jump. */
+function TrickBanner() {
+  const trick = useWorld((s) => s.lastTrick);
+
+  useEffect(() => {
+    if (!trick) return;
+    const timer = setTimeout(() => worldStore.clearTrickBanner(), 3200);
+    return () => clearTimeout(timer);
+  }, [trick]);
+
+  if (!trick) return null;
+
+  return (
+    <div className="pointer-events-none fixed left-1/2 top-1/3 z-30 w-max -translate-x-1/2 rounded-2xl border border-[#ff9f2f]/60 bg-[#0d0a24]/90 px-8 py-4 text-center backdrop-blur">
+      <div className="font-mono text-[0.6rem] uppercase tracking-[0.35em] text-[#ff9f2f]">
+        {trick.spins > 0 ? `${trick.spins * 360}° spin` : "Landed"}
+      </div>
+      <div className="mt-1 font-mono text-3xl font-black tabular-nums text-white">
+        {trick.air.toFixed(2)}s air
+      </div>
+      <div className="font-mono text-sm font-bold text-[#ff5fd2]">
+        +{trick.reward.toLocaleString()} pts
+      </div>
+    </div>
+  );
+}
+
+/** Asked once each time you arrive on the circuit: race the clock, or cruise. */
+function CircuitPrompt() {
+  const open = useWorld((s) => s.circuitPrompt);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.code === "Digit1" || event.code === "Enter") {
+        worldStore.chooseCircuitMode("race");
+      }
+      if (event.code === "Digit2" || event.code === "Escape") {
+        worldStore.chooseCircuitMode("cruise");
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  if (!open) return null;
+
+  return (
+    <div className="pointer-events-auto fixed left-1/2 top-28 z-30 w-max max-w-[92vw] -translate-x-1/2 rounded-2xl border border-[#7dffd0]/50 bg-[#0d0a24]/90 px-7 py-5 text-center backdrop-blur">
+      <div className="font-mono text-[0.6rem] uppercase tracking-[0.35em] text-[#7dffd0]">
+        You're on the circuit
+      </div>
+      <p className="mt-1.5 text-sm text-[#b9b2e8]">Race the clock, or just drive it?</p>
+      <div className="mt-4 flex items-center justify-center gap-3">
+        <button
+          type="button"
+          onClick={() => worldStore.chooseCircuitMode("race")}
+          className="rounded-full bg-gradient-to-r from-[#7dffd0] to-[#31d8ff] px-6 py-2.5 text-xs font-bold uppercase tracking-[0.2em] text-[#08131f] transition hover:scale-[1.03]"
+        >
+          Timed lap · 1
+        </button>
+        <button
+          type="button"
+          onClick={() => worldStore.chooseCircuitMode("cruise")}
+          className="rounded-full border border-white/20 bg-white/[0.05] px-6 py-2.5 text-xs font-bold uppercase tracking-[0.2em] text-[#b9b2e8] transition hover:border-white/40 hover:text-white"
+        >
+          Just cruise · 2
+        </button>
+      </div>
+      <p className="mt-3 font-mono text-[0.58rem] uppercase tracking-widest text-[#6f68a0]">
+        A lap starts when you cross the start line
+      </p>
     </div>
   );
 }

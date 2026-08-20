@@ -6,8 +6,8 @@ import { RigidBody, CuboidCollider } from "@react-three/rapier";
 import { NEON } from "./palette";
 import { CIRCUIT_RAMP_ANGLE, CIRCUIT_RAMP_START, circuitAt, circuitPoint } from "./layout";
 import BlockText from "./BlockText";
-import { CHECKPOINTS, gateAt, updateRace } from "./race";
-import { telemetry, worldStore } from "./store";
+import { CHECKPOINTS, gateAt, resetRace, updateRace } from "./race";
+import { telemetry, useWorld, worldStore } from "./store";
 
 /**
  * The sky circuit: a closed race loop hung above the island, reached by a long
@@ -22,9 +22,16 @@ import { telemetry, worldStore } from "./store";
 const WIDTH = 15;
 /** Samples used for the visual sweep. Cheap now that it is one mesh. */
 const SEGMENTS = 180;
-/** Physics segments. Coarser than the visuals — the car cannot feel the
- *  difference, and every segment is three more colliders in the broadphase. */
-const COLLIDER_SEGMENTS = 72;
+/**
+ * Physics segments. Dense on purpose: each one is a flat box, so the joints
+ * between them are where the surface changes angle, and a coarse chain reads
+ * as a bumpy road. At this resolution each joint turns by well under a degree.
+ *
+ * A single swept trimesh would be smoother still and was the first thing I
+ * tried, but the car fell straight through it even at rest, so this stays
+ * until that can be worked out properly.
+ */
+const COLLIDER_SEGMENTS = 168;
 /** Roll per unit of curvature, capped so the banking never becomes a wall. */
 const BANK_GAIN = 5.2;
 const BANK_LIMIT = 0.34;
@@ -126,6 +133,7 @@ export default function Circuit() {
       <Surface segments={segments} />
       <Pylons frames={frames} />
       <ClimbRamp />
+      <Kickers frames={frames} />
       <StartGate />
       <Gates />
       <RaceWatcher />
@@ -317,16 +325,21 @@ function Markings({ frames }: { frames: Frame[] }) {
   );
 }
 
-/** One static body for the whole loop: deck slab plus a wall each side. */
+/**
+ * Physics for the loop: one smooth trimesh for the road, cuboid barriers along
+ * the edges. The barriers stay boxy on purpose — you only ever scrape them, so
+ * they cost nothing to approximate, while the surface under the wheels is the
+ * one thing that has to be seamless.
+ */
 function Surface({ segments }: { segments: Segment[] }) {
   return (
     <RigidBody type="fixed" colliders={false} friction={1}>
       {segments.map((s, i) => (
         <group key={i} position={s.position} rotation={euler(s) as unknown as THREE.Euler}>
-          {/* Offset so the collider's *top* face is the frame height. Centred,
-              it stands a quarter unit proud of the visual deck — and of the
-              ramp that meets it, which is a step to catch on. */}
-          <CuboidCollider args={[WIDTH / 2, 0.25, s.length / 2]} position={[0, -0.25, 0]} />
+          {/* Deep, and offset so its *top* face is the road surface. Depth is
+              what stops a car coming down off a jump at 40+ units/sec from
+              passing clean through between solver steps. */}
+          <CuboidCollider args={[WIDTH / 2, 1.6, s.length / 2]} position={[0, -1.6, 0]} />
           {[-1, 1].map((side) =>
             side < 0 && inMergeGap(s.angle) ? null : (
               <CuboidCollider
@@ -376,6 +389,74 @@ function Pylons({ frames }: { frames: Frame[] }) {
           <Instance key={i} position={[f.position.x, f.position.y + 5.4, f.position.z]} />
         ))}
       </Instances>
+    </group>
+  );
+}
+
+/**
+ * Mini jump ramps, sitting on the deck out of the racing line.
+ *
+ * Each is a wedge you can take or leave: they sit against one barrier rather
+ * than across the road, so a clean lap never has to touch one, and a session
+ * spent chasing hangtime never has to care about the lap.
+ */
+const KICKER_ANGLES = [0.55, 1.75, 2.9, 4.1, 5.4];
+
+function Kickers({ frames }: { frames: Frame[] }) {
+  const kickers = useMemo(
+    () =>
+      KICKER_ANGLES.map((angle, i) => {
+        const steps = frames.length - 1;
+        const index = Math.round((angle / (Math.PI * 2)) * steps) % steps;
+        const f = frames[index];
+        // Alternate sides so the loop doesn't turn into a slalom.
+        const side = i % 2 ? 1 : -1;
+        const basis = new THREE.Matrix4().makeBasis(f.right, f.up, f.forward);
+        return {
+          position: f.position
+            .clone()
+            .addScaledVector(f.right, side * (HALF - 3.4))
+            .addScaledVector(f.up, 0.05),
+          quaternion: new THREE.Quaternion().setFromRotationMatrix(basis),
+        };
+      }),
+    [frames],
+  );
+
+  return (
+    <group>
+      {kickers.map((k, i) => (
+        <group key={i} position={k.position} quaternion={k.quaternion}>
+          {/* A wedge: a thin slab tipped nose-up, so the leading edge is flush
+              with the deck and the trailing edge is the lip you launch off. */}
+          <group rotation={[-0.34, 0, 0]}>
+            <mesh castShadow receiveShadow position={[0, 0.42, 0]}>
+              <boxGeometry args={[5.6, 0.85, 7.4]} />
+              <meshStandardMaterial
+                color="#2b2f66"
+                emissive={NEON.lime}
+                emissiveIntensity={0.35}
+                roughness={0.5}
+                metalness={0.4}
+                flatShading
+              />
+            </mesh>
+            <RigidBody type="fixed" colliders={false} friction={1}>
+              <CuboidCollider args={[2.8, 0.42, 3.7]} position={[0, 0.42, 0]} />
+            </RigidBody>
+          </group>
+          {/* Chevron on the face so you can read the direction to hit it from. */}
+          <mesh position={[0, 0.95, 1.4]} rotation={[-0.34, 0, 0]}>
+            <boxGeometry args={[4.2, 0.08, 0.8]} />
+            <meshStandardMaterial
+              color={NEON.lime}
+              emissive={NEON.lime}
+              emissiveIntensity={2.4}
+              toneMapped={false}
+            />
+          </mesh>
+        </group>
+      ))}
     </group>
   );
 }
@@ -566,9 +647,32 @@ function Gates() {
   );
 }
 
+/**
+ * Watches for the car arriving on or leaving the circuit, and only runs the lap
+ * clock once the player has actually asked for a race. Cruising used to start
+ * a timer the moment you crossed the line whether you wanted one or not.
+ */
 function RaceWatcher() {
+  const onCircuit = useRef(false);
+  const mode = useWorld((s) => s.circuitMode);
+
   useFrame((_, delta) => {
-    updateRace(telemetry.x, telemetry.z, delta, worldStore);
+    // Generous bounds: anything this high and this far out is the circuit, and
+    // nothing else in the world is.
+    const radius = Math.hypot(telemetry.x, telemetry.z);
+    const here = radius > 105 && telemetry.y > 17;
+
+    if (here !== onCircuit.current) {
+      onCircuit.current = here;
+      if (here) worldStore.askCircuitMode();
+      else {
+        worldStore.leaveCircuit();
+        resetRace();
+      }
+    }
+
+    if (mode === "race") updateRace(telemetry.x, telemetry.z, delta, worldStore);
   });
+
   return null;
 }

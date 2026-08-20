@@ -1,7 +1,12 @@
 import { useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
-import { RigidBody, CuboidCollider, type RapierRigidBody } from "@react-three/rapier";
+import {
+  RigidBody,
+  CuboidCollider,
+  useRapier,
+  type RapierRigidBody,
+} from "@react-three/rapier";
 import { readControls } from "./controls";
 import { telemetry, useWorld, worldStore } from "./store";
 import { PAINT_BY_ID, PAINTS } from "./garage";
@@ -22,6 +27,11 @@ const DRIFT_ENTRY = 3.4;
 const DRIFT_MIN_SPEED = 7;
 /** Grace period before a chain banks, so a brief straightening doesn't end it. */
 const DRIFT_GRACE = 0.75;
+
+/** Ray length below the car's centre that still counts as touching down. */
+const GROUND_REACH = 1.35;
+/** Airtime below this is a bump in the road, not a jump. */
+const MIN_AIRTIME = 0.42;
 
 // Scratch objects — allocating inside useFrame would churn the GC every frame.
 const forward = new THREE.Vector3();
@@ -85,7 +95,47 @@ function scoreDrift(
   telemetry.driftChain = drift.chain;
 }
 
+type AirState = { airborne: boolean; time: number; spin: number; lastYaw: number };
+
+/**
+ * Scores a jump. Airtime is the bulk of it; rotation while off the ground is
+ * the bonus, counted in whole turns so a wobble pays nothing and a full spin
+ * pays properly. Both are only banked on landing — reward for sticking it,
+ * not for leaving the ground.
+ */
+function scoreAir(
+  air: AirState,
+  { grounded, yaw, delta }: { grounded: boolean; yaw: number; delta: number },
+) {
+  if (!grounded) {
+    let turn = yaw - air.lastYaw;
+    turn = ((turn + Math.PI) % (Math.PI * 2)) - Math.PI;
+    air.spin += Math.abs(turn);
+    air.lastYaw = yaw;
+    air.time += delta;
+    air.airborne = true;
+    telemetry.airTime = air.time;
+    telemetry.airSpin = air.spin;
+    telemetry.airborne = air.time > 0.2;
+    return;
+  }
+
+  if (air.airborne && air.time >= MIN_AIRTIME) {
+    const spins = Math.floor(air.spin / (Math.PI * 2));
+    worldStore.landTrick(air.time, spins);
+  }
+  air.airborne = false;
+  air.time = 0;
+  air.spin = 0;
+  air.lastYaw = yaw;
+  telemetry.airborne = false;
+  telemetry.airTime = 0;
+  telemetry.airSpin = 0;
+}
+
 export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void }) {
+  const { world, rapier } = useRapier();
+  const air = useRef<AirState>({ airborne: false, time: 0, spin: 0, lastYaw: 0 });
   const body = useRef<RapierRigidBody>(null);
   const chassis = useRef<THREE.Group>(null);
   const rig = useVehicleRig();
@@ -187,6 +237,20 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
     scoreDrift(drift.current, {
       lateral: Math.abs(alongRight),
       speed: Math.abs(alongForward),
+      delta,
+    });
+
+    // Grounded test by ray rather than by contact events: one short cast per
+    // frame, and it works the same on the island, the ring and the circuit
+    // without any of them having to know about it.
+    const ray = new rapier.Ray(
+      { x: carPosition.x, y: carPosition.y, z: carPosition.z },
+      { x: 0, y: -1, z: 0 },
+    );
+    const hit = world.castRay(ray, GROUND_REACH, true, undefined, undefined, undefined, rb);
+    scoreAir(air.current, {
+      grounded: hit !== null,
+      yaw: telemetry.heading,
       delta,
     });
 
