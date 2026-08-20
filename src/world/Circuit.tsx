@@ -1,6 +1,7 @@
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
+import { Instance, Instances } from "@react-three/drei";
 import { RigidBody, CuboidCollider } from "@react-three/rapier";
 import { NEON } from "./palette";
 import { CIRCUIT_RAMP_ANGLE, CIRCUIT_RAMP_START, circuitAt, circuitPoint } from "./layout";
@@ -19,7 +20,11 @@ import { telemetry, worldStore } from "./store";
  */
 
 const WIDTH = 15;
+/** Samples used for the visual sweep. Cheap now that it is one mesh. */
 const SEGMENTS = 180;
+/** Physics segments. Coarser than the visuals — the car cannot feel the
+ *  difference, and every segment is three more colliders in the broadphase. */
+const COLLIDER_SEGMENTS = 72;
 /** Roll per unit of curvature, capped so the banking never becomes a wall. */
 const BANK_GAIN = 5.2;
 const BANK_LIMIT = 0.34;
@@ -33,23 +38,31 @@ type Segment = {
   angle: number;
 };
 
-function buildSegments(): Segment[] {
+/** A banked frame on the loop: where it is and which way is right and up. */
+export type Frame = {
+  position: THREE.Vector3;
+  forward: THREE.Vector3;
+  right: THREE.Vector3;
+  up: THREE.Vector3;
+};
+
+function buildSegments(count: number): Segment[] {
   const points: THREE.Vector3[] = [];
-  for (let i = 0; i <= SEGMENTS; i += 1) {
-    const a = (i / SEGMENTS) * Math.PI * 2;
+  for (let i = 0; i <= count; i += 1) {
+    const a = (i / count) * Math.PI * 2;
     const p = circuitPoint(a);
     points.push(new THREE.Vector3(p.x, p.y, p.z));
   }
 
   const yaws: number[] = [];
   const lengths: number[] = [];
-  for (let i = 0; i < SEGMENTS; i += 1) {
+  for (let i = 0; i < count; i += 1) {
     const d = points[i + 1].clone().sub(points[i]);
     yaws.push(Math.atan2(d.x, d.z));
     lengths.push(d.length());
   }
 
-  return Array.from({ length: SEGMENTS }, (_, i) => {
+  return Array.from({ length: count }, (_, i) => {
     const from = points[i];
     const to = points[i + 1];
     const d = to.clone().sub(from);
@@ -57,7 +70,7 @@ function buildSegments(): Segment[] {
 
     // Curvature: how much the heading turns per unit travelled. Wrapped to
     // ±π so the seam at the start of the loop isn't read as a hairpin.
-    const next = yaws[(i + 1) % SEGMENTS];
+    const next = yaws[(i + 1) % count];
     let turn = next - yaws[i];
     turn = ((turn + Math.PI) % (Math.PI * 2)) - Math.PI;
     const curvature = turn / Math.max(lengths[i], 0.001);
@@ -68,19 +81,37 @@ function buildSegments(): Segment[] {
       pitch: -Math.atan2(d.y, flat),
       roll: THREE.MathUtils.clamp(curvature * BANK_GAIN, -BANK_LIMIT, BANK_LIMIT),
       length: d.length() + 0.6,
-      angle: (i / SEGMENTS) * Math.PI * 2,
+      angle: (i / count) * Math.PI * 2,
     };
   });
 }
 
+/** Turns the segment list into banked frames for sweeping and instancing. */
+function buildFrames(segments: Segment[]): Frame[] {
+  const frames = segments.map((s) => {
+    const euler = new THREE.Euler(s.pitch, s.yaw, s.roll, "YXZ");
+    const quaternion = new THREE.Quaternion().setFromEuler(euler);
+    return {
+      position: s.position.clone(),
+      forward: new THREE.Vector3(0, 0, 1).applyQuaternion(quaternion),
+      right: new THREE.Vector3(1, 0, 0).applyQuaternion(quaternion),
+      up: new THREE.Vector3(0, 1, 0).applyQuaternion(quaternion),
+    };
+  });
+  // Close the loop so the sweep has no seam at the start line.
+  frames.push(frames[0]);
+  return frames;
+}
+
 export default function Circuit() {
-  const segments = useMemo(buildSegments, []);
+  const segments = useMemo(() => buildSegments(COLLIDER_SEGMENTS), []);
+  const frames = useMemo(() => buildFrames(buildSegments(SEGMENTS)), []);
 
   return (
     <group>
-      <Deck segments={segments} />
+      <Deck frames={frames} />
       <Surface segments={segments} />
-      <Pylons segments={segments} />
+      <Pylons frames={frames} />
       <ClimbRamp />
       <StartGate />
       <Gates />
@@ -96,67 +127,174 @@ export default function Circuit() {
  */
 const euler = (s: Segment): [number, number, number, string] => [s.pitch, s.yaw, s.roll, "YXZ"];
 
-function Deck({ segments }: { segments: Segment[] }) {
+/**
+ * The whole track surface as one swept mesh.
+ *
+ * The first version drew a box per segment — 180 segments times a deck plus
+ * two rails plus studs came to roughly 700 meshes, which on its own cost more
+ * frame time than everything else in the world put together. Sweeping a 2D
+ * profile along the loop gives identical geometry in a single draw call.
+ */
+function sweep(profile: [number, number][], frames: Frame[], closed = true) {
+  const positions: number[] = [];
+  const push = (f: Frame, lateral: number, vertical: number) => {
+    positions.push(
+      f.position.x + f.right.x * lateral + f.up.x * vertical,
+      f.position.y + f.right.y * lateral + f.up.y * vertical,
+      f.position.z + f.right.z * lateral + f.up.z * vertical,
+    );
+  };
+
+  const rings = profile.length;
+  for (let i = 0; i < frames.length - 1; i += 1) {
+    const a = frames[i];
+    const b = frames[i + 1];
+    for (let j = 0; j < (closed ? rings : rings - 1); j += 1) {
+      const [l0, v0] = profile[j];
+      const [l1, v1] = profile[(j + 1) % rings];
+      // Two triangles per profile edge per step.
+      push(a, l0, v0);
+      push(b, l0, v0);
+      push(b, l1, v1);
+
+      push(a, l0, v0);
+      push(b, l1, v1);
+      push(a, l1, v1);
+    }
+  }
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
+const HALF = WIDTH / 2;
+
+function Deck({ frames }: { frames: Frame[] }) {
+  const deck = useMemo(
+    () =>
+      sweep(
+        [
+          [-HALF, 0],
+          [HALF, 0],
+          [HALF, -0.5],
+          [-HALF, -0.5],
+        ],
+        frames,
+      ),
+    [frames],
+  );
+
+  const rails = useMemo(
+    () =>
+      [-1, 1].map((side) =>
+        sweep(
+          [
+            [side * HALF - 0.18, 0],
+            [side * HALF + 0.18, 0],
+            [side * HALF + 0.18, 0.9],
+            [side * HALF - 0.18, 0.9],
+          ],
+          frames,
+        ),
+      ),
+    [frames],
+  );
+
   return (
     <group>
-      {segments.map((s, i) => (
-        <group key={i} position={s.position} rotation={euler(s) as unknown as THREE.Euler}>
-          {/* Lighter than the ring's deck, and faintly self-lit. At 30 units up
-              there are no lanterns and no island bounce, so an unlit surface
-              leaves the rails floating in a void with no road between them —
-              and lighting a 1000-unit loop with point lights alone would cost
-              far more than giving the deck its own glow. */}
-          <mesh receiveShadow>
-            <boxGeometry args={[WIDTH, 0.5, s.length]} />
-            <meshStandardMaterial
-              color="#242a5c"
-              emissive="#2b3370"
-              emissiveIntensity={0.55}
-              roughness={0.55}
-              metalness={0.4}
-              flatShading
-            />
-          </mesh>
-          {[-1, 1].map((side) => (
-            <mesh key={side} position={[(side * WIDTH) / 2, 0.55, 0]}>
-              <boxGeometry args={[0.36, 0.8, s.length]} />
-              <meshStandardMaterial
-                color={side > 0 ? NEON.amber : NEON.cyan}
-                emissive={side > 0 ? NEON.amber : NEON.cyan}
-                emissiveIntensity={3}
-                toneMapped={false}
-              />
-            </mesh>
-          ))}
-          {/* Runway studs down both kerbs. These do the real work of making the
-              track legible from across the loop. */}
-          {i % 3 === 0 &&
-            [-1, 1].map((side) => (
-              <mesh key={`stud${side}`} position={[(side * (WIDTH / 2 - 1.1)), 0.3, 0]}>
-                <boxGeometry args={[0.5, 0.1, 0.5]} />
-                <meshStandardMaterial
-                  color="#f2f5ff"
-                  emissive="#cfe4ff"
-                  emissiveIntensity={2.2}
-                  toneMapped={false}
-                />
-              </mesh>
-            ))}
-          {/* Centre dashes on every fourth segment — a full stripe reads as a
-              solid line and kills the sense of speed. */}
-          {i % 4 === 0 && (
-            <mesh position={[0, 0.28, 0]}>
-              <boxGeometry args={[0.5, 0.06, s.length * 0.45]} />
-              <meshStandardMaterial
-                color={NEON.lime}
-                emissive={NEON.lime}
-                emissiveIntensity={1.6}
-                toneMapped={false}
-              />
-            </mesh>
-          )}
-        </group>
+      <mesh geometry={deck} receiveShadow>
+        {/* Faintly self-lit: 30 units up there are no lanterns and no bounce
+            light, so an unlit deck leaves the rails floating in a void. */}
+        <meshStandardMaterial
+          color="#242a5c"
+          emissive="#2b3370"
+          emissiveIntensity={0.55}
+          roughness={0.55}
+          metalness={0.4}
+          flatShading
+        />
+      </mesh>
+      {rails.map((geometry, i) => (
+        <mesh key={i} geometry={geometry}>
+          <meshStandardMaterial
+            color={i ? NEON.amber : NEON.cyan}
+            emissive={i ? NEON.amber : NEON.cyan}
+            emissiveIntensity={3}
+            toneMapped={false}
+          />
+        </mesh>
       ))}
+      <Markings frames={frames} />
+    </group>
+  );
+}
+
+/** Runway studs and centre dashes, one instanced draw each. */
+function Markings({ frames }: { frames: Frame[] }) {
+  const studs = useMemo(() => {
+    const out: { position: THREE.Vector3; quaternion: THREE.Quaternion }[] = [];
+    const basis = new THREE.Matrix4();
+    for (let i = 0; i < frames.length - 1; i += 3) {
+      const f = frames[i];
+      const forward = f.forward;
+      basis.makeBasis(f.right, f.up, forward);
+      const quaternion = new THREE.Quaternion().setFromRotationMatrix(basis);
+      for (const side of [-1, 1]) {
+        out.push({
+          position: f.position
+            .clone()
+            .addScaledVector(f.right, side * (HALF - 1.1))
+            .addScaledVector(f.up, 0.3),
+          quaternion,
+        });
+      }
+    }
+    return out;
+  }, [frames]);
+
+  const dashes = useMemo(() => {
+    const out: { position: THREE.Vector3; quaternion: THREE.Quaternion }[] = [];
+    const basis = new THREE.Matrix4();
+    for (let i = 0; i < frames.length - 1; i += 6) {
+      const f = frames[i];
+      basis.makeBasis(f.right, f.up, f.forward);
+      out.push({
+        position: f.position.clone().addScaledVector(f.up, 0.3),
+        quaternion: new THREE.Quaternion().setFromRotationMatrix(basis),
+      });
+    }
+    return out;
+  }, [frames]);
+
+  return (
+    <group>
+      <Instances limit={studs.length} range={studs.length}>
+        <boxGeometry args={[0.5, 0.1, 0.5]} />
+        <meshStandardMaterial
+          color="#f2f5ff"
+          emissive="#cfe4ff"
+          emissiveIntensity={2.2}
+          toneMapped={false}
+        />
+        {studs.map((stud, i) => (
+          <Instance key={i} position={stud.position} quaternion={stud.quaternion} />
+        ))}
+      </Instances>
+
+      <Instances limit={dashes.length} range={dashes.length}>
+        <boxGeometry args={[0.5, 0.06, 4]} />
+        <meshStandardMaterial
+          color={NEON.lime}
+          emissive={NEON.lime}
+          emissiveIntensity={1.6}
+          toneMapped={false}
+        />
+        {dashes.map((dash, i) => (
+          <Instance key={i} position={dash.position} quaternion={dash.quaternion} />
+        ))}
+      </Instances>
     </group>
   );
 }
@@ -182,39 +320,39 @@ function Surface({ segments }: { segments: Segment[] }) {
 }
 
 /**
- * Legs down to the sea, each carrying a lamp at deck height. The lamps matter
- * more than the legs: they are the only thing actually lighting the surface up
- * here, and without them the track is a set of glowing rails around a hole.
+ * Legs down to the sea with a lit head, instanced. These carry no real lights:
+ * a point light per pylon is fifteen more lights for every lit material in the
+ * scene to loop over, and the deck's own glow already reads at night.
  */
-function Pylons({ segments }: { segments: Segment[] }) {
+function Pylons({ frames }: { frames: Frame[] }) {
+  const legs = useMemo(() => frames.filter((_, i) => i % 12 === 0), [frames]);
+
   return (
     <group>
-      {segments
-        .filter((_, i) => i % 12 === 0)
-        .map((s, i) => (
-          <group key={i} position={[s.position.x, 0, s.position.z]}>
-            <mesh position={[0, s.position.y / 2 - 5, 0]}>
-              <cylinderGeometry args={[0.9, 1.8, s.position.y + 10, 6]} />
-              <meshStandardMaterial color={NEON.deckEdge} roughness={0.6} flatShading />
-            </mesh>
-            <mesh position={[0, s.position.y + 5.4, 0]}>
-              <octahedronGeometry args={[0.7, 0]} />
-              <meshStandardMaterial
-                color="#dfe9ff"
-                emissive="#bcd4ff"
-                emissiveIntensity={2.6}
-                toneMapped={false}
-              />
-            </mesh>
-            <pointLight
-              position={[0, s.position.y + 5.2, 0]}
-              color="#a8c6ff"
-              intensity={38}
-              distance={34}
-              decay={2}
-            />
-          </group>
+      <Instances limit={legs.length} range={legs.length}>
+        <cylinderGeometry args={[0.9, 1.8, 1, 6]} />
+        <meshStandardMaterial color={NEON.deckEdge} roughness={0.6} flatShading />
+        {legs.map((f, i) => (
+          <Instance
+            key={i}
+            position={[f.position.x, f.position.y / 2 - 5, f.position.z]}
+            scale={[1, f.position.y + 10, 1]}
+          />
         ))}
+      </Instances>
+
+      <Instances limit={legs.length} range={legs.length}>
+        <octahedronGeometry args={[0.7, 0]} />
+        <meshStandardMaterial
+          color="#dfe9ff"
+          emissive="#bcd4ff"
+          emissiveIntensity={2.6}
+          toneMapped={false}
+        />
+        {legs.map((f, i) => (
+          <Instance key={i} position={[f.position.x, f.position.y + 5.4, f.position.z]} />
+        ))}
+      </Instances>
     </group>
   );
 }
@@ -345,7 +483,6 @@ function StartGate() {
       >
         CIRCUIT
       </BlockText>
-      <pointLight position={[0, 7, 0]} color={NEON.lime} intensity={26} distance={38} decay={2} />
     </group>
   );
 }

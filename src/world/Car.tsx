@@ -112,7 +112,12 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
   useFrame((threeState, rawDelta) => {
     const rb = body.current;
     if (!rb) return;
-    const delta = Math.min(rawDelta, 1 / 30);
+    // Clamped so a stalled frame can't fling the car across the island. The
+    // cap doubles as a slow-motion trap though: on a machine running at 10fps
+    // every frame advances only 1/20s of driving, so the car crawls no matter
+    // how long you hold the throttle. 1/20 keeps it stable without making a
+    // slow machine feel broken.
+    const delta = Math.min(rawDelta, 1 / 20);
     const input = readControls();
 
     const rot = rb.rotation();

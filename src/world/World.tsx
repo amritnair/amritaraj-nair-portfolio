@@ -55,7 +55,10 @@ export default function World() {
         intensity={1.9}
         color={PALETTE.moon}
         castShadow
-        shadow-mapSize={[2048, 2048]}
+        // 1024 is plenty for a night scene lit mostly by bloom: the shadow
+        // pass redraws every caster, so this is one of the cheapest places to
+        // buy frame time back.
+        shadow-mapSize={[1024, 1024]}
         shadow-camera-near={1}
         shadow-camera-far={220}
         shadow-camera-left={-90}

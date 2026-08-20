@@ -104,7 +104,10 @@ function OreField({ collected }: { collected: string[] }) {
               toneMapped={false}
             />
           </mesh>
-          {/* A wider, dimmer shell so it reads as a glow rather than a solid. */}
+          {/* A wider, dimmer shell so it reads as a glow rather than a solid.
+              Deliberately not a real light: one point light per crystal is
+              sixteen more lights for every lit material in the world to loop
+              over, and bloom already makes these read from a distance. */}
           <mesh scale={1.7}>
             <octahedronGeometry args={[0.85, 0]} />
             <meshBasicMaterial
@@ -115,7 +118,6 @@ function OreField({ collected }: { collected: string[] }) {
               toneMapped={false}
             />
           </mesh>
-          <pointLight color={NEON.cyan} intensity={7} distance={11} decay={2} />
         </group>
       ))}
     </group>
