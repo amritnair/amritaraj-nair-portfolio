@@ -164,7 +164,12 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
     // The handbrake sharpens the turn-in; without it you can break traction but
     // never rotate far enough to hold a slide.
     const turnRate = TURN_RATE * (input.brake ? 1.4 : 1);
-    rb.setAngvel({ x: 0, y: steer * turnRate * steerFactor * direction, z: 0 }, true);
+    // Steering drives yaw only. Pitch is left to the physics: zeroing it here
+    // pins the car dead level, and a level car on a slope aims its throttle
+    // horizontally into the hill instead of up it — which is why the climb to
+    // the circuit could be ground at but never completed.
+    const spin = rb.angvel();
+    rb.setAngvel({ x: spin.x, y: steer * turnRate * steerFactor * direction, z: spin.z }, true);
 
     const translation = rb.translation();
     carPosition.set(translation.x, translation.y, translation.z);
@@ -253,7 +258,9 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
       restitution={0.1}
       linearDamping={0.35}
       angularDamping={4}
-      enabledRotations={[false, true, false]}
+      // Pitch free so the car lies along whatever it is driving on; roll still
+      // locked, since a car that can roll is a car that ends up on its back.
+      enabledRotations={[true, true, false]}
       ccd
       name="player"
     >

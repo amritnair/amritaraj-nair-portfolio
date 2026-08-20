@@ -16,14 +16,6 @@ export const RING_RADIUS = ISLAND_RADIUS - 16;
 export const RING_HEIGHT = 13;
 export const DECK_WIDTH = 14;
 
-/**
- * Where the on-ramps meet the ring. Chosen to sit in the gaps between the four
- * district spokes (45°, 135°, 225°, 315°) and clear of the jump ramps on the
- * cardinals — a ramp through a district would bury its sign.
- */
-export const RAMP_ANGLES = [Math.PI * 0.625, Math.PI * 1.625];
-export const RAMP_LENGTH = 62;
-
 /** Half-width of the corridor kept clear of scenery under each ramp. */
 export const RAMP_CLEARANCE = 11;
 
@@ -82,7 +74,7 @@ export function circuitPoint(angle: number) {
  */
 export const CIRCUIT_RAMP_ANGLE = Math.PI * 1.5;
 /** Where the climb begins, as a radius from the island centre. */
-export const CIRCUIT_RAMP_START = 38;
+export const CIRCUIT_RAMP_START = 30;
 
 /**
  * Due south, for two reasons: it is the one heading with no district and no
@@ -102,15 +94,4 @@ export function onCircuitRamp(x: number, z: number, pad = 0) {
 }
 
 /** True when (x, z) sits on the footprint of a highway ramp. */
-export function onRampCorridor(x: number, z: number, pad = 0) {
-  for (const angle of RAMP_ANGLES) {
-    const dirX = Math.cos(angle);
-    const dirZ = Math.sin(angle);
-    // Project onto the ramp's centreline, which runs inward from the ring.
-    const along = x * dirX + z * dirZ;
-    if (along < RING_RADIUS - RAMP_LENGTH - 6 || along > RING_RADIUS + 6) continue;
-    const across = Math.abs(-x * dirZ + z * dirX);
-    if (across < RAMP_CLEARANCE + pad) return true;
-  }
-  return onCircuitRamp(x, z, pad);
-}
+export const onRampCorridor = onCircuitRamp;

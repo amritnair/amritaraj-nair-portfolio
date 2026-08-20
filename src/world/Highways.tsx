@@ -4,19 +4,14 @@ import { useFrame } from "@react-three/fiber";
 import { Instance, Instances } from "@react-three/drei";
 import { RigidBody, CuboidCollider } from "@react-three/rapier";
 import { NEON } from "./palette";
-import {
-  DECK_WIDTH,
-  ISLAND_RADIUS,
-  RAMP_ANGLES,
-  RAMP_LENGTH,
-  RING_HEIGHT,
-  RING_RADIUS,
-} from "./layout";
+import { DECK_WIDTH, ISLAND_RADIUS, RING_HEIGHT, RING_RADIUS } from "./layout";
 
 /**
- * The skyway. The ring is real road — it has colliders, two on-ramps up from
- * the island, and kerbs low enough to be thrown over by a bad drift. The two
- * spans crossing above it are scenery only, kept high and out of the way.
+ * The skyway. The ring is still real road — it keeps its colliders, so falling
+ * off the circuit onto it is a recovery rather than a reset — but it no longer
+ * has ramps of its own: the only climb on the island is the one to the circuit,
+ * which crosses over this ring on its way up. The two spans crossing above are
+ * scenery only, kept high and out of the way.
  *
  * Everything reads through emissive trim on dark decks, so the cost is
  * geometry rather than lighting.
@@ -30,9 +25,6 @@ export default function Highways() {
     <group>
       <RingSkyway />
       <RingSurface />
-      {RAMP_ANGLES.map((angle) => (
-        <Ramp key={angle} angle={angle} />
-      ))}
       {/* Purely scenic, and high enough overhead to stay out of the way. */}
       <CrossSpan rotation={Math.PI / 4} height={30} length={ISLAND_RADIUS * 2.1} />
       <CrossSpan rotation={-Math.PI / 4} height={37} length={ISLAND_RADIUS * 2.1} />
@@ -81,88 +73,6 @@ function RingSurface() {
         </group>
       ))}
     </RigidBody>
-  );
-}
-
-/**
- * A straight on-ramp from the island up to the ring. Rapier gets one rotated
- * slab; the visual is the same slab with rails, so what you see is what you
- * drive on.
- */
-function Ramp({ angle }: { angle: number }) {
-  const pitch = Math.atan2(RING_HEIGHT, RAMP_LENGTH);
-  const span = Math.hypot(RING_HEIGHT, RAMP_LENGTH);
-  // Runs inward from the ring towards the island centre.
-  const outer = new THREE.Vector3(Math.cos(angle), 0, Math.sin(angle));
-
-  /**
-   * Two corrections, both of which the car feels immediately:
-   *
-   * The deck is a slab with thickness, so aligning its *centreline* with the
-   * ground puts the surface you actually drive on half a slab above the dirt —
-   * a step at the bottom with the slab's end cap as a wall in front of it. The
-   * whole ramp drops by half its thickness (measured vertically, hence the
-   * cosine) so the top face lands on y = 0 at the bottom and on the ring deck
-   * at the top.
-   *
-   * Even flush, the bottom edge is still a hard crease. Extending the slope
-   * past the ground line buries the last stretch, so the ramp rises out of the
-   * terrain and there is no edge to catch at all.
-   */
-  const BURIED = 14;
-  const drop = 0.3 / Math.cos(pitch);
-  const deckSpan = span + BURIED;
-  const radial = RING_RADIUS - RAMP_LENGTH / 2 - (BURIED / 2) * Math.cos(pitch);
-  const mid = outer.clone().multiplyScalar(radial);
-  const centreY = RING_HEIGHT / 2 - drop - (BURIED / 2) * Math.sin(pitch);
-
-  return (
-    <group position={[mid.x, centreY, mid.z]} rotation={[0, -angle + Math.PI / 2, 0]}>
-      {/* Negative pitch: a rotation about X sends local +z downward, and local
-          +z here points outward at the ring — the positive sign builds a ramp
-          that starts 13 units up at the island end and lands at the skyway's
-          feet, which is exactly backwards. */}
-      <group rotation={[-pitch, 0, 0]}>
-        <mesh receiveShadow castShadow>
-          <boxGeometry args={[DECK_WIDTH, 0.6, deckSpan]} />
-          <meshStandardMaterial color={NEON.deck} roughness={0.5} metalness={0.5} flatShading />
-        </mesh>
-        {[-1, 1].map((side) => (
-          <mesh key={side} position={[(side * DECK_WIDTH) / 2, 0.42, 0]}>
-            <boxGeometry args={[0.3, 0.34, deckSpan]} />
-            <meshStandardMaterial
-              color={side > 0 ? NEON.magenta : NEON.cyan}
-              emissive={side > 0 ? NEON.magenta : NEON.cyan}
-              emissiveIntensity={3.2}
-              toneMapped={false}
-            />
-          </mesh>
-        ))}
-        {/* Chevrons pointing up the ramp. */}
-        {Array.from({ length: Math.floor(deckSpan / 7) }).map((_, i) => (
-          <mesh key={i} position={[0, 0.34, -deckSpan / 2 + 4 + i * 7]}>
-            <boxGeometry args={[3.2, 0.08, 0.7]} />
-            <meshStandardMaterial
-              color={NEON.lime}
-              emissive={NEON.lime}
-              emissiveIntensity={2}
-              toneMapped={false}
-            />
-          </mesh>
-        ))}
-
-        <RigidBody type="fixed" colliders={false} friction={1}>
-          <CuboidCollider args={[DECK_WIDTH / 2, 0.3, deckSpan / 2]} />
-          {[-1, 1].map((side) => (
-            <CuboidCollider
-              key={side}
-              args={[0.3, 0.55, deckSpan / 2]}
-              position={[(side * DECK_WIDTH) / 2, 0.5, 0]}
-            />
-          ))}
-        </RigidBody>
-      </group>
-    </group>
   );
 }
 
