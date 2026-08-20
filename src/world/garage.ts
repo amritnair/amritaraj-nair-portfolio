@@ -48,12 +48,12 @@ export const DESIGN_BY_ID = Object.fromEntries(DESIGNS.map((d) => [d.id, d]));
 export const ORE_VALUE = 750;
 
 /**
- * A clean speedway lap is worth a lot; a slow one still pays. Tuned so a
- * competent lap lands near the price of a mid-tier paint, and the curve rewards
- * shaving seconds rather than merely finishing.
+ * A clean lap is worth a lot; a slow one still pays. The circuit is a bit over
+ * 1000 units around — about 40 seconds flat out — so this puts a good lap near
+ * the price of a mid-tier unlock and still rewards shaving seconds off.
  */
 export function lapReward(time: number) {
-  return Math.max(600, Math.round(9000 - time * 180));
+  return Math.max(800, Math.round(16000 - time * 220));
 }
 
 export type GarageState = {

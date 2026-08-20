@@ -1,3 +1,4 @@
+import { circuitPoint } from "./layout";
 import { telemetry } from "./store";
 
 /**
@@ -9,18 +10,11 @@ import { telemetry } from "./store";
  * back and forth over the start gate.
  */
 
-export const SPEEDWAY = {
-  /** Centre of the oval, out past the island's eastern edge. */
-  x: 208,
-  z: 0,
-  /** Deck height — level with the ring road it branches off. */
-  y: 13,
-  radiusX: 58,
-  radiusZ: 40,
-};
-
-/** Checkpoint angles around the oval, in the direction of travel. */
+/** Checkpoint angles around the circuit, in the direction of travel. */
 export const CHECKPOINTS = [Math.PI * 0.5, Math.PI, Math.PI * 1.5];
+
+/** A gate's position on the circuit, in world space. */
+export const gateAt = (angle: number) => circuitPoint(angle);
 
 /** How close the car has to pass to a gate for it to register. */
 const GATE_RADIUS = 9;
@@ -38,12 +32,7 @@ export type RaceState = {
 
 const state: RaceState = { running: false, checkpoint: 0, time: 0, armed: true };
 
-function gate(angle: number) {
-  return {
-    x: SPEEDWAY.x + Math.cos(angle) * SPEEDWAY.radiusX,
-    z: SPEEDWAY.z + Math.sin(angle) * SPEEDWAY.radiusZ,
-  };
-}
+const gate = (angle: number) => gateAt(angle);
 
 const near = (x: number, z: number, point: { x: number; z: number }, radius: number) => {
   const dx = x - point.x;
@@ -73,10 +62,13 @@ export function updateRace(x: number, z: number, delta: number, sink: Sink) {
       state.armed = false;
     }
 
-    // Wandering off the circuit entirely abandons the lap, rather than leaving
-    // a timer running for the rest of the session.
-    const drift = Math.hypot(x - SPEEDWAY.x, z - SPEEDWAY.z);
-    if (drift > SPEEDWAY.radiusX + 70) {
+    // Dropping off the circuit abandons the lap, rather than leaving a timer
+    // running for the rest of the session. The loop is a ring around the
+    // island, so "off it" means back over the middle.
+    // Falling off counts as abandoning too: the circuit never drops below 22,
+    // so anything under 16 is the ring road, the island or the sea.
+    const fromCentre = Math.hypot(x, z);
+    if (fromCentre < 100 || telemetry.y < 16) {
       state.running = false;
       state.checkpoint = 0;
       state.time = 0;

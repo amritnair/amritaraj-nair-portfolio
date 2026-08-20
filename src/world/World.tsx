@@ -6,7 +6,7 @@ import { Environment, Stars } from "@react-three/drei";
 import { EffectComposer, Bloom, Vignette, SMAA } from "@react-three/postprocessing";
 import Island from "./Island";
 import Highways from "./Highways";
-import Speedway from "./Speedway";
+import Circuit from "./Circuit";
 import Ores from "./Ores";
 import District, { CrateStack, Ramp, TrophyPins } from "./District";
 import BlockText from "./BlockText";
@@ -83,13 +83,14 @@ export default function World() {
         <CrateStack position={[15, 4]} />
         <TrophyPins position={[-54, 54]} />
         {/* Ramps sit in the gaps between the four spoke roads. */}
-        <Ramp position={[0, -48]} rotation={0} />
+{/* Moved off due south: the climb to the circuit runs through there now. */}
+        <Ramp position={[30, -44]} rotation={0} />
         <Ramp position={[56, 0]} rotation={Math.PI / 2} />
         <Ramp position={[0, 50]} rotation={Math.PI} />
 
         {/* Inside Physics: the ring, its ramps and the speedway are real road. */}
         <Highways />
-        <Speedway />
+        <Circuit />
 
         <Car onMove={handleMove} />
       </Physics>

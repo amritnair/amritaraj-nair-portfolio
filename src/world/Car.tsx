@@ -11,7 +11,7 @@ import { VehicleShell, animateVehicle, useVehicleRig } from "./Vehicle";
 export const SPAWN: [number, number, number] = [0, 1.6, 11];
 
 const ACCELERATION = 46;
-const REVERSE_ACCELERATION = 26;
+const REVERSE_ACCELERATION = 38;
 const MAX_SPEED = 26;
 const TURN_RATE = 2.5;
 const GRIP = 0.86;
@@ -167,6 +167,7 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
     if (input.reset || translation.y < -14) reset();
 
     telemetry.x = carPosition.x;
+    telemetry.y = carPosition.y;
     telemetry.z = carPosition.z;
     telemetry.heading = Math.atan2(forward.x, forward.z);
     telemetry.speed = Math.abs(alongForward);
