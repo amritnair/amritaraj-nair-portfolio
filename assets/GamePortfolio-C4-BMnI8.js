@@ -1,6 +1,6 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/World-BHgWXBkt.js","assets/index-BIB08XXb.js","assets/index-BRRzWNuM.css"])))=>i.map(i=>d[i]);
-import { r as iA, g as ip, e as kI, j as z, T as Ep, s as UG, L as al, _ as gU, __tla as __tla_0 } from "./index-BIB08XXb.js";
-let BQ, ii, wl, bC, XB, lt, RC, zA, gQ, dD, _a, MR, hg, dg, AQ, io, Qo, yA, iD, iB, Kg, ED, L, QB, je, Ei, be, qt, vd, MQ, JU, Jg, lK, wC, FQ, BS, tC, IC, MI, VI, ja, og, hB, WI, hE, Cs, Aw, $S, va, Lt, Fl, gC, cT, GE, cB, rT, hT, ai, DT, lT, JJ, SC, sD, ul, ZK, LB, ri, eD, yl, lB, JC, Si, OC, Xl, Dp, lC, pQ, s0, IQ, mm, Od, Rl, OD, nT, n0;
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/World-CQ07WiEq.js","assets/index-C9buRGoi.js","assets/index-BRRzWNuM.css"])))=>i.map(i=>d[i]);
+import { r as iA, g as ip, e as kI, j as z, T as Ep, s as UG, L as al, _ as gU, __tla as __tla_0 } from "./index-C9buRGoi.js";
+let BQ, ii, wl, bC, XB, lt, RC, zA, gQ, dD, _a, MR, hg, dg, AQ, io, Qo, yA, iD, iB, Kg, ED, L, QB, je, Ei, be, qt, vd, MQ, JU, Jg, lK, wC, FQ, BS, tC, IC, MI, VI, ja, og, hB, WI, hE, Cs, Aw, $S, Fl, va, Lt, gC, cT, GE, cB, rT, hT, ai, DT, lT, JJ, SC, sD, ul, ZK, LB, ri, eD, yl, lB, JC, Si, OC, Xl, Dp, lC, pQ, s0, IQ, mm, Od, Rl, OD, nT, n0;
 let __tla = Promise.all([
   (() => {
     try {
@@ -31132,7 +31132,7 @@ No matching component was found for:
           id: "awards",
           title: "Awards",
           subtitle: "Trophies on the shelf",
-          body: "Knock the trophies over with the car. They respawn.",
+          body: "Knock the trophies over with the dog. They respawn.",
           bullets: [
             "Hook'em Hacks 2026 (UT Austin) \u2014 Most Startup Ready + Multimodal Track winner",
             "TidalTAMU 2026 \u2014 Google Gemini Track, 1st place",
@@ -38952,7 +38952,7 @@ No matching component was found for:
       };
     }, []);
   }
-  const iT = iA.lazy(() => gU(() => import("./World-BHgWXBkt.js"), __vite__mapDeps([0,1,2])));
+  const iT = iA.lazy(() => gU(() => import("./World-CQ07WiEq.js"), __vite__mapDeps([0,1,2])));
   function ET() {
     try {
       const B = document.createElement("canvas");
@@ -39128,9 +39128,9 @@ export {
   Cs as ag,
   Aw as ah,
   $S as ai,
-  va as aj,
-  Lt as ak,
-  Fl as al,
+  Fl as aj,
+  va as ak,
+  Lt as al,
   gC as am,
   cT as an,
   GE as ao,
