@@ -30,7 +30,7 @@ export default function Intro() {
   return (
     // Short laptop windows are the common case, not the exception: the whole
     // card has to stay reachable without the play button falling off-screen.
-    <div className="pointer-events-auto fixed inset-0 z-50 overflow-y-auto bg-[#0d0a24]/92 backdrop-blur-md">
+    <div className="pointer-events-auto fixed inset-0 z-50 overflow-y-auto bg-[#0d0a24]/95 backdrop-blur-md">
       <div className="flex min-h-full items-center justify-center px-6 py-8">
         <div className="w-full max-w-2xl text-center text-white">
         <p className="mb-3 font-mono text-[0.68rem] uppercase tracking-[0.42em] text-[#9d8bff]">

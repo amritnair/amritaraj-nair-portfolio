@@ -94,25 +94,42 @@ function Ramp({ angle }: { angle: number }) {
   const span = Math.hypot(RING_HEIGHT, RAMP_LENGTH);
   // Runs inward from the ring towards the island centre.
   const outer = new THREE.Vector3(Math.cos(angle), 0, Math.sin(angle));
-  const mid = outer.clone().multiplyScalar(RING_RADIUS - RAMP_LENGTH / 2);
+
+  /**
+   * Two corrections, both of which the car feels immediately:
+   *
+   * The deck is a slab with thickness, so aligning its *centreline* with the
+   * ground puts the surface you actually drive on half a slab above the dirt —
+   * a step at the bottom with the slab's end cap as a wall in front of it. The
+   * whole ramp drops by half its thickness (measured vertically, hence the
+   * cosine) so the top face lands on y = 0 at the bottom and on the ring deck
+   * at the top.
+   *
+   * Even flush, the bottom edge is still a hard crease. Extending the slope
+   * past the ground line buries the last stretch, so the ramp rises out of the
+   * terrain and there is no edge to catch at all.
+   */
+  const BURIED = 14;
+  const drop = 0.3 / Math.cos(pitch);
+  const deckSpan = span + BURIED;
+  const radial = RING_RADIUS - RAMP_LENGTH / 2 - (BURIED / 2) * Math.cos(pitch);
+  const mid = outer.clone().multiplyScalar(radial);
+  const centreY = RING_HEIGHT / 2 - drop - (BURIED / 2) * Math.sin(pitch);
 
   return (
-    <group
-      position={[mid.x, RING_HEIGHT / 2, mid.z]}
-      rotation={[0, -angle + Math.PI / 2, 0]}
-    >
+    <group position={[mid.x, centreY, mid.z]} rotation={[0, -angle + Math.PI / 2, 0]}>
       {/* Negative pitch: a rotation about X sends local +z downward, and local
           +z here points outward at the ring — the positive sign builds a ramp
           that starts 13 units up at the island end and lands at the skyway's
           feet, which is exactly backwards. */}
       <group rotation={[-pitch, 0, 0]}>
         <mesh receiveShadow castShadow>
-          <boxGeometry args={[DECK_WIDTH, 0.6, span]} />
+          <boxGeometry args={[DECK_WIDTH, 0.6, deckSpan]} />
           <meshStandardMaterial color={NEON.deck} roughness={0.5} metalness={0.5} flatShading />
         </mesh>
         {[-1, 1].map((side) => (
           <mesh key={side} position={[(side * DECK_WIDTH) / 2, 0.42, 0]}>
-            <boxGeometry args={[0.3, 0.34, span]} />
+            <boxGeometry args={[0.3, 0.34, deckSpan]} />
             <meshStandardMaterial
               color={side > 0 ? NEON.magenta : NEON.cyan}
               emissive={side > 0 ? NEON.magenta : NEON.cyan}
@@ -122,8 +139,8 @@ function Ramp({ angle }: { angle: number }) {
           </mesh>
         ))}
         {/* Chevrons pointing up the ramp. */}
-        {Array.from({ length: Math.floor(span / 7) }).map((_, i) => (
-          <mesh key={i} position={[0, 0.34, -span / 2 + 4 + i * 7]}>
+        {Array.from({ length: Math.floor(deckSpan / 7) }).map((_, i) => (
+          <mesh key={i} position={[0, 0.34, -deckSpan / 2 + 4 + i * 7]}>
             <boxGeometry args={[3.2, 0.08, 0.7]} />
             <meshStandardMaterial
               color={NEON.lime}
@@ -135,11 +152,11 @@ function Ramp({ angle }: { angle: number }) {
         ))}
 
         <RigidBody type="fixed" colliders={false} friction={1}>
-          <CuboidCollider args={[DECK_WIDTH / 2, 0.3, span / 2]} />
+          <CuboidCollider args={[DECK_WIDTH / 2, 0.3, deckSpan / 2]} />
           {[-1, 1].map((side) => (
             <CuboidCollider
               key={side}
-              args={[0.3, 0.55, span / 2]}
+              args={[0.3, 0.55, deckSpan / 2]}
               position={[(side * DECK_WIDTH) / 2, 0.5, 0]}
             />
           ))}

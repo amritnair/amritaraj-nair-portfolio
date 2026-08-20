@@ -1,7 +1,8 @@
 import { useEffect } from "react";
-import { DESIGNS, ORE_VALUE, PAINTS, PAINT_BY_ID, isUnlocked } from "../garage";
+import { DESIGNS, DESIGN_BY_ID, ORE_VALUE, PAINTS, PAINT_BY_ID, isUnlocked } from "../garage";
 import { ORES } from "../Ores";
 import { useWorld, worldStore } from "../store";
+import CarPreview from "./CarPreview";
 
 /**
  * The design screen. Opens over the world rather than replacing it, so the car
@@ -30,9 +31,28 @@ export default function Garage() {
   const { points, best, bestLap, ores, paint: activePaint, design: activeDesign } = garage;
 
   return (
-    <div className="pointer-events-auto fixed inset-0 z-40 overflow-y-auto bg-[#0d0a24]/85 backdrop-blur-md">
-      <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col justify-center px-6 py-10">
-        <div className="rounded-3xl border border-white/10 bg-[#140f30]/90 p-6 shadow-2xl sm:p-8">
+    <div className="pointer-events-auto fixed inset-0 z-40 overflow-y-auto bg-[#0d0a24]/95 backdrop-blur-xl">
+      <div className="mx-auto flex min-h-full w-full max-w-6xl flex-col justify-center px-5 py-8">
+        <div className="grid gap-4 lg:grid-cols-[1.05fr_1fr]">
+          {/* The car itself, front and centre — you pick paint by looking at it. */}
+          <div className="relative min-h-[19rem] overflow-hidden rounded-3xl border border-white/10 bg-[#0b0920] shadow-2xl lg:min-h-full">
+            <CarPreview paint={activePaint} design={activeDesign} />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-gradient-to-t from-[#0b0920] via-[#0b0920]/70 to-transparent px-6 pb-5 pt-14">
+              <div>
+                <div className="font-mono text-[0.58rem] uppercase tracking-[0.3em] text-[#31d8ff]">
+                  {DESIGN_BY_ID[activeDesign]?.name ?? "—"}
+                </div>
+                <div className="text-xl font-black tracking-tight text-white">
+                  {PAINT_BY_ID[activePaint]?.name ?? "—"}
+                </div>
+              </div>
+              <div className="text-right font-mono text-[0.56rem] uppercase tracking-widest text-[#6f68a0]">
+                Live preview
+              </div>
+            </div>
+          </div>
+
+        <div className="rounded-3xl border border-white/10 bg-[#140f30]/95 p-6 shadow-2xl">
           <header className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="font-mono text-[0.62rem] uppercase tracking-[0.38em] text-[#31d8ff]">
@@ -150,7 +170,7 @@ export default function Garage() {
 
           <div className="mt-6 flex items-center justify-between gap-4">
             <span className="font-mono text-[0.6rem] uppercase tracking-widest text-[#6f68a0]">
-              Wearing {PAINT_BY_ID[activePaint]?.name ?? "—"}
+              Esc or G to close
             </span>
             <button
               type="button"
@@ -159,6 +179,7 @@ export default function Garage() {
             >
               Back to the road
             </button>
+          </div>
           </div>
         </div>
       </div>
