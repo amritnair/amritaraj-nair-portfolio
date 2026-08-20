@@ -1,5 +1,5 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/World-CMMQxP4m.js","assets/index-DAdbagE5.js","assets/index-BfCHghVE.css"])))=>i.map(i=>d[i]);
-import { r as AA, g as pF, e as kI, j as u, T as FF, s as qG, L as Gl, _ as cU, __tla as __tla_0 } from "./index-DAdbagE5.js";
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/World-mZOp0UcE.js","assets/index-BCQe2k-i.js","assets/index-BfCHghVE.css"])))=>i.map(i=>d[i]);
+import { r as AA, g as pF, e as kI, j as u, T as FF, s as qG, L as Gl, _ as cU, __tla as __tla_0 } from "./index-BCQe2k-i.js";
 let eQ, si, Jl, _C, IQ, pt, fC, XA, iQ, Hr, za, ZR, cg, Rg, BQ, no, ao, yA, rr, sB, Ng, Dr, m, tB, Io, ai, We, Zt, aR, pQ, _U, dg, uK, yC, uQ, nS, sC, gC, MI, tw, qT, kS, zr, LT, nb, rb, Mi, GB, ib, sb, ab, li, Qb, Db, VI, gn, tg, yB, vC, ss, Eb, eb, ow, ob, hi, yE, ci, WI, tb, uC, ve, kC, CC, rT, BI, hI, aU, DT, EB, ZC, zJ, wC, Sr, bl, E0, TB, yi, hr, dl, kB, dC, Ki, PC, iS, qF, SC, fQ, K0, QQ, iH, sR, Tl, ho, Bb, p0;
 let __tla = Promise.all([
   (() => {
@@ -40753,7 +40753,7 @@ No matching component was found for:
       };
     }, []);
   }
-  const XT = AA.lazy(() => cU(() => import("./World-CMMQxP4m.js"), __vite__mapDeps([0,1,2])));
+  const XT = AA.lazy(() => cU(() => import("./World-mZOp0UcE.js"), __vite__mapDeps([0,1,2])));
   function zT() {
     try {
       const B = document.createElement("canvas");
