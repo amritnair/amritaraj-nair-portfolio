@@ -5,6 +5,7 @@ import { Physics } from "@react-three/rapier";
 import { Environment, Stars } from "@react-three/drei";
 import { EffectComposer, Bloom, Vignette, SMAA } from "@react-three/postprocessing";
 import Island from "./Island";
+import Highways from "./Highways";
 import District, { CrateStack, Ramp, TrophyPins } from "./District";
 import BlockText from "./BlockText";
 import Car from "./Car";
@@ -82,6 +83,7 @@ export default function World() {
         <Car onMove={handleMove} />
       </Physics>
 
+      <Highways />
       <Beacons />
 
       <EffectComposer multisampling={0}>

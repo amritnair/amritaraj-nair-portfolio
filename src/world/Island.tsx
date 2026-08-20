@@ -114,6 +114,23 @@ function Roads() {
               <planeGeometry args={[11, length]} />
               <meshStandardMaterial color={PALETTE.road} roughness={0.85} />
             </mesh>
+            {/* Kerb rails. These sit in frame the entire time you're on a road,
+                so they do more for the look of the world than anything on the
+                horizon does. */}
+            {[-5.5, 5.5].map((offset) => (
+              // Starting at the plaza ring rather than the origin: run them the
+              // full length and all four spokes' rails cross in the middle of
+              // the plaza, turning the spawn point into a cage.
+              <mesh key={offset} position={[offset, 0.16, (26 + length) / 2]}>
+                <boxGeometry args={[0.34, 0.34, length - 26]} />
+                <meshStandardMaterial
+                  color={zone.color}
+                  emissive={zone.color}
+                  emissiveIntensity={2.6}
+                  toneMapped={false}
+                />
+              </mesh>
+            ))}
             {/* Centre line, glowing in the zone's colour so each spoke is legible. */}
             {Array.from({ length: Math.floor(length / 9) }).map((_, i) => (
               <mesh key={i} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.04, 26 + i * 9]}>

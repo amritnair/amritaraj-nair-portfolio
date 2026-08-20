@@ -1,0 +1,252 @@
+import { useMemo, useRef } from "react";
+import * as THREE from "three";
+import { useFrame } from "@react-three/fiber";
+import { Instance, Instances } from "@react-three/drei";
+import { NEON } from "./palette";
+import { ISLAND_RADIUS } from "./Island";
+
+/**
+ * Elevated skyways: a ring around the island and two spans crossing over the
+ * plaza, with light traffic running along them.
+ *
+ * Deliberately overhead and purely decorative — no colliders. They give the
+ * night sky a horizon line and a sense of a city that continues past the
+ * island, without adding anything the player can crash into. Everything here
+ * is emissive trim on dark decks, so the cost is geometry, not lighting.
+ */
+
+const RING_RADIUS = ISLAND_RADIUS - 16;
+/**
+ * Low enough to sit inside the chase camera's cone. The camera looks slightly
+ * down, so anything much above this leaves the frame entirely and the skyway
+ * may as well not exist — at 13 you drive underneath it on the way to a
+ * district, which is the whole point of putting it there.
+ */
+const RING_HEIGHT = 13;
+const DECK_WIDTH = 7;
+
+export default function Highways() {
+  return (
+    <group>
+      <RingSkyway />
+      <CrossSpan rotation={Math.PI / 4} height={23} length={ISLAND_RADIUS * 2.1} />
+      <CrossSpan rotation={-Math.PI / 4} height={30} length={ISLAND_RADIUS * 2.1} />
+      <Pylons />
+      <RingTraffic />
+    </group>
+  );
+}
+
+/** The ring: a flat annulus deck with a glowing rail down each edge. */
+function RingSkyway() {
+  return (
+    <group position={[0, RING_HEIGHT, 0]}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <ringGeometry args={[RING_RADIUS - DECK_WIDTH / 2, RING_RADIUS + DECK_WIDTH / 2, 128]} />
+        <meshStandardMaterial
+          color={NEON.deck}
+          roughness={0.45}
+          metalness={0.6}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+      {/* Edge rails. Two thin rings read as a road at distance far better than
+          any amount of surface detail. */}
+      {[-DECK_WIDTH / 2, DECK_WIDTH / 2].map((offset, i) => (
+        <mesh key={offset} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.16, 0]}>
+          <ringGeometry args={[RING_RADIUS + offset - 0.2, RING_RADIUS + offset + 0.2, 128]} />
+          <meshStandardMaterial
+            color={i ? NEON.magenta : NEON.cyan}
+            emissive={i ? NEON.magenta : NEON.cyan}
+            emissiveIntensity={3.4}
+            toneMapped={false}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+      ))}
+      {/* Underside strip, so the deck glows when seen from below — which is the
+          only angle the player ever sees it from. */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.45, 0]}>
+        <ringGeometry args={[RING_RADIUS - 1.6, RING_RADIUS + 1.6, 96]} />
+        <meshStandardMaterial
+          color={NEON.cyan}
+          emissive={NEON.cyan}
+          emissiveIntensity={1.1}
+          toneMapped={false}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+    </group>
+  );
+}
+
+/** A straight span crossing the whole island, high enough to clear the signs. */
+function CrossSpan({
+  rotation,
+  height,
+  length,
+}: {
+  rotation: number;
+  height: number;
+  length: number;
+}) {
+  return (
+    <group position={[0, height, 0]} rotation={[0, rotation, 0]}>
+      <mesh receiveShadow castShadow>
+        <boxGeometry args={[DECK_WIDTH, 0.5, length]} />
+        <meshStandardMaterial color={NEON.deck} roughness={0.45} metalness={0.6} flatShading />
+      </mesh>
+      {[-1, 1].map((side) => (
+        <mesh key={side} position={[(side * DECK_WIDTH) / 2, 0.3, 0]}>
+          <boxGeometry args={[0.22, 0.22, length]} />
+          <meshStandardMaterial
+            color={side > 0 ? NEON.magenta : NEON.cyan}
+            emissive={side > 0 ? NEON.magenta : NEON.cyan}
+            emissiveIntensity={3.6}
+            toneMapped={false}
+          />
+        </mesh>
+      ))}
+      {/* Centre dashes give the span a direction and a sense of speed. */}
+      {Array.from({ length: Math.floor(length / 12) }).map((_, i) => (
+        <mesh key={i} position={[0, 0.28, -length / 2 + 6 + i * 12]}>
+          <boxGeometry args={[0.5, 0.1, 4]} />
+          <meshStandardMaterial
+            color={NEON.lime}
+            emissive={NEON.lime}
+            emissiveIntensity={2.2}
+            toneMapped={false}
+          />
+        </mesh>
+      ))}
+      <SpanTraffic length={length} />
+    </group>
+  );
+}
+
+/** Support columns under the ring, with a lit collar at deck height. */
+function Pylons() {
+  const columns = useMemo(
+    () =>
+      Array.from({ length: 16 }).map((_, i) => {
+        const angle = (i / 16) * Math.PI * 2;
+        return [Math.cos(angle) * RING_RADIUS, Math.sin(angle) * RING_RADIUS] as const;
+      }),
+    [],
+  );
+
+  return (
+    <group>
+      <Instances limit={columns.length} castShadow>
+        <cylinderGeometry args={[0.7, 1.3, RING_HEIGHT, 6]} />
+        <meshStandardMaterial color={NEON.deckEdge} roughness={0.6} metalness={0.4} flatShading />
+        {columns.map(([x, z], i) => (
+          <Instance key={i} position={[x, RING_HEIGHT / 2, z]} />
+        ))}
+      </Instances>
+
+      <Instances limit={columns.length}>
+        <torusGeometry args={[1.5, 0.16, 6, 16]} />
+        <meshStandardMaterial
+          color={NEON.cyan}
+          emissive={NEON.cyan}
+          emissiveIntensity={2.8}
+          toneMapped={false}
+        />
+        {columns.map(([x, z], i) => (
+          <Instance key={i} position={[x, RING_HEIGHT - 2.4, z]} rotation={[Math.PI / 2, 0, 0]} />
+        ))}
+      </Instances>
+    </group>
+  );
+}
+
+/**
+ * Traffic is a streak of light, not a vehicle — at this distance a modelled car
+ * would be four unreadable pixels, while a stretched glowing box reads as
+ * motion immediately.
+ */
+const TRAFFIC_GEOMETRY = <boxGeometry args={[0.5, 0.3, 4.5]} />;
+
+function RingTraffic() {
+  const group = useRef<THREE.Group>(null);
+  const lanes = useMemo(
+    () =>
+      Array.from({ length: 14 }).map((_, i) => ({
+        angle: (i / 14) * Math.PI * 2,
+        // Alternate direction and lane, so the two rails carry opposing flows.
+        direction: i % 2 ? 1 : -1,
+        offset: i % 2 ? 1.9 : -1.9,
+        speed: 0.055 + (i % 5) * 0.012,
+        color: i % 2 ? NEON.magenta : NEON.cyan,
+      })),
+    [],
+  );
+
+  useFrame((_, delta) => {
+    if (!group.current) return;
+    group.current.children.forEach((child, i) => {
+      const lane = lanes[i];
+      lane.angle += delta * lane.speed * lane.direction;
+      const radius = RING_RADIUS + lane.offset;
+      child.position.set(Math.cos(lane.angle) * radius, RING_HEIGHT + 0.4, Math.sin(lane.angle) * radius);
+      child.rotation.y = -lane.angle + Math.PI / 2;
+    });
+  });
+
+  return (
+    <group ref={group}>
+      {lanes.map((lane, i) => (
+        <mesh key={i}>
+          {TRAFFIC_GEOMETRY}
+          <meshStandardMaterial
+            color={lane.color}
+            emissive={lane.color}
+            emissiveIntensity={6}
+            toneMapped={false}
+          />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+function SpanTraffic({ length }: { length: number }) {
+  const group = useRef<THREE.Group>(null);
+  const lanes = useMemo(
+    () =>
+      Array.from({ length: 6 }).map((_, i) => ({
+        t: (i / 6) * length,
+        direction: i % 2 ? 1 : -1,
+        offset: i % 2 ? 1.9 : -1.9,
+        speed: 26 + (i % 3) * 9,
+        color: i % 2 ? NEON.magenta : NEON.cyan,
+      })),
+    [length],
+  );
+
+  useFrame((_, delta) => {
+    if (!group.current) return;
+    group.current.children.forEach((child, i) => {
+      const lane = lanes[i];
+      lane.t = (lane.t + delta * lane.speed + length) % length;
+      child.position.set(lane.offset, 0.45, lane.direction > 0 ? lane.t - length / 2 : length / 2 - lane.t);
+    });
+  });
+
+  return (
+    <group ref={group}>
+      {lanes.map((lane, i) => (
+        <mesh key={i}>
+          {TRAFFIC_GEOMETRY}
+          <meshStandardMaterial
+            color={lane.color}
+            emissive={lane.color}
+            emissiveIntensity={6}
+            toneMapped={false}
+          />
+        </mesh>
+      ))}
+    </group>
+  );
+}

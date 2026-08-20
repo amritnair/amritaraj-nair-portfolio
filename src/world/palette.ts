@@ -18,6 +18,20 @@ export const PALETTE = {
   water: "#1b2f6b",
 };
 
+/**
+ * The neon set. Kept apart from the dusk palette above because these are light
+ * sources, not surfaces — they're used with toneMapped={false} so bloom can
+ * blow them out.
+ */
+export const NEON = {
+  cyan: "#31d8ff",
+  magenta: "#c341ff",
+  amber: "#ff9f2f",
+  lime: "#7dffd0",
+  deck: "#0f1130",
+  deckEdge: "#191c46",
+};
+
 /** Deterministic PRNG so the island looks identical on every visit. */
 export function makeRandom(seed: number) {
   let value = seed >>> 0;

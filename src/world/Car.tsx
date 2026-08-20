@@ -4,7 +4,7 @@ import { useFrame } from "@react-three/fiber";
 import { RigidBody, CuboidCollider, type RapierRigidBody } from "@react-three/rapier";
 import { readControls } from "./controls";
 import { telemetry, worldStore } from "./store";
-import { DogShell, animateDog, useDogRig } from "./Dog";
+import { VehicleShell, animateVehicle, useVehicleRig } from "./Vehicle";
 
 /** Just inside the plaza ring, nose pointed at the title. */
 export const SPAWN: [number, number, number] = [0, 1.6, 11];
@@ -35,7 +35,7 @@ const camLookUp = new THREE.Vector3(0, 1.2, 0);
 export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void }) {
   const body = useRef<RapierRigidBody>(null);
   const chassis = useRef<THREE.Group>(null);
-  const rig = useDogRig();
+  const rig = useVehicleRig();
   const cameraReady = useRef(false);
   const smoothedLook = useRef(new THREE.Vector3());
 
@@ -107,10 +107,10 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
     worldStore.setSpeed(telemetry.speed);
     onMove?.(carPosition);
 
-    // The whole body banks into a turn and dips under acceleration. The dog's
-    // own gait — legs, head, ears, tail — is animated one level down.
+    // The shell banks into a turn and squats under power. Wheels, hubs and
+    // thrusters are animated one level down.
     if (chassis.current) {
-      const roll = THREE.MathUtils.clamp(-steer * speedFactor * 0.12, -0.16, 0.16);
+      const roll = THREE.MathUtils.clamp(-steer * speedFactor * 0.16, -0.2, 0.2);
       const pitch = THREE.MathUtils.clamp(-throttle * 0.05, -0.08, 0.08);
       // Per-second rates rather than raw lerp constants — a fixed 0.12 per
       // frame leans twice as fast on a 120Hz display as it does on a 60Hz one.
@@ -120,12 +120,12 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
       chassis.current.rotation.x = THREE.MathUtils.lerp(chassis.current.rotation.x, pitch, pitchRate);
     }
 
-    animateDog(rig.current, {
+    animateVehicle(rig.current, {
       speed: alongForward,
       steer,
       throttle,
+      brake: input.brake,
       delta,
-      elapsed: threeState.clock.elapsedTime,
     });
 
     // Chase camera: sits behind the car's heading, eases into place. It reads
@@ -178,11 +178,9 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
       ccd
       name="player"
     >
-      {/* Sized to the dog's torso, not its silhouette — legs and tail poking
-          through a collider is invisible, a body that catches on scenery is not. */}
-      <CuboidCollider args={[0.78, 0.62, 1.72]} density={3.6} />
+      <CuboidCollider args={[1.0, 0.5, 2.05]} density={2.6} />
       <group ref={chassis}>
-        <DogShell rig={rig} />
+        <VehicleShell rig={rig} />
       </group>
     </RigidBody>
   );
