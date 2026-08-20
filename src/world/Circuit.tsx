@@ -28,6 +28,19 @@ const COLLIDER_SEGMENTS = 72;
 /** Roll per unit of curvature, capped so the banking never becomes a wall. */
 const BANK_GAIN = 5.2;
 const BANK_LIMIT = 0.34;
+/**
+ * Half-width, in radians, of the opening cut in the circuit's inner barrier
+ * where the climb arrives. The ramp lands on the track's centreline, so
+ * without this the inner guard rail runs straight across the mouth of it and
+ * the climb ends in a wall.
+ */
+const MERGE_HALF_ANGLE = 0.11;
+
+/** True for a point on the loop that sits in the merge opening. */
+function inMergeGap(angle: number) {
+  const diff = Math.abs(((angle - CIRCUIT_RAMP_ANGLE + Math.PI) % (Math.PI * 2)) - Math.PI);
+  return diff < MERGE_HALF_ANGLE;
+}
 
 type Segment = {
   position: THREE.Vector3;
@@ -186,21 +199,26 @@ function Deck({ frames }: { frames: Frame[] }) {
     [frames],
   );
 
-  const rails = useMemo(
-    () =>
-      [-1, 1].map((side) =>
-        sweep(
-          [
-            [side * HALF - 0.18, 0],
-            [side * HALF + 0.18, 0],
-            [side * HALF + 0.18, 0.9],
-            [side * HALF - 0.18, 0.9],
-          ],
-          frames,
-        ),
-      ),
-    [frames],
-  );
+  const rails = useMemo(() => {
+    const profile = (side: number): [number, number][] => [
+      [side * HALF - 0.18, 0],
+      [side * HALF + 0.18, 0],
+      [side * HALF + 0.18, 0.9],
+      [side * HALF - 0.18, 0.9],
+    ];
+
+    // `right` points radially outward, so -1 is the inner rail — the one the
+    // climb crosses. Sweep it as an open ribbon that starts after the opening
+    // and wraps around to just before it.
+    const steps = frames.length - 1;
+    const centre = Math.round((CIRCUIT_RAMP_ANGLE / (Math.PI * 2)) * steps);
+    const half = Math.ceil(MERGE_HALF_ANGLE / ((Math.PI * 2) / steps));
+    const from = (centre + half) % steps;
+    const to = (centre - half + steps) % steps;
+    const innerFrames = [...frames.slice(from, steps), ...frames.slice(0, to + 1)];
+
+    return [sweep(profile(-1), innerFrames), sweep(profile(1), frames)];
+  }, [frames]);
 
   return (
     <group>
@@ -305,14 +323,19 @@ function Surface({ segments }: { segments: Segment[] }) {
     <RigidBody type="fixed" colliders={false} friction={1}>
       {segments.map((s, i) => (
         <group key={i} position={s.position} rotation={euler(s) as unknown as THREE.Euler}>
-          <CuboidCollider args={[WIDTH / 2, 0.25, s.length / 2]} />
-          {[-1, 1].map((side) => (
-            <CuboidCollider
-              key={side}
-              args={[0.36, 1.0, s.length / 2]}
-              position={[(side * WIDTH) / 2, 1.0, 0]}
-            />
-          ))}
+          {/* Offset so the collider's *top* face is the frame height. Centred,
+              it stands a quarter unit proud of the visual deck — and of the
+              ramp that meets it, which is a step to catch on. */}
+          <CuboidCollider args={[WIDTH / 2, 0.25, s.length / 2]} position={[0, -0.25, 0]} />
+          {[-1, 1].map((side) =>
+            side < 0 && inMergeGap(s.angle) ? null : (
+              <CuboidCollider
+                key={side}
+                args={[0.36, 1.0, s.length / 2]}
+                position={[(side * WIDTH) / 2, 0.75, 0]}
+              />
+            ),
+          )}
         </group>
       ))}
     </RigidBody>
@@ -369,7 +392,13 @@ function ClimbRamp() {
   const dirX = Math.cos(angle);
   const dirZ = Math.sin(angle);
 
-  const run = landing.radius - CIRCUIT_RAMP_START;
+  // Stop at the track's inner edge rather than its centreline. Landing in the
+  // middle means arriving perpendicular with only half the width left to turn
+  // in, so at any speed you cross the track and meet the outer wall.
+  // ...with a couple of units of overlap onto the deck, so any small mismatch
+  // between the straight ramp and the banked track is a lip you drive over
+  // rather than a gap you drop through.
+  const run = landing.radius - HALF + 2 - CIRCUIT_RAMP_START;
   const rise = landing.height;
   const pitch = Math.atan2(rise, run);
   const span = Math.hypot(rise, run);
@@ -381,6 +410,7 @@ function ClimbRamp() {
   const drop = 0.3 / Math.cos(pitch);
   const deckSpan = span + BURIED;
   const radial = CIRCUIT_RAMP_START + run / 2 - (BURIED / 2) * Math.cos(pitch);
+
   const centreY = rise / 2 - drop - (BURIED / 2) * Math.sin(pitch);
 
   return (
