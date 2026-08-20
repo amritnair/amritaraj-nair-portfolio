@@ -227,7 +227,7 @@ export const ZONES: Zone[] = [
         id: "awards",
         title: "Awards",
         subtitle: "Trophies on the shelf",
-        body: "Knock the trophies over with the car. They respawn.",
+        body: "Knock the trophies over with the dog. They respawn.",
         bullets: [
           "Hook'em Hacks 2026 (UT Austin) — Most Startup Ready + Multimodal Track winner",
           "TidalTAMU 2026 — Google Gemini Track, 1st place",

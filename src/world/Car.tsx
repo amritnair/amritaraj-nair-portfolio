@@ -4,6 +4,7 @@ import { useFrame } from "@react-three/fiber";
 import { RigidBody, CuboidCollider, type RapierRigidBody } from "@react-three/rapier";
 import { readControls } from "./controls";
 import { telemetry, worldStore } from "./store";
+import { DogShell, animateDog, useDogRig } from "./Dog";
 
 /** Just inside the plaza ring, nose pointed at the title. */
 export const SPAWN: [number, number, number] = [0, 1.6, 11];
@@ -34,7 +35,7 @@ const camLookUp = new THREE.Vector3(0, 1.2, 0);
 export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void }) {
   const body = useRef<RapierRigidBody>(null);
   const chassis = useRef<THREE.Group>(null);
-  const wheels = useRef<(THREE.Group | null)[]>([]);
+  const rig = useDogRig();
   const cameraReady = useRef(false);
   const smoothedLook = useRef(new THREE.Vector3());
 
@@ -106,9 +107,10 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
     worldStore.setSpeed(telemetry.speed);
     onMove?.(carPosition);
 
-    // Visual flourish: the shell leans into corners and squats under power.
+    // The whole body banks into a turn and dips under acceleration. The dog's
+    // own gait — legs, head, ears, tail — is animated one level down.
     if (chassis.current) {
-      const roll = THREE.MathUtils.clamp(-steer * speedFactor * 0.16, -0.2, 0.2);
+      const roll = THREE.MathUtils.clamp(-steer * speedFactor * 0.12, -0.16, 0.16);
       const pitch = THREE.MathUtils.clamp(-throttle * 0.05, -0.08, 0.08);
       // Per-second rates rather than raw lerp constants — a fixed 0.12 per
       // frame leans twice as fast on a 120Hz display as it does on a 60Hz one.
@@ -118,16 +120,12 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
       chassis.current.rotation.x = THREE.MathUtils.lerp(chassis.current.rotation.x, pitch, pitchRate);
     }
 
-    const spin = alongForward * delta * 2.2;
-    const steerRate = 1 - Math.pow(0.0002, delta);
-    wheels.current.forEach((wheel, index) => {
-      if (!wheel) return;
-      wheel.rotation.x -= spin;
-      // Front wheels ease to the steering angle instead of snapping to it.
-      if (index < 2) {
-        const hub = wheel.parent!;
-        hub.rotation.y = THREE.MathUtils.lerp(hub.rotation.y, steer * 0.42, steerRate);
-      }
+    animateDog(rig.current, {
+      speed: alongForward,
+      steer,
+      throttle,
+      delta,
+      elapsed: threeState.clock.elapsedTime,
     });
 
     // Chase camera: sits behind the car's heading, eases into place. It reads
@@ -178,95 +176,14 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
       angularDamping={4}
       enabledRotations={[false, true, false]}
       ccd
-      name="car"
+      name="player"
     >
-      <CuboidCollider args={[1.05, 0.55, 2.1]} density={2.4} />
+      {/* Sized to the dog's torso, not its silhouette — legs and tail poking
+          through a collider is invisible, a body that catches on scenery is not. */}
+      <CuboidCollider args={[0.78, 0.62, 1.72]} density={3.6} />
       <group ref={chassis}>
-        <CarShell wheelRefs={wheels} />
+        <DogShell rig={rig} />
       </group>
     </RigidBody>
-  );
-}
-
-function CarShell({ wheelRefs }: { wheelRefs: React.MutableRefObject<(THREE.Group | null)[]> }) {
-  return (
-    <group>
-      {/* Lower body */}
-      <mesh castShadow receiveShadow position={[0, 0.05, 0]}>
-        <boxGeometry args={[2.0, 0.7, 4.1]} />
-        <meshStandardMaterial color="#e0384d" roughness={0.35} metalness={0.25} flatShading />
-      </mesh>
-      {/* Tapered nose */}
-      <mesh castShadow position={[0, 0.02, -2.05]}>
-        <boxGeometry args={[1.82, 0.5, 0.5]} />
-        <meshStandardMaterial color="#c02a3e" roughness={0.4} metalness={0.2} flatShading />
-      </mesh>
-      {/* Cabin */}
-      <mesh castShadow receiveShadow position={[0, 0.66, 0.12]}>
-        <boxGeometry args={[1.66, 0.66, 2.0]} />
-        <meshStandardMaterial color="#2a2f52" roughness={0.2} metalness={0.5} flatShading />
-      </mesh>
-      {/* Windscreen */}
-      <mesh position={[0, 0.7, -0.9]}>
-        <boxGeometry args={[1.5, 0.5, 0.12]} />
-        <meshStandardMaterial
-          color="#9ad9ff"
-          emissive="#3aa7ff"
-          emissiveIntensity={0.5}
-          roughness={0.05}
-          metalness={0.6}
-        />
-      </mesh>
-      {/* Rear spoiler */}
-      <mesh castShadow position={[0, 0.72, 1.95]}>
-        <boxGeometry args={[1.9, 0.12, 0.42]} />
-        <meshStandardMaterial color="#1b1f38" roughness={0.4} flatShading />
-      </mesh>
-
-      {/* Headlights */}
-      {[-0.62, 0.62].map((x) => (
-        <mesh key={`head${x}`} position={[x, 0.08, -2.28]}>
-          <boxGeometry args={[0.42, 0.2, 0.1]} />
-          <meshStandardMaterial color="#fff3c4" emissive="#ffe9a8" emissiveIntensity={4} />
-        </mesh>
-      ))}
-      {/* Tail lights */}
-      {[-0.66, 0.66].map((x) => (
-        <mesh key={`tail${x}`} position={[x, 0.16, 2.06]}>
-          <boxGeometry args={[0.4, 0.16, 0.08]} />
-          <meshStandardMaterial color="#ff3b3b" emissive="#ff2222" emissiveIntensity={5} />
-        </mesh>
-      ))}
-      {/* Cone of light so the headlights read on the ground at night */}
-      <spotLight
-        position={[0, 0.4, -2.2]}
-        target-position={[0, -1, -14]}
-        angle={0.62}
-        penumbra={0.7}
-        intensity={40}
-        distance={30}
-        color="#ffeec2"
-      />
-
-      {[
-        [-1.02, -0.35, -1.32],
-        [1.02, -0.35, -1.32],
-        [-1.02, -0.35, 1.34],
-        [1.02, -0.35, 1.34],
-      ].map(([x, y, z], index) => (
-        <group key={index} position={[x, y, z]}>
-          <group ref={(el) => (wheelRefs.current[index] = el)}>
-            <mesh castShadow rotation={[0, 0, Math.PI / 2]}>
-              <cylinderGeometry args={[0.52, 0.52, 0.38, 12]} />
-              <meshStandardMaterial color="#141726" roughness={0.85} flatShading />
-            </mesh>
-            <mesh rotation={[0, 0, Math.PI / 2]} position={[x > 0 ? 0.16 : -0.16, 0, 0]}>
-              <cylinderGeometry args={[0.26, 0.26, 0.12, 8]} />
-              <meshStandardMaterial color="#d8dcf0" metalness={0.7} roughness={0.3} flatShading />
-            </mesh>
-          </group>
-        </group>
-      ))}
-    </group>
   );
 }
