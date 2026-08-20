@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Github, ArrowLeft } from "lucide-react";
+import { ExternalLink, Github, ArrowLeft, Gamepad2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { PROJECTS } from "@/data/projects";
 import Navigation from "@/components/Navigation";
@@ -73,9 +73,14 @@ const AllProjects = () => {
       <Navigation />
       <div className="container mx-auto px-6 pt-24 pb-20 relative z-10">
         <div className="max-w-5xl mx-auto">
-          <Button asChild variant="ghost" size="sm" className="mb-8 text-muted-foreground hover:text-foreground rounded-lg">
-            <Link to="/"><ArrowLeft className="w-4 h-4 mr-2" />Back</Link>
-          </Button>
+          <div className="mb-8 flex items-center gap-2">
+            <Button asChild variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground rounded-lg">
+              <Link to="/"><ArrowLeft className="w-4 h-4 mr-2" />Back</Link>
+            </Button>
+            <Button asChild size="sm" className="rounded-lg bg-gradient-to-r from-[#5b4bff] to-[#c341ff] text-white hover:opacity-90">
+              <Link to="/"><Gamepad2 className="w-4 h-4 mr-2" />Play the world</Link>
+            </Button>
+          </div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <p className="mono text-primary text-sm tracking-widest uppercase mb-4">Portfolio</p>

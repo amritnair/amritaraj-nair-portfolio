@@ -1,4 +1,5 @@
 import { useProgress } from "@react-three/drei";
+import { Link } from "react-router-dom";
 import { PROFILE } from "../content";
 import { worldStore } from "../store";
 
@@ -46,15 +47,24 @@ export default function Intro() {
           ))}
         </div>
 
-        <button
-          type="button"
-          disabled={!ready}
-          onClick={() => worldStore.start()}
-          className="group mt-8 inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-[#5b4bff] to-[#c341ff] px-9 py-4 text-sm font-bold uppercase tracking-[0.22em] text-white shadow-[0_0_40px_-6px_rgba(140,90,255,0.9)] transition hover:scale-[1.03] disabled:cursor-wait disabled:opacity-50"
-        >
-          {ready ? "Start driving" : `Loading ${Math.round(progress)}%`}
-          {ready && <span className="transition group-hover:translate-x-1">→</span>}
-        </button>
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <button
+            type="button"
+            disabled={!ready}
+            onClick={() => worldStore.start()}
+            className="group inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-[#5b4bff] to-[#c341ff] px-9 py-4 text-sm font-bold uppercase tracking-[0.22em] text-white shadow-[0_0_40px_-6px_rgba(140,90,255,0.9)] transition hover:scale-[1.03] disabled:cursor-wait disabled:opacity-50"
+          >
+            <span className="text-base leading-none">▶</span>
+            {ready ? "Play the world" : `Loading ${Math.round(progress)}%`}
+          </button>
+
+          <Link
+            to="/resume"
+            className="inline-flex items-center rounded-full border border-white/15 bg-white/[0.04] px-7 py-4 text-sm font-bold uppercase tracking-[0.22em] text-[#b9b2e8] transition hover:border-white/30 hover:text-white"
+          >
+            Read the résumé
+          </Link>
+        </div>
 
         <div className="mt-8 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs">
           {PROFILE.links.map((link) => (

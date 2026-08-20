@@ -40,7 +40,7 @@ export const PROFILE = {
   phone: "214-316-6196",
   links: [
     { label: "GitHub", href: "https://github.com/amritnair" },
-    { label: "LinkedIn", href: "https://linkedin.com/in/amritaraj-nair" },
+    { label: "LinkedIn", href: "https://linkedin.com/in/amritnair1" },
     { label: "Email", href: "mailto:amritnair23@gmail.com" },
     { label: "Résumé (PDF)", href: "Amritaraj_Nair_Resume.pdf" },
   ] as Link[],
@@ -175,8 +175,9 @@ export const ZONES: Zone[] = [
         title: "ClinicalHours",
         subtitle: "CTO & Lead Engineer",
         meta: "Dec 2025 – Present",
-        body: "An AI virtual receptionist that books clinical hours for pre-med students while they sleep.",
+        body: "An AI virtual receptionist that books clinical hours for pre-med students while they sleep. Placed in the top 10% of the Spring 2026 Y Combinator batch.",
         bullets: [
+          "Top 10% of the Spring 2026 Y Combinator batch",
           "Email + call automation over the Gmail API and GoHighLevel to schedule clinic meetings",
           "MapBox and Google APIs for geolocation-based clinic discovery",
           "Processed large-scale U.S. hospital datasets in Python into production-ready formats",
@@ -286,7 +287,11 @@ export const ZONES: Zone[] = [
         title: "Get in touch",
         subtitle: "Fastest ways to reach me",
         body: "Always up for talking about AI products, quant tooling or a good hackathon idea.",
-        bullets: [`Email — ${PROFILE.email}`, `Phone — ${PROFILE.phone}`],
+        bullets: [
+          `Email — ${PROFILE.email}`,
+          `Phone — ${PROFILE.phone}`,
+          "Available year-round — internship, part-time or full-time research and engineering roles",
+        ],
         links: PROFILE.links,
       },
     ],

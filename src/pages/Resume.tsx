@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Download, Share2, Mail, Linkedin, Link2, Copy, Check } from "lucide-react";
+import { ArrowLeft, Download, Share2, Mail, Linkedin, Link2, Copy, Check, Gamepad2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -89,6 +89,16 @@ const Resume = () => {
           </h1>
 
           <div className="flex gap-2">
+            {/* Straight back into the drivable world */}
+            <Button
+              size="sm"
+              onClick={() => navigate("/")}
+              className="gap-2 bg-gradient-to-r from-[#5b4bff] to-[#c341ff] text-white hover:opacity-90"
+            >
+              <Gamepad2 className="h-4 w-4" />
+              Play the world
+            </Button>
+
             {/* Share */}
             <div className="relative">
               <Button
