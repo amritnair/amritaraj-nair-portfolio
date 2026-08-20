@@ -13,27 +13,26 @@ export default function Intro() {
   const ready = progress >= 100 || !active;
 
   return (
-    <div className="pointer-events-auto fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-[#0d0a24]/92 px-6 py-10 backdrop-blur-md">
-      <div className="w-full max-w-2xl text-center text-white">
-        <p className="mb-4 font-mono text-[0.68rem] uppercase tracking-[0.42em] text-[#9d8bff]">
+    // Short laptop windows are the common case, not the exception: the whole
+    // card has to stay reachable without the play button falling off-screen.
+    <div className="pointer-events-auto fixed inset-0 z-50 overflow-y-auto bg-[#0d0a24]/92 backdrop-blur-md">
+      <div className="flex min-h-full items-center justify-center px-6 py-8">
+        <div className="w-full max-w-2xl text-center text-white">
+        <p className="mb-3 font-mono text-[0.68rem] uppercase tracking-[0.42em] text-[#9d8bff]">
           An interactive portfolio
         </p>
 
-        <h1 className="text-4xl font-black leading-[0.95] tracking-tight sm:text-6xl">
+        <h1 className="text-4xl font-black leading-[0.95] tracking-tight sm:text-5xl lg:text-6xl">
           <span className="bg-gradient-to-br from-[#c9d4ff] via-white to-[#8f7bff] bg-clip-text text-transparent">
             {PROFILE.name}
           </span>
         </h1>
 
-        <p className="mx-auto mt-4 max-w-md text-sm text-[#b9b2e8] sm:text-base">
+        <p className="mx-auto mt-3 max-w-md text-sm text-[#b9b2e8] sm:text-base">
           {PROFILE.tagline}
         </p>
 
-        <p className="mx-auto mt-6 max-w-xl text-sm leading-relaxed text-[#8f88bd]">
-          {PROFILE.blurb}
-        </p>
-
-        <div className="mx-auto mt-8 grid max-w-md grid-cols-2 gap-2 text-left font-mono text-[0.7rem] text-[#8f88bd] sm:grid-cols-4">
+        <div className="mx-auto mt-6 grid max-w-md grid-cols-2 gap-2 text-left font-mono text-[0.7rem] text-[#8f88bd] sm:grid-cols-4">
           {[
             ["W / ↑", "Drive"],
             ["S / ↓", "Reverse"],
@@ -47,7 +46,7 @@ export default function Intro() {
           ))}
         </div>
 
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
           <button
             type="button"
             disabled={!ready}
@@ -66,7 +65,7 @@ export default function Intro() {
           </Link>
         </div>
 
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs">
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs">
           {PROFILE.links.map((link) => (
             <a
               key={link.label}
@@ -78,6 +77,7 @@ export default function Intro() {
               {link.label}
             </a>
           ))}
+        </div>
         </div>
       </div>
     </div>

@@ -34,8 +34,6 @@ export const PROFILE = {
   name: "AMRITARAJ NAIR",
   short: "AMRIT",
   tagline: "CS Honors @ Texas A&M · builds AI products that ship",
-  blurb:
-    "I'm a computer science honors student at Texas A&M (May 2029) who spends most of his time shipping: AI health-tech at Matic, a quant investing platform, a computer-vision pickleball coach, and a virtual receptionist for pre-med students. Drive around — every district is a real part of my resume.",
   email: "amritnair23@gmail.com",
   phone: "214-316-6196",
   links: [
