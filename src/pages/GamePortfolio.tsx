@@ -86,7 +86,10 @@ export default function GamePortfolio() {
     <main className="relative h-[100dvh] w-full overflow-hidden bg-[#160f34] text-white">
       <Canvas
         shadows
-        dpr={[1, 2]}
+        // Capped below full retina on purpose: bloom and SMAA run over every
+        // pixel, and a locked 60fps at 1.5x reads as far smoother than a
+        // fluctuating 2x.
+        dpr={[1, 1.5]}
         gl={{
           antialias: false,
           powerPreference: "high-performance",

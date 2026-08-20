@@ -8,9 +8,24 @@ const withBase = (href: string) =>
     ? href
     : `${import.meta.env.BASE_URL}${href}`;
 
+/** Mac reports "MacIntel"/"Mac" here regardless of chip. */
+const isMac = typeof navigator !== "undefined" && /Mac/i.test(navigator.platform);
+const FULLSCREEN_KEY = isMac ? "⌃⌘F" : "F11";
+
 export default function Intro() {
   const { progress, active } = useProgress();
   const ready = progress >= 100 || !active;
+
+  // The world is framed for a full window — a browser with tabs, bookmarks and
+  // a dock eating the bottom crops the districts. Offer fullscreen on the way
+  // in rather than letting people discover the problem mid-drive.
+  const play = async (fullscreen: boolean) => {
+    if (fullscreen && !document.fullscreenElement) {
+      // A refusal here is not worth blocking on — start the world either way.
+      await document.documentElement.requestFullscreen?.().catch(() => {});
+    }
+    worldStore.start();
+  };
 
   return (
     // Short laptop windows are the common case, not the exception: the whole
@@ -50,11 +65,11 @@ export default function Intro() {
           <button
             type="button"
             disabled={!ready}
-            onClick={() => worldStore.start()}
+            onClick={() => play(true)}
             className="group inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-[#5b4bff] to-[#c341ff] px-9 py-4 text-sm font-bold uppercase tracking-[0.22em] text-white shadow-[0_0_40px_-6px_rgba(140,90,255,0.9)] transition hover:scale-[1.03] disabled:cursor-wait disabled:opacity-50"
           >
             <span className="text-base leading-none">▶</span>
-            {ready ? "Play the world" : `Loading ${Math.round(progress)}%`}
+            {ready ? "Play fullscreen" : `Loading ${Math.round(progress)}%`}
           </button>
 
           <Link
@@ -64,6 +79,18 @@ export default function Intro() {
             Read the résumé
           </Link>
         </div>
+
+        <p className="mt-4 text-[0.7rem] text-[#6f68a0]">
+          Best in fullscreen ({FULLSCREEN_KEY} toggles it) —{" "}
+          <button
+            type="button"
+            disabled={!ready}
+            onClick={() => play(false)}
+            className="underline decoration-[#6b5fd1] underline-offset-4 transition hover:text-white disabled:opacity-50"
+          >
+            or play in this window
+          </button>
+        </p>
 
         <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs">
           {PROFILE.links.map((link) => (

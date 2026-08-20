@@ -47,7 +47,7 @@ export default function World() {
         intensity={1.9}
         color={PALETTE.moon}
         castShadow
-        shadow-mapSize={[4096, 4096]}
+        shadow-mapSize={[2048, 2048]}
         shadow-camera-near={1}
         shadow-camera-far={220}
         shadow-camera-left={-90}
@@ -61,7 +61,10 @@ export default function World() {
       <Environment preset="night" />
       <Moon />
 
-      <Physics timeStep="vary" gravity={[0, -30, 0]}>
+      {/* A fixed step keeps the solver stable and lets rapier interpolate the
+          car's transform between steps — "vary" feeds every render hitch
+          straight into the physics and shows up as camera judder. */}
+      <Physics timeStep={1 / 60} interpolate gravity={[0, -30, 0]}>
         <Island />
         {ZONES.map((zone) => (
           <District key={zone.id} zone={zone} />

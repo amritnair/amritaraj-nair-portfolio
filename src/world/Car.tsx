@@ -23,12 +23,20 @@ const quaternion = new THREE.Quaternion();
 const camTarget = new THREE.Vector3();
 const camLook = new THREE.Vector3();
 const carPosition = new THREE.Vector3();
+// The camera tracks the *interpolated* visual transform, not the raw physics
+// pose — those only agree on frames that happen to land on a solver step.
+const visualPosition = new THREE.Vector3();
+const visualQuaternion = new THREE.Quaternion();
+const visualForward = new THREE.Vector3();
+const camOffsetUp = new THREE.Vector3(0, 5.6, 0);
+const camLookUp = new THREE.Vector3(0, 1.2, 0);
 
 export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void }) {
   const body = useRef<RapierRigidBody>(null);
   const chassis = useRef<THREE.Group>(null);
   const wheels = useRef<(THREE.Group | null)[]>([]);
   const cameraReady = useRef(false);
+  const smoothedLook = useRef(new THREE.Vector3());
 
   const reset = () => {
     const rb = body.current;
@@ -102,33 +110,60 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
     if (chassis.current) {
       const roll = THREE.MathUtils.clamp(-steer * speedFactor * 0.16, -0.2, 0.2);
       const pitch = THREE.MathUtils.clamp(-throttle * 0.05, -0.08, 0.08);
-      chassis.current.rotation.z = THREE.MathUtils.lerp(chassis.current.rotation.z, roll, 0.12);
-      chassis.current.rotation.x = THREE.MathUtils.lerp(chassis.current.rotation.x, pitch, 0.1);
+      // Per-second rates rather than raw lerp constants — a fixed 0.12 per
+      // frame leans twice as fast on a 120Hz display as it does on a 60Hz one.
+      const rollRate = 1 - Math.pow(0.0005, delta);
+      const pitchRate = 1 - Math.pow(0.002, delta);
+      chassis.current.rotation.z = THREE.MathUtils.lerp(chassis.current.rotation.z, roll, rollRate);
+      chassis.current.rotation.x = THREE.MathUtils.lerp(chassis.current.rotation.x, pitch, pitchRate);
     }
 
     const spin = alongForward * delta * 2.2;
+    const steerRate = 1 - Math.pow(0.0002, delta);
     wheels.current.forEach((wheel, index) => {
       if (!wheel) return;
       wheel.rotation.x -= spin;
-      if (index < 2) wheel.parent!.rotation.y = steer * 0.42;
+      // Front wheels ease to the steering angle instead of snapping to it.
+      if (index < 2) {
+        const hub = wheel.parent!;
+        hub.rotation.y = THREE.MathUtils.lerp(hub.rotation.y, steer * 0.42, steerRate);
+      }
     });
 
-    // Chase camera: sits behind the car's heading, eases into place.
+    // Chase camera: sits behind the car's heading, eases into place. It reads
+    // the rendered transform of the rigid body's group, which rapier fills in
+    // between fixed solver steps — following rb.translation() instead makes the
+    // camera step at 60Hz under a display running at any other rate.
+    const visual = chassis.current?.parent;
+    if (visual) {
+      visual.getWorldPosition(visualPosition);
+      visual.getWorldQuaternion(visualQuaternion);
+      visualForward.set(0, 0, -1).applyQuaternion(visualQuaternion);
+    } else {
+      visualPosition.copy(carPosition);
+      visualForward.copy(forward);
+    }
+
     camTarget
-      .copy(carPosition)
-      .addScaledVector(forward, -11 - speedFactor * 3)
-      .add(new THREE.Vector3(0, 5.6, 0));
+      .copy(visualPosition)
+      .addScaledVector(visualForward, -11 - speedFactor * 3)
+      .add(camOffsetUp);
+    // Where the camera *wants* to look. Smoothing this as well as the position
+    // matters more than it sounds: an instant lookAt on a lagging position is
+    // what makes a chase camera feel like it snaps through corners.
+    camLook.copy(visualPosition).addScaledVector(visualForward, 6).add(camLookUp);
+
     if (!cameraReady.current) {
       threeState.camera.position.copy(camTarget);
+      smoothedLook.current.copy(camLook);
       cameraReady.current = true;
     } else {
-      threeState.camera.position.lerp(camTarget, 1 - Math.pow(0.0015, delta));
+      // Exponential smoothing expressed per-second, so the feel is identical at
+      // 60, 120 or 144Hz.
+      threeState.camera.position.lerp(camTarget, 1 - Math.pow(0.0022, delta));
+      smoothedLook.current.lerp(camLook, 1 - Math.pow(0.0006, delta));
     }
-    camLook
-      .copy(carPosition)
-      .addScaledVector(forward, 6)
-      .add(new THREE.Vector3(0, 1.2, 0));
-    threeState.camera.lookAt(camLook);
+    threeState.camera.lookAt(smoothedLook.current);
   });
 
   return (
