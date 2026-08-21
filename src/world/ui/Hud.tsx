@@ -3,6 +3,7 @@ import { ISLAND_RADIUS } from "../Island";
 import { PROFILE, ZONE_BY_ID, ZONES } from "../content";
 import { telemetry, useWorld, worldStore } from "../store";
 import { ORES } from "../Ores";
+import { rankFor } from "../garage";
 
 const MAP = 132;
 const toMap = (v: number) => MAP / 2 + (v / ISLAND_RADIUS) * (MAP / 2 - 8);
@@ -52,6 +53,7 @@ export default function Hud() {
       <AirMeter />
       <TrickBanner />
       <CircuitPrompt />
+      <AwardToasts />
 
       {activeZone && !openZone && (
         <button
@@ -285,38 +287,98 @@ function RaceTimer() {
   );
 }
 
-/** Announces a finished lap, then gets out of the way. */
+/**
+ * The lap result, itemised. A single "+6100" tells you nothing about what you
+ * did well; this shows the working, so the next lap has something to aim at.
+ */
 function LapBanner() {
-  const lastLap = useWorld((s) => s.lastLap);
+  const lap = useWorld((s) => s.lastLap);
+  const bestLap = useWorld((s) => s.garage.bestLap);
 
   useEffect(() => {
-    if (!lastLap) return;
-    const timer = setTimeout(() => worldStore.clearLapBanner(), 4500);
+    if (!lap) return;
+    const timer = setTimeout(() => worldStore.clearLapBanner(), 7000);
     return () => clearTimeout(timer);
-  }, [lastLap]);
+  }, [lap]);
 
-  if (!lastLap) return null;
+  if (!lap) return null;
+
+  const delta = bestLap !== null && !lap.best ? lap.time - bestLap : null;
 
   return (
-    <div className="pointer-events-none fixed left-1/2 top-1/3 z-30 w-max -translate-x-1/2 rounded-2xl border border-[#7dffd0]/50 bg-[#0d0a24]/90 px-8 py-5 text-center backdrop-blur">
-      <div className="font-mono text-[0.6rem] uppercase tracking-[0.35em] text-[#7dffd0]">
-        {lastLap.best ? "New best lap" : "Lap complete"}
+    <div className="pointer-events-none fixed left-1/2 top-1/4 z-30 w-max min-w-[17rem] -translate-x-1/2 rounded-2xl border border-[#7dffd0]/50 bg-[#0d0a24]/92 px-7 py-5 backdrop-blur">
+      <div className="text-center font-mono text-[0.6rem] uppercase tracking-[0.35em] text-[#7dffd0]">
+        {lap.best ? "New best lap" : "Lap complete"}
       </div>
-      <div className="mt-1 font-mono text-4xl font-black tabular-nums text-white">
-        {lastLap.time.toFixed(2)}s
+      <div className="mt-1 text-center font-mono text-4xl font-black tabular-nums text-white">
+        {lap.time.toFixed(2)}s
       </div>
-      <div className="mt-1 font-mono text-sm font-bold text-[#ff5fd2]">
-        +{lastLap.reward.toLocaleString()} pts
+      {delta !== null && (
+        <div className="text-center font-mono text-[0.62rem] tabular-nums text-[#ff9f2f]">
+          +{delta.toFixed(2)} off your best
+        </div>
+      )}
+
+      <div className="mt-4 space-y-1 border-t border-white/10 pt-3 font-mono text-[0.68rem]">
+        <Row label="Lap time" value={lap.base} />
+        <Row
+          label={lap.clean ? "Clean lap" : "Clean lap — you hit something"}
+          value={lap.cleanBonus}
+          muted={!lap.clean}
+        />
+        <Row label="Style banked this lap" value={lap.styleBonus} muted={lap.styleBonus === 0} />
+        <div className="flex items-baseline justify-between border-t border-white/10 pt-2 text-sm font-black text-white">
+          <span>Total</span>
+          <span className="tabular-nums">{lap.total.toLocaleString()}</span>
+        </div>
       </div>
     </div>
   );
 }
 
+function Row({ label, value, muted }: { label: string; value: number; muted?: boolean }) {
+  return (
+    <div className={`flex items-baseline justify-between ${muted ? "text-[#6f68a0]" : "text-[#b9b2e8]"}`}>
+      <span>{label}</span>
+      <span className="tabular-nums">{value > 0 ? `+${value.toLocaleString()}` : "—"}</span>
+    </div>
+  );
+}
+
+/** Floating "+N" for every award, so points always land somewhere visible. */
+function AwardToasts() {
+  const awards = useWorld((s) => s.awards);
+
+  useEffect(() => {
+    if (!awards.length) return;
+    const timers = awards.map((a) => setTimeout(() => worldStore.dismissAward(a.id), 1800));
+    return () => timers.forEach(clearTimeout);
+  }, [awards]);
+
+  return (
+    <div className="pointer-events-none fixed right-4 top-44 z-20 flex flex-col items-end gap-1.5">
+      {awards.map((a) => (
+        <div
+          key={a.id}
+          className="rounded-lg border border-[#ff5fd2]/40 bg-[#0d0a24]/85 px-3 py-1.5 text-right backdrop-blur"
+        >
+          <div className="font-mono text-[0.5rem] uppercase tracking-[0.28em] text-[#ff5fd2]">
+            {a.label}
+          </div>
+          <div className="font-mono text-sm font-black tabular-nums text-white">
+            +{a.amount.toLocaleString()}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 /** Entry point to the design screen, with the running points total on it. */
 function GarageButton() {
   const points = useWorld((s) => s.garage.points);
   const ores = useWorld((s) => s.garage.ores.length);
   const panelOpen = useWorld((s) => s.openZone !== null);
+  const rank = rankFor(points);
 
   return (
     <button
@@ -333,6 +395,18 @@ function GarageButton() {
       </div>
       <div className="font-mono text-[0.55rem] uppercase tracking-widest text-[#6f68a0]">
         ◈ {ores}/{ORES.length} ore
+      </div>
+      {/* Rank bar: progression you can see filling without opening anything. */}
+      <div className="mt-1.5 flex items-center justify-end gap-1.5">
+        <span className="font-mono text-[0.5rem] uppercase tracking-[0.2em] text-[#ff9f2f]">
+          {rank.current.name}
+        </span>
+        <span className="h-1 w-10 overflow-hidden rounded-full bg-white/10">
+          <span
+            className="block h-full origin-left rounded-full bg-gradient-to-r from-[#ff9f2f] to-[#ff5fd2]"
+            style={{ transform: `scaleX(${rank.progress})` }}
+          />
+        </span>
       </div>
     </button>
   );

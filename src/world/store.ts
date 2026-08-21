@@ -2,10 +2,11 @@ import { useSyncExternalStore } from "react";
 import {
   DEFAULT_GARAGE,
   ORE_VALUE,
-  lapReward,
   loadGarage,
   saveGarage,
+  scoreLap,
   type GarageState,
+  type LapScore,
 } from "./garage";
 
 export type WorldState = {
@@ -20,8 +21,8 @@ export type WorldState = {
   showHelp: boolean;
   garageOpen: boolean;
   garage: GarageState;
-  /** Set briefly after a lap so the HUD can announce it. */
-  lastLap: { time: number; reward: number; best: boolean } | null;
+  /** Set after a lap: the full itemised result, shown until dismissed. */
+  lastLap: LapScore | null;
   /** Set briefly after a landing, same idea. */
   lastTrick: { air: number; spins: number; reward: number } | null;
   /**
@@ -32,6 +33,8 @@ export type WorldState = {
   circuitMode: "undecided" | "race" | "cruise";
   /** True while the choice is on screen. */
   circuitPrompt: boolean;
+  /** Rolling feed of point awards, for the floating "+N" toasts. */
+  awards: { id: number; label: string; amount: number }[];
 };
 
 let state: WorldState = {
@@ -48,6 +51,7 @@ let state: WorldState = {
   lastTrick: null,
   circuitMode: "undecided",
   circuitPrompt: false,
+  awards: [],
 };
 
 const listeners = new Set<() => void>();
@@ -84,6 +88,13 @@ export const telemetry = {
   boosting: false,
 };
 
+/**
+ * Bookkeeping for the lap in progress. Style points earned during a lap are
+ * counted here and paid out with the lap result, so a lap you drove well is
+ * visibly worth more than the same lap driven scrappily.
+ */
+const lap = { style: 0, impacts: 0 };
+
 function set(patch: Partial<WorldState>) {
   let changed = false;
   for (const key of Object.keys(patch) as (keyof WorldState)[]) {
@@ -114,6 +125,7 @@ export const worldStore = {
   },
   toggleGarage: () => set({ garageOpen: !state.garageOpen }),
   clearLapBanner: () => set({ lastLap: null }),
+  dismissAward: (id: number) => set({ awards: state.awards.filter((a) => a.id !== id) }),
   clearTrickBanner: () => set({ lastTrick: null }),
 
   /** Called when the car first reaches the circuit deck. */
@@ -130,10 +142,22 @@ export const worldStore = {
     set({ circuitMode: "undecided", circuitPrompt: false });
   },
 
+  /** Registers a hit hard enough to count against a clean lap. */
+  registerImpact() {
+    lap.impacts += 1;
+  },
+
+  /** Starts a fresh lap's bookkeeping. */
+  startLap() {
+    lap.style = 0;
+    lap.impacts = 0;
+  },
+
   /** A landed jump: airtime plus whole rotations. */
   landTrick(air: number, spins: number) {
     const reward = Math.round(air * 900 + spins * 1600);
     if (reward <= 0) return;
+    if (telemetry.raceRunning) lap.style += reward;
     const garage = { ...state.garage, points: state.garage.points + reward };
     saveGarage(garage);
     set({ garage, lastTrick: { air, spins, reward } });
@@ -152,13 +176,14 @@ export const worldStore = {
   bankDrift(amount: number) {
     const points = Math.round(amount);
     if (points <= 0) return;
+    if (telemetry.raceRunning) lap.style += points;
     const garage = {
       ...state.garage,
       points: state.garage.points + points,
       best: Math.max(state.garage.best, points),
     };
     saveGarage(garage);
-    set({ garage });
+    set({ garage, awards: award(state.awards, "Drift", points) });
   },
 
   /** Ore pickup. Idempotent: the collision test fires on every frame in range. */
@@ -170,20 +195,22 @@ export const worldStore = {
       points: state.garage.points + ORE_VALUE,
     };
     saveGarage(garage);
-    set({ garage });
+    set({ garage, awards: award(state.awards, "Ore", ORE_VALUE) });
   },
 
-  /** A completed speedway lap: pays out, and records a personal best. */
+  /** A completed lap: pays out itemised, and records a personal best. */
   finishLap(time: number) {
-    const reward = lapReward(time);
-    const best = state.garage.bestLap === null || time < state.garage.bestLap;
+    const result = scoreLap(time, lap.style, lap.impacts === 0);
+    result.best = state.garage.bestLap === null || time < state.garage.bestLap;
+    // Style was already banked as it happened; only the lap's own money is new.
+    const fresh = result.base + result.cleanBonus;
     const garage = {
       ...state.garage,
-      points: state.garage.points + reward,
-      bestLap: best ? time : state.garage.bestLap,
+      points: state.garage.points + fresh,
+      bestLap: result.best ? time : state.garage.bestLap,
     };
     saveGarage(garage);
-    set({ garage, lastLap: { time, reward, best } });
+    set({ garage, lastLap: result });
   },
 
   selectPaint(paint: string) {
@@ -211,6 +238,13 @@ export const worldStore = {
     set({ activeZone: null, openZone: state.openZone === id ? null : state.openZone });
   },
 };
+
+let awardId = 0;
+/** Keeps the toast feed short — three at a time is plenty. */
+function award(current: WorldState["awards"], label: string, amount: number) {
+  awardId += 1;
+  return [...current, { id: awardId, label, amount }].slice(-3);
+}
 
 export function useWorld<T>(selector: (s: WorldState) => T): T {
   return useSyncExternalStore(

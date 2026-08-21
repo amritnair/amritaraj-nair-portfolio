@@ -40,7 +40,7 @@ const near = (x: number, z: number, point: { x: number; z: number }, radius: num
   return dx * dx + dz * dz < radius * radius;
 };
 
-type Sink = { finishLap: (time: number) => void };
+type Sink = { finishLap: (time: number) => void; startLap: () => void };
 
 export function updateRace(x: number, z: number, delta: number, sink: Sink) {
   const start = gate(0);
@@ -77,6 +77,7 @@ export function updateRace(x: number, z: number, delta: number, sink: Sink) {
     state.running = true;
     state.checkpoint = 0;
     state.time = 0;
+    sink.startLap();
     state.armed = false;
   }
 

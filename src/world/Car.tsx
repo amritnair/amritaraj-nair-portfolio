@@ -169,6 +169,10 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
   /** Live drift chain: points banked so far and how long since it lapsed. */
   const drift = useRef({ chain: 0, held: 0, lapsed: 0 });
   const boosting = useRef(false);
+  /** Previous frame's forward speed, for spotting impacts. */
+  const lastSpeed = useRef(0);
+  /** Decaying camera shake, topped up by hits. */
+  const shake = useRef(0);
 
   const reset = () => {
     const rb = body.current;
@@ -283,6 +287,17 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
     }
     telemetry.boosting = wantsBoost;
 
+    // An impact is a sudden loss of speed you did not ask for. Cheaper and
+    // steadier than collision events, which also fire on every landing and on
+    // every joint in the road.
+    const drop = lastSpeed.current - Math.abs(alongForward);
+    if (drop > 7 && !braking && lastSpeed.current > 9) {
+      worldStore.registerImpact();
+      shake.current = Math.min(1, shake.current + drop / 26);
+    }
+    lastSpeed.current = Math.abs(alongForward);
+    shake.current = Math.max(0, shake.current - delta * 2.6);
+
     // Grounded test by ray rather than by contact events: one short cast per
     // frame, and it works the same on the island, the ring and the circuit
     // without any of them having to know about it.
@@ -361,6 +376,14 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
       // 60, 120 or 144Hz.
       threeState.camera.position.lerp(camTarget, 1 - Math.pow(0.0022, delta));
       smoothedLook.current.lerp(camLook, 1 - Math.pow(0.0006, delta));
+    }
+    // Knock the camera about on impact — the clearest possible signal that you
+    // hit something, and it costs nothing.
+    if (shake.current > 0.001) {
+      const amount = shake.current * shake.current * 1.4;
+      threeState.camera.position.x += (Math.random() - 0.5) * amount;
+      threeState.camera.position.y += (Math.random() - 0.5) * amount;
+      threeState.camera.position.z += (Math.random() - 0.5) * amount;
     }
     threeState.camera.lookAt(smoothedLook.current);
   });

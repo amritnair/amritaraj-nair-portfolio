@@ -56,6 +56,59 @@ export function lapReward(time: number) {
   return Math.max(800, Math.round(16000 - time * 220));
 }
 
+/**
+ * Rank tiers. Progression the player can feel between unlocks — the gaps
+ * widen, but the early ones come quickly so the first session shows movement.
+ */
+export const RANKS = [
+  { name: "Rookie", at: 0 },
+  { name: "Runner", at: 2500 },
+  { name: "Slider", at: 7000 },
+  { name: "Ace", at: 15000 },
+  { name: "Circuit King", at: 30000 },
+  { name: "Legend", at: 55000 },
+];
+
+export function rankFor(points: number) {
+  let index = 0;
+  for (let i = 0; i < RANKS.length; i += 1) if (points >= RANKS[i].at) index = i;
+  const current = RANKS[index];
+  const next = RANKS[index + 1] ?? null;
+  const progress = next ? (points - current.at) / (next.at - current.at) : 1;
+  return { index, current, next, progress: Math.min(Math.max(progress, 0), 1) };
+}
+
+/**
+ * A lap's payout, itemised so the result screen can show its working rather
+ * than a single number the player has to take on trust.
+ */
+export type LapScore = {
+  time: number;
+  base: number;
+  cleanBonus: number;
+  styleBonus: number;
+  total: number;
+  clean: boolean;
+  best: boolean;
+};
+
+export function scoreLap(time: number, style: number, clean: boolean): LapScore {
+  const base = Math.max(800, Math.round(16000 - time * 220));
+  // A clean lap is worth a third again — enough to be worth driving for,
+  // not so much that a scrappy lap feels pointless.
+  const cleanBonus = clean ? Math.round(base * 0.35) : 0;
+  const styleBonus = Math.round(style);
+  return {
+    time,
+    base,
+    cleanBonus,
+    styleBonus,
+    total: base + cleanBonus + styleBonus,
+    clean,
+    best: false,
+  };
+}
+
 export type GarageState = {
   points: number;
   /** Highest single drift chain, kept as a bragging number. */
