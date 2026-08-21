@@ -84,8 +84,11 @@ export const telemetry = {
   airborne: false,
   airTime: 0,
   airSpin: 0,
-  /** Boost tank, 0..BOOST_MAX, and whether it is firing right now. */
-  boost: 0,
+  /**
+   * Boost tank, 0..BOOST_MAX. Starts part full: an empty tank means a new
+   * player presses Shift, nothing happens, and never presses it again.
+   */
+  boost: 45,
   boosting: false,
 };
 

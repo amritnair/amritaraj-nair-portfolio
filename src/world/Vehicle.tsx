@@ -19,6 +19,8 @@ export type VehicleRig = {
   mounts: (THREE.Group | null)[];
   /** Thruster meshes, brightened under throttle. */
   thrusters: (THREE.Mesh | null)[];
+  /** Exhaust flames, grown under power and stretched hard under boost. */
+  flames: (THREE.Mesh | null)[];
   thrusterLight: THREE.PointLight | null;
 };
 
@@ -28,6 +30,7 @@ export const useVehicleRig = () =>
     hubs: [null, null],
     mounts: [null, null, null, null],
     thrusters: [null, null],
+    flames: [null, null],
     thrusterLight: null,
   });
 
@@ -57,6 +60,7 @@ type AnimateArgs = {
   /** Vertical speed, so a landing visibly compresses the springs. */
   vertical: number;
   braking: boolean;
+  boosting: boolean;
 };
 
 /** Rest height of a wheel mount, and how far it may travel either way. */
@@ -65,7 +69,7 @@ const TRAVEL = 0.17;
 
 export function animateVehicle(
   rig: VehicleRig,
-  { speed, steer, throttle, brake, delta, paint, lateral, vertical, braking }: AnimateArgs,
+  { speed, steer, throttle, brake, delta, paint, lateral, vertical, braking, boosting }: AnimateArgs,
 ) {
   const spin = speed * delta * 2.2;
   rig.wheels.forEach((wheel) => {
@@ -111,6 +115,30 @@ export function animateVehicle(
     material.color.set(glow);
     material.emissive.set(glow);
   });
+  /*
+   * Exhaust. Real geometry welded to the car rather than a particle spray:
+   * particles behind a car at speed read as a scatter of dots hanging in the
+   * air, while a stretched cone reads as thrust.
+   */
+  const flameTarget = boosting ? 1 : Math.max(throttle, 0) * 0.32;
+  const flameRate = 1 - Math.pow(0.0001, delta);
+  rig.flames.forEach((flame, i) => {
+    if (!flame) return;
+    // Flicker, so it never looks like a static cone.
+    const flicker = 0.86 + Math.sin(performance.now() * 0.03 + i * 2.1) * 0.14;
+    const length = flameTarget * flicker;
+    flame.scale.z = THREE.MathUtils.lerp(flame.scale.z, Math.max(length * 5.2, 0.001), flameRate);
+    flame.scale.x = flame.scale.y = THREE.MathUtils.lerp(
+      flame.scale.x,
+      Math.max(0.35 + length * 0.75, 0.001),
+      flameRate,
+    );
+    flame.visible = flame.scale.z > 0.05;
+    const material = flame.material as THREE.MeshBasicMaterial;
+    material.color.set(boosting ? "#eafcff" : glow);
+    material.opacity = boosting ? 0.85 : 0.5;
+  });
+
   if (rig.thrusterLight) {
     rig.thrusterLight.intensity = THREE.MathUtils.lerp(
       rig.thrusterLight.intensity,
@@ -256,6 +284,29 @@ function Thrusters({ rig }: { rig: React.MutableRefObject<VehicleRig> }) {
           />
         </mesh>
       ))}
+      {/* Cones pointing astern. Scaled from nothing, so at rest there is
+          simply no flame rather than a stub hanging off the back. */}
+      {[-0.52, 0.52].map((x, i) => (
+        <mesh
+          key={`flame${x}`}
+          position={[x, 0.02, 2.2]}
+          rotation={[Math.PI / 2, 0, 0]}
+          scale={[0.001, 0.001, 0.001]}
+          ref={(el) => (rig.current.flames[i] = el)}
+        >
+          <coneGeometry args={[0.3, 1, 10, 1, true]} />
+          <meshBasicMaterial
+            color={paint.trim}
+            transparent
+            opacity={0.7}
+            depthWrite={false}
+            side={THREE.DoubleSide}
+            blending={THREE.AdditiveBlending}
+            toneMapped={false}
+          />
+        </mesh>
+      ))}
+
       <pointLight
         position={[0, 0.1, 2.5]}
         distance={14}

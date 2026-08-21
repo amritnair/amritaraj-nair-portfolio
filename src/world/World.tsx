@@ -3,7 +3,7 @@ import * as THREE from "three";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Physics } from "@react-three/rapier";
 import { Environment, Stars } from "@react-three/drei";
-import { EffectComposer, Bloom, Vignette, SMAA } from "@react-three/postprocessing";
+import { EffectComposer, SMAA } from "@react-three/postprocessing";
 import Island from "./Island";
 import Highways from "./Highways";
 import Circuit from "./Circuit";
@@ -11,6 +11,7 @@ import Ores from "./Ores";
 import Effects from "./Effects";
 import Skyline from "./Skyline";
 import Ghost from "./Ghost";
+import Grade from "./Grade";
 import District, { CrateStack, Ramp, TrophyPins } from "./District";
 import BlockText from "./BlockText";
 import Car from "./Car";
@@ -110,14 +111,7 @@ export default function World() {
       <Beacons />
 
       <EffectComposer multisampling={0}>
-        <Bloom
-          intensity={1.25}
-          luminanceThreshold={0.75}
-          luminanceSmoothing={0.28}
-          mipmapBlur
-          radius={0.72}
-        />
-        <Vignette offset={0.28} darkness={0.72} />
+        <Grade />
         <SMAA />
       </EffectComposer>
     </>

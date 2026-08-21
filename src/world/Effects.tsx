@@ -2,21 +2,23 @@ import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { telemetry } from "./store";
-import { PAINT_BY_ID, PAINTS, TRAIL_BY_ID } from "./garage";
-import { useWorld } from "./store";
 
 /**
- * Everything the car leaves behind: tyre smoke while it slides, skid marks on
- * the road under it, and a trail out of the thrusters under boost.
+ * What the car leaves on the road: tyre smoke while it slides and skid marks
+ * under it. Both are pooled and share one draw call each, and both read the
+ * car straight off telemetry rather than taking props, so neither causes a
+ * React render while running.
  *
- * All three are pooled particle systems sharing one draw call each. They read
- * the car straight off telemetry rather than taking props, so none of them
- * cause a React render while they're running.
+ * The boost trail and the speed streaks used to live here too, as point
+ * sprites. Both were wrong: sprites behind a moving car read as a scatter of
+ * dots hanging in the air, and the streaks were parented to the car so they
+ * never moved relative to it at all — a cloud of specks that followed you
+ * around. Thrust is now geometry on the car itself, and the sense of speed is
+ * done in screen space where it belongs.
  */
 
-const SMOKE_COUNT = 90;
+const SMOKE_COUNT = 70;
 const MARK_COUNT = 120;
-const TRAIL_COUNT = 60;
 
 /** Soft round sprite — untextured points render as hard squares. */
 const PUFF = (() => {
@@ -65,59 +67,10 @@ export default function Effects() {
     <group>
       <TyreSmoke />
       <SkidMarks />
-      <BoostTrail />
-      <SpeedStreaks />
     </group>
   );
 }
 
-/**
- * Streaks rushing past the camera at speed.
- *
- * They live in a fixed cloud around the car rather than being emitted, so the
- * cost is constant: the effect is entirely in the opacity, which is zero until
- * you are actually moving quickly and jumps under boost.
- */
-function SpeedStreaks() {
-  const points = useRef<THREE.Points>(null);
-  const geometry = useMemo(() => {
-    const count = 140;
-    const positions = new Float32Array(count * 3);
-    for (let i = 0; i < count; i += 1) {
-      const angle = Math.random() * Math.PI * 2;
-      const radius = 6 + Math.random() * 16;
-      positions[i * 3] = Math.cos(angle) * radius;
-      positions[i * 3 + 1] = Math.random() * 9 - 1;
-      positions[i * 3 + 2] = Math.sin(angle) * radius;
-    }
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    return geo;
-  }, []);
-
-  useFrame(() => {
-    if (!points.current) return;
-    points.current.position.set(telemetry.x, telemetry.y, telemetry.z);
-    const pace = Math.max(0, (telemetry.speed - 16) / 22);
-    const material = points.current.material as THREE.PointsMaterial;
-    material.opacity = Math.min(pace, 1) * (telemetry.boosting ? 0.55 : 0.3);
-  });
-
-  return (
-    <points ref={points} geometry={geometry} frustumCulled={false}>
-      <pointsMaterial
-        size={0.6}
-        color="#dfe9ff"
-        transparent
-        opacity={0}
-        depthWrite={false}
-        sizeAttenuation
-        toneMapped={false}
-        blending={THREE.AdditiveBlending}
-      />
-    </points>
-  );
-}
 
 /** Puffs off the rear wheels whenever the car is sliding. */
 function TyreSmoke() {
@@ -156,19 +109,21 @@ function TyreSmoke() {
     geometry.attributes.size.needsUpdate = true;
     if (points.current) {
       const material = points.current.material as THREE.PointsMaterial;
-      material.opacity = sliding ? 0.5 : 0.32;
+      material.opacity = sliding ? 0.34 : 0.2;
     }
   });
 
   return (
     <points ref={points} geometry={geometry} frustumCulled={false}>
+      {/* Large and soft on purpose — small sprites read as dots however
+          pretty the texture is. */}
       <pointsMaterial
-        size={2.4}
+        size={5.5}
         map={PUFF}
         alphaMap={PUFF}
-        color="#cfd4ff"
+        color="#c9cff2"
         transparent
-        opacity={0.4}
+        opacity={0.28}
         depthWrite={false}
         sizeAttenuation
         toneMapped={false}
@@ -215,65 +170,5 @@ function SkidMarks() {
       <planeGeometry args={[2.0, 1.1]} />
       <meshBasicMaterial color="#0a0a16" transparent opacity={0.38} depthWrite={false} />
     </instancedMesh>
-  );
-}
-
-/** Streaks out of the thrusters, in the car's own trim colour. */
-function BoostTrail() {
-  const points = useRef<THREE.Points>(null);
-  const pool = useMemo(() => makePool(TRAIL_COUNT), []);
-  const paintId = useWorld((s) => s.garage.paint);
-  const trailId = useWorld((s) => s.garage.trail);
-  const paint = PAINT_BY_ID[paintId] ?? PAINTS[0];
-  // "Match paint" is stored as an empty colour rather than a special case at
-  // every use site.
-  const trailColor = TRAIL_BY_ID[trailId]?.color || paint.trim;
-  const geometry = useMemo(() => {
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute("position", new THREE.BufferAttribute(pool.positions, 3));
-    return geo;
-  }, [pool]);
-
-  useFrame((_, delta) => {
-    if (telemetry.boosting) {
-      const back = 2.4;
-      emit(
-        pool,
-        telemetry.x + Math.sin(telemetry.heading) * back + (Math.random() - 0.5) * 0.8,
-        telemetry.y - 0.1 + (Math.random() - 0.5) * 0.3,
-        telemetry.z + Math.cos(telemetry.heading) * back + (Math.random() - 0.5) * 0.8,
-        1,
-      );
-    }
-
-    for (let i = 0; i < TRAIL_COUNT; i += 1) {
-      if (pool.life[i] <= 0) continue;
-      pool.life[i] -= delta * 2.4;
-      pool.positions[i * 3 + 1] += delta * 0.6;
-      if (pool.life[i] <= 0) pool.positions[i * 3 + 1] = 9999;
-    }
-    geometry.attributes.position.needsUpdate = true;
-
-    if (points.current) {
-      const material = points.current.material as THREE.PointsMaterial;
-      material.opacity = telemetry.boosting ? 0.95 : 0.5;
-    }
-  });
-
-  return (
-    <points ref={points} geometry={geometry} frustumCulled={false}>
-      <pointsMaterial
-        size={1.5}
-        map={PUFF}
-        alphaMap={PUFF}
-        color={trailColor}
-        transparent
-        opacity={0.9}
-        depthWrite={false}
-        sizeAttenuation
-        toneMapped={false}
-        blending={THREE.AdditiveBlending}
-      />
-    </points>
   );
 }
