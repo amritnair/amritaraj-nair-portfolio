@@ -145,8 +145,8 @@ function AirMeter() {
       if (wrap.current) wrap.current.style.opacity = telemetry.airborne ? "1" : "0";
       if (telemetry.airborne) {
         if (time.current) time.current.textContent = `${telemetry.airTime.toFixed(2)}s`;
-        const spins = Math.floor(telemetry.airSpin / (Math.PI * 2));
-        if (spin.current) spin.current.textContent = spins > 0 ? `${spins * 360}°` : "";
+        const rotations = telemetry.trickSpins + telemetry.trickFlips;
+        if (spin.current) spin.current.textContent = rotations > 0 ? `${rotations * 360}°` : "";
       }
       frame = requestAnimationFrame(tick);
     };
@@ -166,6 +166,17 @@ function AirMeter() {
           0.00s
         </span>
         <span ref={spin} className="font-mono text-base font-black text-[#7dffd0]" />
+      </div>
+      {/* The controls only matter while you're up there, so that's the only
+          time they're on screen. */}
+      <div className="mt-1 flex justify-center gap-2 font-mono text-[0.5rem] uppercase tracking-[0.18em] text-[#8f88bd]">
+        <span>
+          <b className="text-white">Q/E</b> spin
+        </span>
+        <span>
+          <b className="text-white">F/C</b> flip
+        </span>
+        <span className="text-[#7dffd0]">land level for 1.5x</span>
       </div>
     </div>
   );

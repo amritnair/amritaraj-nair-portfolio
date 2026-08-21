@@ -171,7 +171,7 @@ function Strip({
       <meshStandardMaterial
         color={hue}
         emissive={hue}
-        emissiveIntensity={intensity}
+        emissiveIntensity={intensity * paint.glow}
         toneMapped={false}
       />
     </mesh>
@@ -212,22 +212,42 @@ function Hull() {
       {/* Main hull — wide, flat and low. */}
       <mesh castShadow receiveShadow position={[0, 0.02, 0]}>
         <boxGeometry args={[1.96, 0.44, 4.0]} />
-        <meshStandardMaterial color={paint.shell} roughness={0.28} metalness={0.75} flatShading />
+        <meshStandardMaterial
+          color={paint.shell}
+          roughness={paint.roughness}
+          metalness={paint.metalness}
+          flatShading
+        />
       </mesh>
       {/* Nose, stepped down and narrowed so the front reads as a blade. */}
       <mesh castShadow position={[0, -0.06, -2.14]}>
         <boxGeometry args={[1.62, 0.28, 0.72]} />
-        <meshStandardMaterial color={paint.shell} roughness={0.3} metalness={0.7} flatShading />
+        <meshStandardMaterial
+          color={paint.shell}
+          roughness={paint.roughness}
+          metalness={paint.metalness}
+          flatShading
+        />
       </mesh>
       <mesh castShadow position={[0, -0.13, -2.62]}>
         <boxGeometry args={[1.24, 0.16, 0.42]} />
-        <meshStandardMaterial color={panel} roughness={0.3} metalness={0.7} flatShading />
+        <meshStandardMaterial
+          color={panel}
+          roughness={paint.roughness}
+          metalness={paint.metalness}
+          flatShading
+        />
       </mesh>
       {/* Shoulders over the rear wheels. */}
       {[-0.94, 0.94].map((x) => (
         <mesh key={x} castShadow position={[x, 0.16, 1.28]}>
           <boxGeometry args={[0.42, 0.5, 1.5]} />
-          <meshStandardMaterial color={panel} roughness={0.3} metalness={0.7} flatShading />
+          <meshStandardMaterial
+            color={panel}
+            roughness={paint.roughness}
+            metalness={paint.metalness}
+            flatShading
+          />
         </mesh>
       ))}
       {/* Canopy: a single tinted wedge, no frame — frames read as clutter at
@@ -350,26 +370,38 @@ function Lights() {
 }
 
 /**
- * The unlockable body kits. Each is additive geometry on the same hull, so a
- * kit can never break the silhouette the physics collider assumes.
+ * Body kits.
+ *
+ * These used to be a stripe or a small wing — technically different, visually
+ * almost identical from the only angle you ever see the car from. Each kit now
+ * changes the car's outline: arches, skirts, a diffuser, a wing you can see
+ * over the roof. If you can't tell which kit is fitted from behind at speed,
+ * it isn't a kit.
  */
 function BodyKit({ design }: { design: string }) {
   const paint = usePaint();
+  const panel = lighten(paint.shell);
 
   if (design === "stripe") {
     return (
       <>
         {[-0.34, 0.34].map((x) => (
           <mesh key={x} position={[x, 0.25, -0.1]}>
-            <boxGeometry args={[0.26, 0.04, 3.9]} />
+            <boxGeometry args={[0.3, 0.05, 4.0]} />
             <meshStandardMaterial
               color={paint.trim}
               emissive={paint.trim}
-              emissiveIntensity={2.6}
+              emissiveIntensity={2.4 * paint.glow}
               toneMapped={false}
             />
           </mesh>
         ))}
+        {/* Front splitter, low and wide. */}
+        <mesh castShadow position={[0, -0.22, -2.5]}>
+          <boxGeometry args={[2.1, 0.1, 0.9]} />
+          <meshStandardMaterial color={panel} roughness={0.4} metalness={0.6} flatShading />
+        </mesh>
+        <Strip position={[0, -0.16, -2.92]} args={[2.0, 0.06, 0.08]} intensity={4} />
       </>
     );
   }
@@ -377,17 +409,88 @@ function BodyKit({ design }: { design: string }) {
   if (design === "wing") {
     return (
       <>
-        {[-0.78, 0.78].map((x) => (
-          <mesh key={x} castShadow position={[x, 0.5, 1.86]}>
-            <boxGeometry args={[0.12, 0.5, 0.3]} />
-            <meshStandardMaterial color={lighten(paint.shell)} roughness={0.4} metalness={0.6} />
+        {/* Swan-neck uprights hang the wing from above, so it reads as a wing
+            rather than a shelf. */}
+        {[-0.72, 0.72].map((x) => (
+          <mesh key={x} castShadow position={[x, 0.72, 1.94]} rotation={[0.22, 0, 0]}>
+            <boxGeometry args={[0.12, 0.86, 0.22]} />
+            <meshStandardMaterial color={panel} roughness={0.35} metalness={0.7} />
           </mesh>
         ))}
-        <mesh castShadow position={[0, 0.76, 1.9]}>
-          <boxGeometry args={[2.1, 0.1, 0.6]} />
-          <meshStandardMaterial color={paint.shell} roughness={0.35} metalness={0.7} flatShading />
+        <mesh castShadow position={[0, 1.16, 2.02]} rotation={[0.16, 0, 0]}>
+          <boxGeometry args={[2.3, 0.1, 0.78]} />
+          <meshStandardMaterial
+            color={paint.shell}
+            roughness={paint.roughness}
+            metalness={paint.metalness}
+            flatShading
+          />
         </mesh>
-        <Strip position={[0, 0.82, 1.9]} args={[2.0, 0.05, 0.12]} intensity={5} />
+        {[-1.15, 1.15].map((x) => (
+          <mesh key={x} castShadow position={[x, 1.28, 2.02]}>
+            <boxGeometry args={[0.08, 0.34, 0.74]} />
+            <meshStandardMaterial color={panel} roughness={0.35} metalness={0.7} />
+          </mesh>
+        ))}
+        <Strip position={[0, 1.22, 2.02]} args={[2.2, 0.05, 0.1]} intensity={5} />
+        {/* Diffuser under the tail. */}
+        {[-0.6, 0, 0.6].map((x) => (
+          <mesh key={x} castShadow position={[x, -0.26, 2.1]}>
+            <boxGeometry args={[0.14, 0.34, 0.7]} />
+            <meshStandardMaterial color={panel} roughness={0.5} metalness={0.5} />
+          </mesh>
+        ))}
+        {/* Side skirts. */}
+        {[-1.02, 1.02].map((x) => (
+          <mesh key={x} castShadow position={[x, -0.24, 0.1]}>
+            <boxGeometry args={[0.16, 0.22, 2.9]} />
+            <meshStandardMaterial color={panel} roughness={0.45} metalness={0.55} />
+          </mesh>
+        ))}
+      </>
+    );
+  }
+
+  if (design === "widebody") {
+    return (
+      <>
+        {/* Flared arches over all four wheels — the biggest change to the
+            silhouette any kit can make. */}
+        {[
+          [-1.16, -1.32],
+          [1.16, -1.32],
+          [-1.16, 1.36],
+          [1.16, 1.36],
+        ].map(([x, z], i) => (
+          <group key={i}>
+            <mesh castShadow position={[x, 0.06, z]}>
+              <boxGeometry args={[0.42, 0.62, 1.5]} />
+              <meshStandardMaterial
+                color={paint.shell}
+                roughness={paint.roughness}
+                metalness={paint.metalness}
+                flatShading
+              />
+            </mesh>
+            <mesh position={[x + (x > 0 ? 0.12 : -0.12), 0.3, z]}>
+              <boxGeometry args={[0.2, 0.08, 1.42]} />
+              <meshStandardMaterial
+                color={paint.accent}
+                emissive={paint.accent}
+                emissiveIntensity={2.2 * paint.glow}
+                toneMapped={false}
+              />
+            </mesh>
+          </group>
+        ))}
+        {/* Vented bonnet. */}
+        {[-0.3, 0.3].map((x) => (
+          <mesh key={x} castShadow position={[x, 0.2, -1.5]} rotation={[0.16, 0, 0]}>
+            <boxGeometry args={[0.42, 0.1, 0.7]} />
+            <meshStandardMaterial color={panel} roughness={0.4} metalness={0.6} />
+          </mesh>
+        ))}
+        <Strip position={[0, 0.26, -1.05]} args={[1.1, 0.05, 0.08]} intensity={4} />
       </>
     );
   }
@@ -395,19 +498,35 @@ function BodyKit({ design }: { design: string }) {
   if (design === "hover") {
     return (
       <>
-        {/* Skirt: a continuous glowing lip around the base. */}
+        {/* Closed pods over the wheels, and a lit skirt all the way round. */}
         {[
-          { position: [0, -0.24, -1.6] as [number, number, number], args: [1.9, 0.1, 0.12] },
-          { position: [0, -0.24, 1.8] as [number, number, number], args: [1.9, 0.1, 0.12] },
-          { position: [-1.0, -0.24, 0.1] as [number, number, number], args: [0.12, 0.1, 3.6] },
-          { position: [1.0, -0.24, 0.1] as [number, number, number], args: [0.12, 0.1, 3.6] },
+          [-1.02, -1.32],
+          [1.02, -1.32],
+          [-1.02, 1.36],
+          [1.02, 1.36],
+        ].map(([x, z], i) => (
+          <mesh key={i} castShadow position={[x, -0.12, z]}>
+            <boxGeometry args={[0.52, 0.86, 1.46]} />
+            <meshStandardMaterial
+              color={paint.shell}
+              roughness={paint.roughness}
+              metalness={paint.metalness}
+              flatShading
+            />
+          </mesh>
+        ))}
+        {[
+          { position: [0, -0.3, -1.7] as [number, number, number], args: [2.0, 0.12, 0.14] },
+          { position: [0, -0.3, 1.9] as [number, number, number], args: [2.0, 0.12, 0.14] },
+          { position: [-1.02, -0.3, 0.1] as [number, number, number], args: [0.14, 0.12, 3.6] },
+          { position: [1.02, -0.3, 0.1] as [number, number, number], args: [0.14, 0.12, 3.6] },
         ].map((bar, i) => (
           <Strip
             key={i}
             position={bar.position}
             args={bar.args as [number, number, number]}
             color={paint.accent}
-            intensity={4}
+            intensity={4.5}
           />
         ))}
       </>
@@ -418,20 +537,32 @@ function BodyKit({ design }: { design: string }) {
     return (
       <>
         {/* Roof fin */}
-        <mesh castShadow position={[0, 0.78, 0.5]}>
-          <boxGeometry args={[0.1, 0.42, 1.3]} />
-          <meshStandardMaterial color={paint.shell} roughness={0.35} metalness={0.7} flatShading />
+        <mesh castShadow position={[0, 0.86, 0.55]}>
+          <boxGeometry args={[0.12, 0.56, 1.5]} />
+          <meshStandardMaterial
+            color={paint.shell}
+            roughness={paint.roughness}
+            metalness={paint.metalness}
+            flatShading
+          />
         </mesh>
-        <Strip position={[0, 0.99, 0.5]} args={[0.06, 0.06, 1.2]} intensity={6} />
+        <Strip position={[0, 1.14, 0.55]} args={[0.07, 0.07, 1.4]} intensity={6} />
         {/* Nose canards */}
         {[-1.0, 1.0].map((x) => (
-          <mesh key={x} castShadow position={[x, -0.08, -2.0]} rotation={[0, 0, x > 0 ? -0.2 : 0.2]}>
-            <boxGeometry args={[0.5, 0.07, 0.5]} />
-            <meshStandardMaterial color={lighten(paint.shell)} roughness={0.4} metalness={0.6} />
+          <mesh key={x} castShadow position={[x, -0.06, -2.0]} rotation={[0, 0, x > 0 ? -0.24 : 0.24]}>
+            <boxGeometry args={[0.62, 0.08, 0.62]} />
+            <meshStandardMaterial color={panel} roughness={0.4} metalness={0.6} />
           </mesh>
         ))}
+        {[-1.1, 1.1].map((x) => (
+          <Strip key={x} position={[x, -0.02, -2.2]} args={[0.5, 0.05, 0.07]} intensity={5} />
+        ))}
+        {/* Blade winglets either side of the tail */}
         {[-1.05, 1.05].map((x) => (
-          <Strip key={x} position={[x, -0.05, -2.16]} args={[0.42, 0.05, 0.06]} intensity={5} />
+          <mesh key={`blade${x}`} castShadow position={[x, 0.42, 1.7]} rotation={[0.3, 0, 0]}>
+            <boxGeometry args={[0.1, 0.72, 0.9]} />
+            <meshStandardMaterial color={panel} roughness={0.35} metalness={0.7} />
+          </mesh>
         ))}
       </>
     );

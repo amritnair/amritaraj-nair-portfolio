@@ -35,6 +35,7 @@ import {
 } from "./drive";
 import { cameraTuning } from "./camera";
 import { record } from "./ghostLap";
+import { createTrickState, updateTricks } from "./tricks";
 
 /** Just inside the plaza ring, nose pointed at the title. */
 export const SPAWN: [number, number, number] = [0, 1.6, 11];
@@ -51,6 +52,13 @@ const DRIFT_GRACE = 0.75;
 const GROUND_REACH = 1.35;
 /** Airtime below this is a bump in the road, not a jump. */
 const MIN_AIRTIME = 0.42;
+
+/** How hard the car pulls itself level once it is back on the ground. */
+const RIGHTING_TORQUE = 7.5;
+/** Pitch past this, at a standstill, counts as beached rather than driving. */
+const BEACHED_PITCH = 0.55;
+/** Seconds beached before the car is simply set upright. */
+const BEACHED_GRACE = 1.1;
 
 // Scratch objects — allocating inside useFrame would churn the GC every frame.
 const forward = new THREE.Vector3();
@@ -176,6 +184,13 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
   const shake = useRef(0);
   /** Camera roll through corners. */
   const lean = useRef(0);
+  /** How long the car has been stuck at an angle going nowhere. */
+  const beached = useRef(0);
+  const scratchEuler = useRef(new THREE.Euler(0, 0, 0, "YXZ"));
+  const tricks = useRef(createTrickState());
+  /** The group tricks rotate — separate from the chassis, which the physics
+   *  lean already owns. */
+  const shell = useRef<THREE.Group>(null);
 
   const reset = () => {
     const rb = body.current;
@@ -314,11 +329,66 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
       { x: 0, y: -1, z: 0 },
     );
     const hit = world.castRay(ray, GROUND_REACH, true, undefined, undefined, undefined, rb);
+    const grounded = hit !== null;
+    updateTricks(
+      tricks.current,
+      shell.current,
+      {
+        spinLeft: input.spinLeft,
+        spinRight: input.spinRight,
+        flipForward: input.flipForward,
+        flipBack: input.flipBack,
+      },
+      !grounded,
+      delta,
+    );
     scoreAir(air.current, {
-      grounded: hit !== null,
+      grounded,
       yaw: telemetry.heading,
       delta,
     });
+
+    /*
+     * Righting. Pitch is free so the car can lie along a ramp, but nothing was
+     * ever pulling it back: land nose-down and it stays nose-down, wedged at
+     * whatever angle it touched at.
+     *
+     * On the ground it is torqued level, strongly enough to recover from a bad
+     * landing and gently enough not to fight a slope. If it ends up stopped and
+     * steeply pitched anyway, it gets stood up outright after a moment — being
+     * stuck is never the interesting outcome.
+     */
+    const pitch = scratchEuler.current.setFromQuaternion(quaternion, "YXZ").x;
+    if (grounded && Math.abs(pitch) > 0.02) {
+      const spinNow = rb.angvel();
+      rb.setAngvel(
+        { x: -pitch * RIGHTING_TORQUE - spinNow.x * 0.6, y: spinNow.y, z: spinNow.z },
+        true,
+      );
+    }
+
+    if (grounded && Math.abs(pitch) > BEACHED_PITCH && Math.abs(alongForward) < 2) {
+      beached.current += delta;
+      if (beached.current > BEACHED_GRACE) {
+        // Keep the heading, drop everything else.
+        const heading = scratchEuler.current.setFromQuaternion(quaternion, "YXZ").y;
+        const upright = new THREE.Quaternion().setFromEuler(
+          new THREE.Euler(0, heading, 0, "YXZ"),
+        );
+        rb.setRotation(
+          { x: upright.x, y: upright.y, z: upright.z, w: upright.w },
+          true,
+        );
+        rb.setTranslation(
+          { x: carPosition.x, y: carPosition.y + 0.6, z: carPosition.z },
+          true,
+        );
+        rb.setAngvel({ x: 0, y: 0, z: 0 }, true);
+        beached.current = 0;
+      }
+    } else {
+      beached.current = 0;
+    }
 
     // The shell banks into a turn and squats under power. Wheels, hubs and
     // thrusters are animated one level down.
@@ -429,7 +499,9 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
           scraping a wall stops you dead instead of sliding along it. */}
       <CuboidCollider args={[1.0, 0.5, 2.05]} density={2.6} friction={0.15} />
       <group ref={chassis}>
-        <VehicleShell rig={rig} paint={paint} design={garage.design} wheel={garage.wheel} />
+        <group ref={shell}>
+          <VehicleShell rig={rig} paint={paint} design={garage.design} wheel={garage.wheel} />
+        </group>
       </group>
     </RigidBody>
   );

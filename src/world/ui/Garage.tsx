@@ -7,7 +7,8 @@ import {
   PAINT_BY_ID,
   TRAILS,
   WHEELS,
-  isUnlocked,
+  canAfford,
+  isOwned,
   rankFor,
   rarityFor,
 } from "../garage";
@@ -54,7 +55,7 @@ export default function Garage() {
 
   if (!open) return null;
 
-  const { points, best, bestLap, ores, paint, design, wheel, trail, loadouts } = garage;
+  const { points, best, bestLap, ores, paint, design, wheel, trail, loadouts, owned } = garage;
   const rank = rankFor(points);
 
   return (
@@ -115,7 +116,7 @@ export default function Garage() {
 
           <div className="flex flex-col rounded-3xl border border-white/10 bg-[#140f30]/95 p-5 shadow-2xl sm:p-6">
             <header className="flex flex-wrap items-center justify-between gap-3">
-              <h2 className="text-xl font-black tracking-tight text-white">Locker</h2>
+              <h2 className="text-xl font-black tracking-tight text-white">Shop</h2>
               <div className="flex gap-1 rounded-full border border-white/10 bg-white/[0.03] p-1">
                 {TABS.map((t) => (
                   <button
@@ -140,9 +141,11 @@ export default function Garage() {
                   {PAINTS.map((item) => (
                     <Tile
                       key={item.id}
+                      id={item.id}
                       name={item.name}
                       cost={item.cost}
                       points={points}
+                      owned={owned}
                       active={item.id === paint}
                       onPick={() => worldStore.selectPaint(item.id)}
                       swatch={`linear-gradient(135deg, ${item.shell} 42%, ${item.trim} 100%)`}
@@ -156,10 +159,12 @@ export default function Garage() {
                   {DESIGNS.map((item) => (
                     <Tile
                       key={item.id}
+                      id={item.id}
                       name={item.name}
                       note={item.blurb}
                       cost={item.cost}
                       points={points}
+                      owned={owned}
                       active={item.id === design}
                       onPick={() => worldStore.selectDesign(item.id)}
                     />
@@ -172,10 +177,12 @@ export default function Garage() {
                   {WHEELS.map((item) => (
                     <Tile
                       key={item.id}
+                      id={item.id}
                       name={item.name}
                       note={item.spokes ? `${item.spokes} spokes` : "Solid face"}
                       cost={item.cost}
                       points={points}
+                      owned={owned}
                       active={item.id === wheel}
                       onPick={() => worldStore.selectWheel(item.id)}
                     />
@@ -188,9 +195,11 @@ export default function Garage() {
                   {TRAILS.map((item) => (
                     <Tile
                       key={item.id}
+                      id={item.id}
                       name={item.name}
                       cost={item.cost}
                       points={points}
+                      owned={owned}
                       active={item.id === trail}
                       onPick={() => worldStore.selectTrail(item.id)}
                       swatch={
@@ -268,62 +277,96 @@ function Grid({ children }: { children: React.ReactNode }) {
  * One item. Locked tiles still show what they are and what they cost — hiding
  * them would remove the reason to go and earn the points.
  */
+/**
+ * One item in the shop.
+ *
+ * Three states rather than two: owned items equip on click, affordable ones
+ * show their price and buy on click, and the rest show how far off you are.
+ * Everything stays visible — hiding what you can't afford removes the reason
+ * to go and earn it.
+ */
 function Tile({
+  id,
   name,
   note,
   cost,
   points,
+  owned,
   active,
   onPick,
   swatch,
 }: {
+  id: string;
   name: string;
   note?: string;
   cost: number;
   points: number;
+  owned: string[];
   active: boolean;
   onPick: () => void;
   swatch?: string;
 }) {
-  const unlocked = isUnlocked(cost, points);
+  const have = isOwned(id, cost, owned);
+  const affordable = canAfford(cost, points);
   const rarity = rarityFor(cost);
   const short = cost - points;
+
+  const click = () => {
+    if (have) {
+      onPick();
+      return;
+    }
+    // Buying equips it straight away — nobody buys a paint to leave it in a box.
+    if (worldStore.purchase(id, cost)) onPick();
+  };
+
+  const state = active
+    ? "Equipped"
+    : have
+      ? "Owned"
+      : affordable
+        ? `Buy · ${cost.toLocaleString()}`
+        : `${short.toLocaleString()} short`;
 
   return (
     <button
       type="button"
-      disabled={!unlocked}
-      onClick={onPick}
+      disabled={!have && !affordable}
+      onClick={click}
       className={`group relative overflow-hidden rounded-xl border px-3 py-2.5 text-left transition ${
         active
           ? "border-white bg-white/10"
-          : unlocked
+          : have
             ? "border-white/12 bg-white/[0.03] hover:border-white/35"
-            : "cursor-not-allowed border-white/8 bg-white/[0.02]"
+            : affordable
+              ? "border-[#7dffd0]/40 bg-[#7dffd0]/[0.06] hover:border-[#7dffd0]"
+              : "cursor-not-allowed border-white/8 bg-white/[0.02]"
       }`}
       style={{ boxShadow: active ? `inset 0 0 0 1px ${rarity.color}` : undefined }}
     >
       {/* Rarity reads as a colour bar rather than a word competing for space. */}
       <span
         className="absolute inset-x-0 top-0 h-[3px]"
-        style={{ background: rarity.color, opacity: unlocked ? 1 : 0.4 }}
+        style={{ background: rarity.color, opacity: have || affordable ? 1 : 0.4 }}
       />
       <div className="flex items-center gap-2">
         {swatch && (
           <span
             className="h-7 w-7 shrink-0 rounded-lg border border-white/20"
-            style={{ background: swatch, opacity: unlocked ? 1 : 0.45 }}
+            style={{ background: swatch, opacity: have || affordable ? 1 : 0.4 }}
           />
         )}
         <div className="min-w-0">
-          <div className={`truncate text-[0.8rem] font-bold ${unlocked ? "text-white" : "text-[#8f88bd]"}`}>
+          <div
+            className={`truncate text-[0.8rem] font-bold ${have || affordable ? "text-white" : "text-[#8f88bd]"}`}
+          >
             {name}
           </div>
           <div
             className="font-mono text-[0.52rem] uppercase tracking-wider"
-            style={{ color: rarity.color }}
+            style={{ color: have ? rarity.color : affordable ? "#7dffd0" : "#6f68a0" }}
           >
-            {active ? "Equipped" : unlocked ? rarity.name : `${short.toLocaleString()} more`}
+            {state}
           </div>
         </div>
       </div>

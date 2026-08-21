@@ -500,9 +500,11 @@ function Pylons({ frames }: { frames: Frame[] }) {
  * from behind it read as nothing at all.
  */
 const KICKER_ANGLES = [0.55, 1.75, 2.9, 4.1, 5.4];
-const KICKER_HALF_WIDTH = 2.9;
-const KICKER_LENGTH = 8;
-const KICKER_LIP = 1.5;
+const KICKER_HALF_WIDTH = 3.6;
+/** Long and tall: the old ones barely unweighted the car, let alone launched
+ *  it. This gradient throws a car at speed well clear of the deck. */
+const KICKER_LENGTH = 13;
+const KICKER_LIP = 3.2;
 
 /** Wedge geometry: flat on the deck at the back, rising to the lip in front. */
 const WEDGE_GEOMETRY = (() => {

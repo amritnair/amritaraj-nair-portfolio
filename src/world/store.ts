@@ -90,6 +90,10 @@ export const telemetry = {
    */
   boost: 45,
   boosting: false,
+  /** Live trick rotation while airborne. */
+  trickSpins: 0,
+  trickFlips: 0,
+  trickAngle: 0,
 };
 
 /**
@@ -157,6 +161,24 @@ export const worldStore = {
     lap.impacts = 0;
   },
 
+  /**
+   * A landed trick. Whole rotations pay properly, a partial one pays a
+   * fraction, and sticking it level pays half again — the bonus is for the
+   * landing, which is the part that takes timing.
+   */
+  landTrickRotation(whole: number, partial: number, clean: boolean) {
+    const base = whole * 2200 + Math.round(partial * 700);
+    const reward = Math.round(base * (clean ? 1.5 : 1));
+    if (reward <= 0) return;
+    if (telemetry.raceRunning) lap.style += reward;
+    const garage = { ...state.garage, points: state.garage.points + reward };
+    saveGarage(garage);
+    set({
+      garage,
+      awards: award(state.awards, clean ? "Stuck it" : "Trick", reward),
+    });
+  },
+
   /** A landed jump: airtime plus whole rotations. */
   landTrick(air: number, spins: number) {
     const reward = Math.round(air * 900 + spins * 1600);
@@ -216,6 +238,22 @@ export const worldStore = {
     saveGarage(garage);
     commitRecording(result.best);
     set({ garage, lastLap: result });
+  },
+
+  /**
+   * Buys an item. Deducts the price and records it; refuses rather than going
+   * negative, so the shop can never leave the player in debt.
+   */
+  purchase(id: string, cost: number) {
+    if (state.garage.owned.includes(id) || state.garage.points < cost) return false;
+    const garage = {
+      ...state.garage,
+      points: state.garage.points - cost,
+      owned: [...state.garage.owned, id],
+    };
+    saveGarage(garage);
+    set({ garage });
+    return true;
   },
 
   selectPaint(paint: string) {

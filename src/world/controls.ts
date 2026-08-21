@@ -8,6 +8,11 @@ export type Controls = {
   brake: boolean;
   reset: boolean;
   boost: boolean;
+  /** Mid-air trick inputs. */
+  spinLeft: boolean;
+  spinRight: boolean;
+  flipForward: boolean;
+  flipBack: boolean;
 };
 
 /** Shared mutable input state — read every frame, never through React. */
@@ -19,6 +24,10 @@ export const controls: Controls = {
   brake: false,
   reset: false,
   boost: false,
+  spinLeft: false,
+  spinRight: false,
+  flipForward: false,
+  flipBack: false,
 };
 
 const KEY_MAP: Record<string, keyof Controls> = {
@@ -34,6 +43,11 @@ const KEY_MAP: Record<string, keyof Controls> = {
   KeyR: "reset",
   ShiftLeft: "boost",
   ShiftRight: "boost",
+  // Tricks. Right hand stays on the arrows or WASD; these sit under it.
+  KeyQ: "spinLeft",
+  KeyE: "spinRight",
+  KeyF: "flipForward",
+  KeyC: "flipBack",
 };
 
 export function readControls(): Controls {
@@ -49,7 +63,15 @@ export function useKeyboardControls() {
       const target = event.target as HTMLElement | null;
       if (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)) return;
       if (event.code === "Space") event.preventDefault();
-      if (action === "brake" || action === "reset" || action === "boost") {
+      if (
+        action === "brake" ||
+        action === "reset" ||
+        action === "boost" ||
+        action === "spinLeft" ||
+        action === "spinRight" ||
+        action === "flipForward" ||
+        action === "flipBack"
+      ) {
         controls[action] = value > 0;
       } else {
         controls[action] = value;
@@ -66,6 +88,10 @@ export function useKeyboardControls() {
       controls.brake = false;
       controls.reset = false;
       controls.boost = false;
+      controls.spinLeft = false;
+      controls.spinRight = false;
+      controls.flipForward = false;
+      controls.flipBack = false;
     };
 
     window.addEventListener("keydown", down);

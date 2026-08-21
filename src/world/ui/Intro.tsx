@@ -54,7 +54,7 @@ export default function Intro() {
             ["A D", "Steer"],
             ["SPACE", "Drift"],
             ["SHIFT", "Boost"],
-            ["G", "Garage"],
+            ["Q E F C", "Tricks"],
           ].map(([key, label]) => (
             <div key={key} className="rounded-md border border-white/10 bg-white/[0.04] px-2 py-2">
               <div className="text-[#e4dfff]">{key}</div>

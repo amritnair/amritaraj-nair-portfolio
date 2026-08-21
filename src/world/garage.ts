@@ -14,6 +14,11 @@ export type Paint = {
   trim: string;
   /** Secondary emissive, used for the belly seam and tail bar. */
   accent: string;
+  /** Panel finish: matte through to mirror. */
+  metalness: number;
+  roughness: number;
+  /** Multiplier on every emissive strip, so some cars simply burn brighter. */
+  glow: number;
   cost: number;
 };
 
@@ -24,21 +29,110 @@ export type Design = {
   cost: number;
 };
 
+/**
+ * Finishes carry more than a hue: how metallic the panels are and how hard the
+ * trim burns are what actually separate one from another at a glance. A set of
+ * near-black shells with a different accent was the old failing — every car
+ * looked the same until you found a bright wall to park against.
+ */
 export const PAINTS: Paint[] = [
-  { id: "grid", name: "Grid", shell: "#10122c", trim: "#31d8ff", accent: "#c341ff", cost: 0 },
-  { id: "ember", name: "Ember", shell: "#26101c", trim: "#ff9f2f", accent: "#ff3b6b", cost: 0 },
-  { id: "venom", name: "Venom", shell: "#0d2018", trim: "#7dffd0", accent: "#b6ff3b", cost: 1500 },
-  { id: "orchid", name: "Orchid", shell: "#1d0f2e", trim: "#ff5fd2", accent: "#8f5bff", cost: 4000 },
-  { id: "sabre", name: "Sabre", shell: "#2a2118", trim: "#ffe9a8", accent: "#ff9f2f", cost: 9000 },
-  { id: "void", name: "Void", shell: "#05060f", trim: "#f2f5ff", accent: "#4a4488", cost: 18000 },
+  {
+    id: "grid",
+    name: "Grid",
+    shell: "#10122c",
+    trim: "#31d8ff",
+    accent: "#c341ff",
+    metalness: 0.75,
+    roughness: 0.28,
+    glow: 1,
+    cost: 0,
+  },
+  {
+    id: "ember",
+    name: "Ember",
+    shell: "#5a1420",
+    trim: "#ff9f2f",
+    accent: "#ff3b6b",
+    metalness: 0.55,
+    roughness: 0.34,
+    glow: 1.1,
+    cost: 0,
+  },
+  {
+    id: "chalk",
+    name: "Chalk",
+    shell: "#e6e9f5",
+    trim: "#2b3bff",
+    accent: "#ff3b6b",
+    metalness: 0.1,
+    roughness: 0.72,
+    glow: 0.8,
+    cost: 1200,
+  },
+  {
+    id: "venom",
+    name: "Venom",
+    shell: "#1f5c2a",
+    trim: "#b6ff3b",
+    accent: "#7dffd0",
+    metalness: 0.5,
+    roughness: 0.3,
+    glow: 1.25,
+    cost: 2600,
+  },
+  {
+    id: "orchid",
+    name: "Orchid",
+    shell: "#4a1173",
+    trim: "#ff5fd2",
+    accent: "#8f5bff",
+    metalness: 0.68,
+    roughness: 0.22,
+    glow: 1.3,
+    cost: 4800,
+  },
+  {
+    id: "sabre",
+    name: "Sabre",
+    shell: "#c9a227",
+    trim: "#fff4c2",
+    accent: "#ff9f2f",
+    metalness: 0.95,
+    roughness: 0.12,
+    glow: 1.15,
+    cost: 9000,
+  },
+  {
+    id: "chrome",
+    name: "Chrome",
+    shell: "#b9c4de",
+    trim: "#ffffff",
+    accent: "#7fd4ff",
+    metalness: 1,
+    roughness: 0.04,
+    glow: 1.4,
+    cost: 14000,
+  },
+  {
+    id: "void",
+    name: "Void",
+    shell: "#05060f",
+    trim: "#f2f5ff",
+    accent: "#8f5bff",
+    metalness: 0.4,
+    roughness: 0.5,
+    glow: 1.8,
+    cost: 22000,
+  },
 ];
 
 export const DESIGNS: Design[] = [
   { id: "runner", name: "Runner", blurb: "The standard shell.", cost: 0 },
-  { id: "stripe", name: "Stripe", blurb: "Twin race stripes over the hull.", cost: 0 },
-  { id: "wing", name: "Wing", blurb: "Rear wing and a wider tail bar.", cost: 2500 },
-  { id: "hover", name: "Hover", blurb: "Wheel covers and a glowing skirt.", cost: 6000 },
-  { id: "spike", name: "Spike", blurb: "Roof fin and canards on the nose.", cost: 12000 },
+  { id: "stripe", name: "Stripe", blurb: "Race stripes and a nose splitter.", cost: 0 },
+  { id: "wing", name: "Wing", blurb: "Swan-neck wing, diffuser and side skirts.", cost: 2500 },
+  { id: "widebody", name: "Widebody", blurb: "Flared arches and a vented bonnet.", cost: 5500 },
+  { id: "hover", name: "Hover", blurb: "Closed wheel pods and a lit skirt.", cost: 8000 },
+  { id: "spike", name: "Spike", blurb: "Roof fin, canards and blade winglets.", cost: 12000 },
 ];
 
 /** Rim styles. Cosmetic only, but the wheels are the part you stare at. */
@@ -161,6 +255,8 @@ export type GarageState = {
   trail: string;
   /** Three saved kits, so a look can be kept and swapped back to. */
   loadouts: (Loadout | null)[];
+  /** Ids of everything bought. Free items are treated as always owned. */
+  owned: string[];
 };
 
 export type Loadout = {
@@ -183,6 +279,7 @@ export const DEFAULT_GARAGE: GarageState = {
   wheel: "disc",
   trail: "match",
   loadouts: [null, null, null],
+  owned: [],
 };
 
 export function loadGarage(): GarageState {
@@ -207,6 +304,9 @@ export function loadGarage(): GarageState {
       loadouts: Array.isArray(parsed.loadouts)
         ? [0, 1, 2].map((i) => (parsed.loadouts?.[i] as Loadout | null) ?? null)
         : [null, null, null],
+      owned: Array.isArray(parsed.owned)
+        ? parsed.owned.filter((id) => typeof id === "string")
+        : [],
     };
   } catch {
     // Private browsing, disabled storage, corrupt JSON — none of it is worth
@@ -223,4 +323,15 @@ export function saveGarage(garage: GarageState) {
   }
 }
 
-export const isUnlocked = (cost: number, points: number) => points >= cost;
+/**
+ * Ownership, not thresholds.
+ *
+ * Points used to unlock things by simply being high enough, which meant they
+ * were a score rather than a currency — you never chose anything, and the
+ * whole catalogue arrived at once when the number got big. Now items are
+ * bought and the points are spent, so what to buy first is an actual decision.
+ */
+export const isOwned = (id: string, cost: number, owned: string[]) =>
+  cost === 0 || owned.includes(id);
+
+export const canAfford = (cost: number, points: number) => points >= cost;
