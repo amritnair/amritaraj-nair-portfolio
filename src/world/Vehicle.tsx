@@ -15,6 +15,8 @@ export type VehicleRig = {
   wheels: (THREE.Group | null)[];
   /** The two steerable front hubs. */
   hubs: (THREE.Group | null)[];
+  /** All four mounts, moved vertically to fake suspension travel. */
+  mounts: (THREE.Group | null)[];
   /** Thruster meshes, brightened under throttle. */
   thrusters: (THREE.Mesh | null)[];
   thrusterLight: THREE.PointLight | null;
@@ -24,6 +26,7 @@ export const useVehicleRig = () =>
   useRef<VehicleRig>({
     wheels: [null, null, null, null],
     hubs: [null, null],
+    mounts: [null, null, null, null],
     thrusters: [null, null],
     thrusterLight: null,
   });
@@ -49,15 +52,44 @@ type AnimateArgs = {
   brake: boolean;
   delta: number;
   paint: Paint;
+  /** How hard the car is sliding sideways, for weight transfer. */
+  lateral: number;
+  /** Vertical speed, so a landing visibly compresses the springs. */
+  vertical: number;
+  braking: boolean;
 };
+
+/** Rest height of a wheel mount, and how far it may travel either way. */
+const MOUNT_Y = -0.3;
+const TRAVEL = 0.17;
 
 export function animateVehicle(
   rig: VehicleRig,
-  { speed, steer, throttle, brake, delta, paint }: AnimateArgs,
+  { speed, steer, throttle, brake, delta, paint, lateral, vertical, braking }: AnimateArgs,
 ) {
   const spin = speed * delta * 2.2;
   rig.wheels.forEach((wheel) => {
     if (wheel) wheel.rotation.x -= spin;
+  });
+
+  /*
+   * Suspension. Weight moves the way it would in a real car: forwards under
+   * braking, back under power, and outwards through a corner — so the body
+   * visibly leans on the loaded corner instead of floating level. A hard
+   * landing compresses everything at once.
+   */
+  const slam = Math.min(Math.abs(vertical) / 18, 1);
+  const squat = braking ? -1 : Math.max(throttle, 0);
+  const springRate = 1 - Math.pow(0.0006, delta);
+  rig.mounts.forEach((mount, i) => {
+    if (!mount) return;
+    const front = i < 2;
+    const outer = i % 2 === 0 ? -1 : 1;
+    // Positive compresses (mount rises towards the body).
+    const pitchLoad = front ? -squat * 0.6 : squat * 0.6;
+    const rollLoad = -steer * outer * Math.min(lateral / 8, 1) * 0.9;
+    const target = MOUNT_Y + THREE.MathUtils.clamp(pitchLoad + rollLoad + slam, -1, 1) * TRAVEL;
+    mount.position.y = THREE.MathUtils.lerp(mount.position.y, target, springRate);
   });
 
   // Front hubs ease to the steering angle instead of snapping to it.
@@ -382,6 +414,7 @@ function Wheels({
           key={index}
           position={[x, y, z]}
           ref={(el) => {
+            rig.current.mounts[index] = el;
             if (index < 2) rig.current.hubs[index] = el;
           }}
         >

@@ -66,7 +66,56 @@ export default function Effects() {
       <TyreSmoke />
       <SkidMarks />
       <BoostTrail />
+      <SpeedStreaks />
     </group>
+  );
+}
+
+/**
+ * Streaks rushing past the camera at speed.
+ *
+ * They live in a fixed cloud around the car rather than being emitted, so the
+ * cost is constant: the effect is entirely in the opacity, which is zero until
+ * you are actually moving quickly and jumps under boost.
+ */
+function SpeedStreaks() {
+  const points = useRef<THREE.Points>(null);
+  const geometry = useMemo(() => {
+    const count = 140;
+    const positions = new Float32Array(count * 3);
+    for (let i = 0; i < count; i += 1) {
+      const angle = Math.random() * Math.PI * 2;
+      const radius = 6 + Math.random() * 16;
+      positions[i * 3] = Math.cos(angle) * radius;
+      positions[i * 3 + 1] = Math.random() * 9 - 1;
+      positions[i * 3 + 2] = Math.sin(angle) * radius;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    return geo;
+  }, []);
+
+  useFrame(() => {
+    if (!points.current) return;
+    points.current.position.set(telemetry.x, telemetry.y, telemetry.z);
+    const pace = Math.max(0, (telemetry.speed - 16) / 22);
+    const material = points.current.material as THREE.PointsMaterial;
+    material.opacity = Math.min(pace, 1) * (telemetry.boosting ? 0.55 : 0.3);
+  });
+
+  return (
+    <points ref={points} geometry={geometry} frustumCulled={false}>
+      <pointsMaterial
+        size={0.6}
+        color="#dfe9ff"
+        transparent
+        opacity={0}
+        depthWrite={false}
+        sizeAttenuation
+        toneMapped={false}
+        blending={THREE.AdditiveBlending}
+      />
+    </points>
   );
 }
 

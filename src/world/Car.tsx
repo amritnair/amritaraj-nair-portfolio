@@ -332,6 +332,9 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
       brake: input.brake,
       delta,
       paint: paintRef.current,
+      lateral: Math.abs(alongRight),
+      vertical: linvel.y,
+      braking,
     });
 
     // Chase camera: sits behind the car's heading, eases into place. It reads
