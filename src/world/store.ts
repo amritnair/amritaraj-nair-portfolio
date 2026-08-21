@@ -225,6 +225,42 @@ export const worldStore = {
     set({ garage });
   },
 
+  selectWheel(wheel: string) {
+    const garage = { ...state.garage, wheel };
+    saveGarage(garage);
+    set({ garage });
+  },
+
+  selectTrail(trail: string) {
+    const garage = { ...state.garage, trail };
+    saveGarage(garage);
+    set({ garage });
+  },
+
+  /** Stores the kit currently on the car into one of the three slots. */
+  saveLoadout(slot: number, name: string) {
+    const { paint, design, wheel, trail } = state.garage;
+    const loadouts = [...state.garage.loadouts];
+    loadouts[slot] = { name, paint, design, wheel, trail };
+    const garage = { ...state.garage, loadouts };
+    saveGarage(garage);
+    set({ garage });
+  },
+
+  applyLoadout(slot: number) {
+    const kit = state.garage.loadouts[slot];
+    if (!kit) return;
+    const garage = {
+      ...state.garage,
+      paint: kit.paint,
+      design: kit.design,
+      wheel: kit.wheel,
+      trail: kit.trail,
+    };
+    saveGarage(garage);
+    set({ garage });
+  },
+
   enterZone(id: string) {
     if (state.activeZone === id) return;
     set({

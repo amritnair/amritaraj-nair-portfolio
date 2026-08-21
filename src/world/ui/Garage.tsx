@@ -1,17 +1,43 @@
-import { useEffect } from "react";
-import { DESIGNS, DESIGN_BY_ID, ORE_VALUE, PAINTS, PAINT_BY_ID, isUnlocked } from "../garage";
+import { useEffect, useState } from "react";
+import {
+  DESIGNS,
+  DESIGN_BY_ID,
+  ORE_VALUE,
+  PAINTS,
+  PAINT_BY_ID,
+  TRAILS,
+  WHEELS,
+  isUnlocked,
+  rankFor,
+  rarityFor,
+} from "../garage";
 import { ORES } from "../Ores";
 import { useWorld, worldStore } from "../store";
 import CarPreview from "./CarPreview";
 
 /**
- * The design screen. Opens over the world rather than replacing it, so the car
- * behind stays visible and you can see a paint change land the moment you pick
- * it — a preview swatch never quite convinces the way the actual car does.
+ * The locker.
+ *
+ * Laid out the way a customisation screen has to be to feel good: the car
+ * itself is the biggest thing on screen and updates the instant you pick
+ * something, categories are tabs rather than a single long scroll, every tile
+ * says what it costs and how rare it is, and the kit you've assembled can be
+ * saved and swapped back to.
  */
+
+type Tab = "paint" | "kit" | "wheels" | "trail";
+
+const TABS: { id: Tab; label: string }[] = [
+  { id: "paint", label: "Paint" },
+  { id: "kit", label: "Body kit" },
+  { id: "wheels", label: "Wheels" },
+  { id: "trail", label: "Trail" },
+];
+
 export default function Garage() {
   const open = useWorld((s) => s.garageOpen);
   const garage = useWorld((s) => s.garage);
+  const [tab, setTab] = useState<Tab>("paint");
 
   // G toggles, Escape closes. Registered whenever the world is running so the
   // key works from the road, not just once the panel is already up.
@@ -28,158 +54,205 @@ export default function Garage() {
 
   if (!open) return null;
 
-  const { points, best, bestLap, ores, paint: activePaint, design: activeDesign } = garage;
+  const { points, best, bestLap, ores, paint, design, wheel, trail, loadouts } = garage;
+  const rank = rankFor(points);
 
   return (
     <div className="pointer-events-auto fixed inset-0 z-40 overflow-y-auto bg-[#0d0a24]/95 backdrop-blur-xl">
       <div className="mx-auto flex min-h-full w-full max-w-6xl flex-col justify-center px-5 py-8">
-        <div className="grid gap-4 lg:grid-cols-[1.05fr_1fr]">
-          {/* The car itself, front and centre — you pick paint by looking at it. */}
-          <div className="relative min-h-[19rem] overflow-hidden rounded-3xl border border-white/10 bg-[#0b0920] shadow-2xl lg:min-h-full">
-            <CarPreview paint={activePaint} design={activeDesign} />
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-gradient-to-t from-[#0b0920] via-[#0b0920]/70 to-transparent px-6 pb-5 pt-14">
+        <div className="grid gap-4 lg:grid-cols-[1.1fr_1fr]">
+          {/* The car, front and centre — you pick by looking at it. */}
+          <div className="relative min-h-[20rem] overflow-hidden rounded-3xl border border-white/10 bg-[#0b0920] shadow-2xl lg:min-h-full">
+            <CarPreview paint={paint} design={design} wheel={wheel} />
+
+            <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-3 bg-gradient-to-b from-[#0b0920] via-[#0b0920]/70 to-transparent px-6 pb-12 pt-5">
               <div>
-                <div className="font-mono text-[0.58rem] uppercase tracking-[0.3em] text-[#31d8ff]">
-                  {DESIGN_BY_ID[activeDesign]?.name ?? "—"}
+                <div className="font-mono text-[0.55rem] uppercase tracking-[0.3em] text-[#ff9f2f]">
+                  {rank.current.name}
                 </div>
-                <div className="text-xl font-black tracking-tight text-white">
-                  {PAINT_BY_ID[activePaint]?.name ?? "—"}
+                <div className="mt-1 flex items-baseline gap-2">
+                  <span className="font-mono text-2xl font-black tabular-nums text-white">
+                    {points.toLocaleString()}
+                  </span>
+                  <span className="font-mono text-[0.55rem] uppercase tracking-widest text-[#6f68a0]">
+                    points
+                  </span>
                 </div>
-              </div>
-              <div className="text-right font-mono text-[0.56rem] uppercase tracking-widest text-[#6f68a0]">
-                Live preview
-              </div>
-            </div>
-          </div>
-
-        <div className="rounded-3xl border border-white/10 bg-[#140f30]/95 p-6 shadow-2xl">
-          <header className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="font-mono text-[0.62rem] uppercase tracking-[0.38em] text-[#31d8ff]">
-                Garage
-              </p>
-              <h2 className="mt-1 text-2xl font-black tracking-tight text-white sm:text-3xl">
-                Drift points buy paint
-              </h2>
-            </div>
-            <div className="text-right">
-              <div className="font-mono text-[0.6rem] uppercase tracking-widest text-[#8f88bd]">
-                Banked
-              </div>
-              <div className="font-mono text-2xl font-black tabular-nums text-white">
-                {points.toLocaleString()}
-              </div>
-              {best > 0 && (
-                <div className="font-mono text-[0.6rem] uppercase tracking-widest text-[#6f68a0]">
-                  Best chain {Math.round(best).toLocaleString()}
-                </div>
-              )}
-            </div>
-          </header>
-
-          <div className="mt-4 grid gap-2 sm:grid-cols-3">
-            <Earner title="Drift">
-              Hold <Key>Space</Key> through a corner. The multiplier climbs each second you
-              stay sideways, and the chain banks when you straighten up.
-            </Earner>
-            <Earner title="Speedway">
-              Take a ramp to the ring road, then the east bridge. Cross the line to start a
-              lap, hit all three gates, come back through.{" "}
-              {bestLap !== null && (
-                <span className="text-[#7dffd0]">Best {bestLap.toFixed(2)}s.</span>
-              )}
-            </Earner>
-            <Earner title="Diamond ore">
-              {ORE_VALUE} points each, hidden off-road in the treeline and out by the rim.{" "}
-              <span className="text-[#31d8ff]">
-                {ores.length}/{ORES.length} found.
-              </span>
-            </Earner>
-          </div>
-
-          <Section title="Paint">
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {PAINTS.map((paint) => {
-                const unlocked = isUnlocked(paint.cost, points);
-                const active = paint.id === activePaint;
-                return (
-                  <button
-                    key={paint.id}
-                    type="button"
-                    disabled={!unlocked}
-                    onClick={() => worldStore.selectPaint(paint.id)}
-                    className={`group relative overflow-hidden rounded-xl border px-3 py-3 text-left transition ${
-                      active
-                        ? "border-[#31d8ff] bg-[#31d8ff]/10"
-                        : unlocked
-                          ? "border-white/12 bg-white/[0.03] hover:border-white/30"
-                          : "cursor-not-allowed border-white/8 bg-white/[0.02] opacity-55"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="h-7 w-7 shrink-0 rounded-lg border border-white/20"
-                        style={{
-                          background: `linear-gradient(135deg, ${paint.shell} 40%, ${paint.trim} 100%)`,
-                        }}
+                {rank.next && (
+                  <div className="mt-1.5 w-40">
+                    <div className="h-1 overflow-hidden rounded-full bg-white/10">
+                      <div
+                        className="h-full origin-left rounded-full bg-gradient-to-r from-[#ff9f2f] to-[#ff5fd2]"
+                        style={{ transform: `scaleX(${rank.progress})` }}
                       />
-                      <div className="min-w-0">
-                        <div className="truncate text-sm font-bold text-white">{paint.name}</div>
-                        <div className="font-mono text-[0.58rem] uppercase tracking-wider text-[#8f88bd]">
-                          {active ? "Equipped" : unlocked ? "Ready" : `${paint.cost.toLocaleString()} pts`}
-                        </div>
-                      </div>
                     </div>
-                  </button>
-                );
-              })}
+                    <div className="mt-1 font-mono text-[0.52rem] uppercase tracking-widest text-[#6f68a0]">
+                      {(rank.next.at - points).toLocaleString()} to {rank.next.name}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-          </Section>
 
-          <Section title="Body kit">
-            <div className="grid gap-2 sm:grid-cols-2">
-              {DESIGNS.map((design) => {
-                const unlocked = isUnlocked(design.cost, points);
-                const active = design.id === activeDesign;
-                return (
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-gradient-to-t from-[#0b0920] via-[#0b0920]/75 to-transparent px-6 pb-5 pt-14">
+              <div>
+                <div className="text-xl font-black tracking-tight text-white">
+                  {PAINT_BY_ID[paint]?.name ?? "—"}
+                </div>
+                <div className="font-mono text-[0.56rem] uppercase tracking-[0.24em] text-[#8f88bd]">
+                  {DESIGN_BY_ID[design]?.name ?? "—"} · {WHEELS.find((w) => w.id === wheel)?.name}
+                </div>
+              </div>
+              <div className="text-right font-mono text-[0.54rem] uppercase tracking-widest text-[#6f68a0]">
+                {bestLap !== null && <div>Best lap {bestLap.toFixed(2)}s</div>}
+                {best > 0 && <div>Best chain {Math.round(best).toLocaleString()}</div>}
+                <div>
+                  ◈ {ores.length}/{ORES.length} ore
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col rounded-3xl border border-white/10 bg-[#140f30]/95 p-5 shadow-2xl sm:p-6">
+            <header className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-xl font-black tracking-tight text-white">Locker</h2>
+              <div className="flex gap-1 rounded-full border border-white/10 bg-white/[0.03] p-1">
+                {TABS.map((t) => (
                   <button
-                    key={design.id}
+                    key={t.id}
                     type="button"
-                    disabled={!unlocked}
-                    onClick={() => worldStore.selectDesign(design.id)}
-                    className={`rounded-xl border px-4 py-3 text-left transition ${
-                      active
-                        ? "border-[#ff5fd2] bg-[#ff5fd2]/10"
-                        : unlocked
-                          ? "border-white/12 bg-white/[0.03] hover:border-white/30"
-                          : "cursor-not-allowed border-white/8 bg-white/[0.02] opacity-55"
+                    onClick={() => setTab(t.id)}
+                    className={`rounded-full px-3 py-1.5 font-mono text-[0.56rem] uppercase tracking-[0.18em] transition ${
+                      tab === t.id
+                        ? "bg-white/90 text-[#140f30]"
+                        : "text-[#8f88bd] hover:text-white"
                     }`}
                   >
-                    <div className="flex items-baseline justify-between gap-2">
-                      <span className="text-sm font-bold text-white">{design.name}</span>
-                      <span className="font-mono text-[0.58rem] uppercase tracking-wider text-[#8f88bd]">
-                        {active ? "Equipped" : unlocked ? "Ready" : `${design.cost.toLocaleString()} pts`}
-                      </span>
-                    </div>
-                    <p className="mt-1 text-[0.72rem] leading-snug text-[#8f88bd]">{design.blurb}</p>
+                    {t.label}
                   </button>
-                );
-              })}
-            </div>
-          </Section>
+                ))}
+              </div>
+            </header>
 
-          <div className="mt-6 flex items-center justify-between gap-4">
-            <span className="font-mono text-[0.6rem] uppercase tracking-widest text-[#6f68a0]">
-              Esc or G to close
-            </span>
-            <button
-              type="button"
-              onClick={() => worldStore.closeGarage()}
-              className="rounded-full bg-gradient-to-r from-[#5b4bff] to-[#c341ff] px-7 py-3 text-xs font-bold uppercase tracking-[0.22em] text-white transition hover:scale-[1.03]"
-            >
-              Back to the road
-            </button>
-          </div>
+            <div className="mt-4 min-h-[15rem] flex-1">
+              {tab === "paint" && (
+                <Grid>
+                  {PAINTS.map((item) => (
+                    <Tile
+                      key={item.id}
+                      name={item.name}
+                      cost={item.cost}
+                      points={points}
+                      active={item.id === paint}
+                      onPick={() => worldStore.selectPaint(item.id)}
+                      swatch={`linear-gradient(135deg, ${item.shell} 42%, ${item.trim} 100%)`}
+                    />
+                  ))}
+                </Grid>
+              )}
+
+              {tab === "kit" && (
+                <Grid>
+                  {DESIGNS.map((item) => (
+                    <Tile
+                      key={item.id}
+                      name={item.name}
+                      note={item.blurb}
+                      cost={item.cost}
+                      points={points}
+                      active={item.id === design}
+                      onPick={() => worldStore.selectDesign(item.id)}
+                    />
+                  ))}
+                </Grid>
+              )}
+
+              {tab === "wheels" && (
+                <Grid>
+                  {WHEELS.map((item) => (
+                    <Tile
+                      key={item.id}
+                      name={item.name}
+                      note={item.spokes ? `${item.spokes} spokes` : "Solid face"}
+                      cost={item.cost}
+                      points={points}
+                      active={item.id === wheel}
+                      onPick={() => worldStore.selectWheel(item.id)}
+                    />
+                  ))}
+                </Grid>
+              )}
+
+              {tab === "trail" && (
+                <Grid>
+                  {TRAILS.map((item) => (
+                    <Tile
+                      key={item.id}
+                      name={item.name}
+                      cost={item.cost}
+                      points={points}
+                      active={item.id === trail}
+                      onPick={() => worldStore.selectTrail(item.id)}
+                      swatch={
+                        item.color
+                          ? `linear-gradient(135deg, ${item.color}, #0b0920)`
+                          : `linear-gradient(135deg, ${PAINT_BY_ID[paint]?.trim ?? "#fff"}, #0b0920)`
+                      }
+                    />
+                  ))}
+                </Grid>
+              )}
+            </div>
+
+            {/* Saved kits. Three slots is enough to keep a look you like while
+                experimenting with another. */}
+            <section className="mt-4 border-t border-white/10 pt-3">
+              <div className="font-mono text-[0.54rem] uppercase tracking-[0.28em] text-[#9d8bff]">
+                Saved kits
+              </div>
+              <div className="mt-2 grid grid-cols-3 gap-2">
+                {loadouts.map((kit, slot) => (
+                  <div
+                    key={slot}
+                    className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2"
+                  >
+                    <div className="truncate text-[0.72rem] font-bold text-white">
+                      {kit ? kit.name : `Slot ${slot + 1}`}
+                    </div>
+                    <div className="mt-1.5 flex gap-1">
+                      <button
+                        type="button"
+                        onClick={() => worldStore.saveLoadout(slot, `Kit ${slot + 1}`)}
+                        className="flex-1 rounded-md border border-white/15 px-1.5 py-1 font-mono text-[0.5rem] uppercase tracking-wider text-[#b9b2e8] transition hover:border-white/40 hover:text-white"
+                      >
+                        Save
+                      </button>
+                      <button
+                        type="button"
+                        disabled={!kit}
+                        onClick={() => worldStore.applyLoadout(slot)}
+                        className="flex-1 rounded-md bg-white/90 px-1.5 py-1 font-mono text-[0.5rem] uppercase tracking-wider text-[#140f30] transition hover:bg-white disabled:opacity-30"
+                      >
+                        Equip
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+              <span className="font-mono text-[0.54rem] uppercase tracking-widest text-[#6f68a0]">
+                Drift · jumps · ore ({ORE_VALUE}) · clean laps
+              </span>
+              <button
+                type="button"
+                onClick={() => worldStore.closeGarage()}
+                className="rounded-full bg-gradient-to-r from-[#5b4bff] to-[#c341ff] px-6 py-2.5 text-xs font-bold uppercase tracking-[0.2em] text-white transition hover:scale-[1.03]"
+              >
+                Back to the road
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -187,33 +260,74 @@ export default function Garage() {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="mt-6">
-      <h3 className="mb-2 font-mono text-[0.6rem] uppercase tracking-[0.3em] text-[#9d8bff]">
-        {title}
-      </h3>
-      {children}
-    </section>
-  );
+function Grid({ children }: { children: React.ReactNode }) {
+  return <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">{children}</div>;
 }
 
-/** One of the three ways to earn, explained where the spending happens. */
-function Earner({ title, children }: { title: string; children: React.ReactNode }) {
+/**
+ * One item. Locked tiles still show what they are and what they cost — hiding
+ * them would remove the reason to go and earn the points.
+ */
+function Tile({
+  name,
+  note,
+  cost,
+  points,
+  active,
+  onPick,
+  swatch,
+}: {
+  name: string;
+  note?: string;
+  cost: number;
+  points: number;
+  active: boolean;
+  onPick: () => void;
+  swatch?: string;
+}) {
+  const unlocked = isUnlocked(cost, points);
+  const rarity = rarityFor(cost);
+  const short = cost - points;
+
   return (
-    <div className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
-      <div className="font-mono text-[0.58rem] uppercase tracking-[0.28em] text-[#9d8bff]">
-        {title}
+    <button
+      type="button"
+      disabled={!unlocked}
+      onClick={onPick}
+      className={`group relative overflow-hidden rounded-xl border px-3 py-2.5 text-left transition ${
+        active
+          ? "border-white bg-white/10"
+          : unlocked
+            ? "border-white/12 bg-white/[0.03] hover:border-white/35"
+            : "cursor-not-allowed border-white/8 bg-white/[0.02]"
+      }`}
+      style={{ boxShadow: active ? `inset 0 0 0 1px ${rarity.color}` : undefined }}
+    >
+      {/* Rarity reads as a colour bar rather than a word competing for space. */}
+      <span
+        className="absolute inset-x-0 top-0 h-[3px]"
+        style={{ background: rarity.color, opacity: unlocked ? 1 : 0.4 }}
+      />
+      <div className="flex items-center gap-2">
+        {swatch && (
+          <span
+            className="h-7 w-7 shrink-0 rounded-lg border border-white/20"
+            style={{ background: swatch, opacity: unlocked ? 1 : 0.45 }}
+          />
+        )}
+        <div className="min-w-0">
+          <div className={`truncate text-[0.8rem] font-bold ${unlocked ? "text-white" : "text-[#8f88bd]"}`}>
+            {name}
+          </div>
+          <div
+            className="font-mono text-[0.52rem] uppercase tracking-wider"
+            style={{ color: rarity.color }}
+          >
+            {active ? "Equipped" : unlocked ? rarity.name : `${short.toLocaleString()} more`}
+          </div>
+        </div>
       </div>
-      <p className="mt-1 text-[0.72rem] leading-relaxed text-[#b9b2e8]">{children}</p>
-    </div>
-  );
-}
-
-function Key({ children }: { children: React.ReactNode }) {
-  return (
-    <kbd className="rounded border border-white/20 bg-white/10 px-1.5 py-0.5 font-mono text-[0.65rem] text-white">
-      {children}
-    </kbd>
+      {note && <p className="mt-1 truncate text-[0.62rem] text-[#6f68a0]">{note}</p>}
+    </button>
   );
 }

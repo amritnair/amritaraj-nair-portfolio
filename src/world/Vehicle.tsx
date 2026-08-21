@@ -1,6 +1,6 @@
 import { createContext, useContext, useRef } from "react";
 import * as THREE from "three";
-import { PAINTS, type Paint } from "./garage";
+import { PAINTS, WHEEL_BY_ID, WHEELS, type Paint } from "./garage";
 
 /**
  * The player's car: a low-slung light-runner. Almost all of its read comes
@@ -122,10 +122,12 @@ export function VehicleShell({
   rig,
   paint,
   design,
+  wheel = "disc",
 }: {
   rig: React.MutableRefObject<VehicleRig>;
   paint: Paint;
   design: string;
+  wheel?: string;
 }) {
   return (
     <PaintContext.Provider value={paint}>
@@ -134,7 +136,7 @@ export function VehicleShell({
         <Trim />
         <Thrusters rig={rig} />
         <Lights />
-        <Wheels rig={rig} covered={design === "hover"} />
+        <Wheels rig={rig} covered={design === "hover"} style={wheel} />
         <BodyKit design={design} />
       </group>
     </PaintContext.Provider>
@@ -358,11 +360,14 @@ function BodyKit({ design }: { design: string }) {
 function Wheels({
   rig,
   covered,
+  style,
 }: {
   rig: React.MutableRefObject<VehicleRig>;
   covered: boolean;
+  style: string;
 }) {
   const paint = usePaint();
+  const rim = WHEEL_BY_ID[style] ?? WHEELS[0];
   const mounts: [number, number, number][] = [
     [-1.02, -0.3, -1.32],
     [1.02, -0.3, -1.32],
@@ -387,7 +392,7 @@ function Wheels({
             </mesh>
             {/* Glowing rim, lightcycle-style, on the outboard face only. */}
             <mesh rotation={[Math.PI / 2, 0, 0]} position={[x > 0 ? 0.19 : -0.19, 0, 0]}>
-              <torusGeometry args={[0.34, 0.055, 8, 20]} />
+              <torusGeometry args={[rim.rim, 0.055, 8, 20]} />
               <meshStandardMaterial
                 color={paint.trim}
                 emissive={paint.trim}
@@ -399,6 +404,22 @@ function Wheels({
               <cylinderGeometry args={[0.16, 0.16, 0.06, 8]} />
               <meshStandardMaterial color="#8fa8ff" metalness={0.9} roughness={0.2} flatShading />
             </mesh>
+            {/* Spokes, drawn as thin bars across the rim face. */}
+            {Array.from({ length: rim.spokes }).map((_, spoke) => (
+              <mesh
+                key={spoke}
+                position={[x > 0 ? 0.21 : -0.21, 0, 0]}
+                rotation={[(spoke / rim.spokes) * Math.PI, 0, Math.PI / 2]}
+              >
+                <boxGeometry args={[0.05, 0.04, rim.rim * 1.9]} />
+                <meshStandardMaterial
+                  color={paint.trim}
+                  emissive={paint.trim}
+                  emissiveIntensity={1.6}
+                  toneMapped={false}
+                />
+              </mesh>
+            ))}
           </group>
 
           {/* Wheel covers don't spin with the wheel, so they sit outside the

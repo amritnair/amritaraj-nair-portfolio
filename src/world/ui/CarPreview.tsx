@@ -17,7 +17,15 @@ import { PAINT_BY_ID, PAINTS } from "../garage";
  * scene: the world keeps running behind the panel, and stealing its camera
  * would mean putting it back afterwards without disturbing the drive.
  */
-export default function CarPreview({ paint, design }: { paint: string; design: string }) {
+export default function CarPreview({
+  paint,
+  design,
+  wheel,
+}: {
+  paint: string;
+  design: string;
+  wheel: string;
+}) {
   const resolved = PAINT_BY_ID[paint] ?? PAINTS[0];
 
   return (
@@ -39,7 +47,7 @@ export default function CarPreview({ paint, design }: { paint: string; design: s
       <pointLight position={[-6, 3, -4]} intensity={70} distance={22} color={NEON.magenta} />
       <pointLight position={[5, 2, -5]} intensity={55} distance={20} color={NEON.cyan} />
 
-      <Turntable paint={resolved} design={design} />
+      <Turntable paint={resolved} design={design} wheel={wheel} />
       <Platform />
     </Canvas>
   );
@@ -48,9 +56,11 @@ export default function CarPreview({ paint, design }: { paint: string; design: s
 function Turntable({
   paint,
   design,
+  wheel,
 }: {
   paint: (typeof PAINTS)[number];
   design: string;
+  wheel: string;
 }) {
   const rig = useVehicleRig();
   const group = useRef<THREE.Group>(null);
@@ -68,7 +78,7 @@ function Turntable({
 
   return (
     <group ref={group} position={[0, 0.1, 0]} scale={0.78}>
-      <VehicleShell rig={rig} paint={paint} design={design} />
+      <VehicleShell rig={rig} paint={paint} design={design} wheel={wheel} />
     </group>
   );
 }

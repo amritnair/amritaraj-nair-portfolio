@@ -41,7 +41,45 @@ export const DESIGNS: Design[] = [
   { id: "spike", name: "Spike", blurb: "Roof fin and canards on the nose.", cost: 12000 },
 ];
 
+/** Rim styles. Cosmetic only, but the wheels are the part you stare at. */
+export type Wheel = { id: string; name: string; cost: number; spokes: number; rim: number };
+export const WHEELS: Wheel[] = [
+  { id: "disc", name: "Disc", cost: 0, spokes: 0, rim: 0.34 },
+  { id: "split", name: "Split Six", cost: 0, spokes: 6, rim: 0.34 },
+  { id: "turbine", name: "Turbine", cost: 3500, spokes: 10, rim: 0.36 },
+  { id: "halo", name: "Halo", cost: 8000, spokes: 3, rim: 0.42 },
+];
+
+/** Boost trail colours, chosen separately from paint. */
+export type Trail = { id: string; name: string; color: string; cost: number };
+export const TRAILS: Trail[] = [
+  { id: "match", name: "Match paint", color: "", cost: 0 },
+  { id: "ice", name: "Ice", color: "#9fe8ff", cost: 0 },
+  { id: "sunburst", name: "Sunburst", color: "#ffb347", cost: 2000 },
+  { id: "toxic", name: "Toxic", color: "#b6ff3b", cost: 5000 },
+  { id: "violet", name: "Violet", color: "#c77bff", cost: 9000 },
+];
+
+/**
+ * Rarity is derived from price rather than stored, so a tier can never drift
+ * out of step with what something actually costs.
+ */
+export const RARITIES = [
+  { name: "Common", color: "#9aa3c7", at: 0 },
+  { name: "Rare", color: "#4fb8ff", at: 1 },
+  { name: "Epic", color: "#c77bff", at: 5000 },
+  { name: "Legendary", color: "#ffb347", at: 12000 },
+];
+
+export function rarityFor(cost: number) {
+  let tier = RARITIES[0];
+  for (const r of RARITIES) if (cost >= r.at) tier = r;
+  return tier;
+}
+
 export const PAINT_BY_ID = Object.fromEntries(PAINTS.map((p) => [p.id, p]));
+export const WHEEL_BY_ID = Object.fromEntries(WHEELS.map((w) => [w.id, w]));
+export const TRAIL_BY_ID = Object.fromEntries(TRAILS.map((t) => [t.id, t]));
 export const DESIGN_BY_ID = Object.fromEntries(DESIGNS.map((d) => [d.id, d]));
 
 /** Points a single diamond ore is worth. */
@@ -119,6 +157,18 @@ export type GarageState = {
   ores: string[];
   /** Fastest speedway lap in seconds, or null if never completed one. */
   bestLap: number | null;
+  wheel: string;
+  trail: string;
+  /** Three saved kits, so a look can be kept and swapped back to. */
+  loadouts: (Loadout | null)[];
+};
+
+export type Loadout = {
+  name: string;
+  paint: string;
+  design: string;
+  wheel: string;
+  trail: string;
 };
 
 const STORAGE_KEY = "amrit-world-garage-v1";
@@ -130,6 +180,9 @@ export const DEFAULT_GARAGE: GarageState = {
   design: "runner",
   ores: [],
   bestLap: null,
+  wheel: "disc",
+  trail: "match",
+  loadouts: [null, null, null],
 };
 
 export function loadGarage(): GarageState {
@@ -149,6 +202,11 @@ export function loadGarage(): GarageState {
         typeof parsed.bestLap === "number" && Number.isFinite(parsed.bestLap)
           ? parsed.bestLap
           : null,
+      wheel: parsed.wheel && WHEEL_BY_ID[parsed.wheel] ? parsed.wheel : DEFAULT_GARAGE.wheel,
+      trail: parsed.trail && TRAIL_BY_ID[parsed.trail] ? parsed.trail : DEFAULT_GARAGE.trail,
+      loadouts: Array.isArray(parsed.loadouts)
+        ? [0, 1, 2].map((i) => (parsed.loadouts?.[i] as Loadout | null) ?? null)
+        : [null, null, null],
     };
   } catch {
     // Private browsing, disabled storage, corrupt JSON — none of it is worth

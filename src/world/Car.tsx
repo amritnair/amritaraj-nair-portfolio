@@ -410,7 +410,7 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
           scraping a wall stops you dead instead of sliding along it. */}
       <CuboidCollider args={[1.0, 0.5, 2.05]} density={2.6} friction={0.15} />
       <group ref={chassis}>
-        <VehicleShell rig={rig} paint={paint} design={garage.design} />
+        <VehicleShell rig={rig} paint={paint} design={garage.design} wheel={garage.wheel} />
       </group>
     </RigidBody>
   );

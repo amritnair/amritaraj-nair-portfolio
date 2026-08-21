@@ -2,7 +2,7 @@ import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { telemetry } from "./store";
-import { PAINT_BY_ID, PAINTS } from "./garage";
+import { PAINT_BY_ID, PAINTS, TRAIL_BY_ID } from "./garage";
 import { useWorld } from "./store";
 
 /**
@@ -174,7 +174,11 @@ function BoostTrail() {
   const points = useRef<THREE.Points>(null);
   const pool = useMemo(() => makePool(TRAIL_COUNT), []);
   const paintId = useWorld((s) => s.garage.paint);
+  const trailId = useWorld((s) => s.garage.trail);
   const paint = PAINT_BY_ID[paintId] ?? PAINTS[0];
+  // "Match paint" is stored as an empty colour rather than a special case at
+  // every use site.
+  const trailColor = TRAIL_BY_ID[trailId]?.color || paint.trim;
   const geometry = useMemo(() => {
     const geo = new THREE.BufferGeometry();
     geo.setAttribute("position", new THREE.BufferAttribute(pool.positions, 3));
@@ -213,7 +217,7 @@ function BoostTrail() {
         size={1.5}
         map={PUFF}
         alphaMap={PUFF}
-        color={paint.trim}
+        color={trailColor}
         transparent
         opacity={0.9}
         depthWrite={false}
