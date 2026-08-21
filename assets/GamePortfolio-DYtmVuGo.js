@@ -1,6 +1,6 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/World-BjAy3E_y.js","assets/index-B4IldweE.js","assets/index-DG5bFADg.css"])))=>i.map(i=>d[i]);
-import { r as $, g as bF, e as MI, j as p, T as OF, s as Pk, L as Rl, _ as p0, __tla as __tla_0 } from "./index-B4IldweE.js";
-let $e, ri, Tl, jC, bB, Rt, LC, XA, tQ, Pr, ut, iR, Sg, Yg, eQ, lo, co, MS, kr, aB, dg, Gr, m, sB, yA, io, Di, Xt, Ku, aQ, JQ, gU, fg, vU, tn, MC, YQ, DC, ag, qT, wg, NU, MN, nx, Yb, ww, JD, Eb, ir, iD, tb, Ob, vb, fb, Ni, MB, qb, Tb, bb, yi, ub, _b, QC, UI, XI, GB, qC, hs, Lb, mb, Sw, Hb, Si, UE, wi, WI, xb, tg, Rb, CQ, KC, iC, BI, pT, cI, YT, EC, M0, aJ, GC, Nr, $l, lK, _B, Mi, Mr, bl, UB, fC, Fi, WC, cS, VF, kC, qQ, LK, oQ, wH, Uu, zl, yo, Jb, HK;
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/World-BPrfBw7_.js","assets/index-DemyLlKe.js","assets/index-DG5bFADg.css"])))=>i.map(i=>d[i]);
+import { r as $, g as bF, e as MI, j as p, T as OF, s as Pk, L as Rl, _ as p0, __tla as __tla_0 } from "./index-DemyLlKe.js";
+let $e, ri, Tl, jC, bB, Rt, LC, XA, tQ, Pr, ut, iR, Sg, Yg, eQ, lo, co, MS, kr, aB, dg, Gr, m, sB, yA, io, Di, Xt, Ku, aQ, JQ, gU, fg, vU, tn, MC, YQ, DC, ag, EC, M0, qT, wg, NU, MN, nx, qb, ww, JD, eb, ir, iD, sb, _b, Zb, Yb, Ni, MB, Lb, Ob, vb, yi, Rb, Pb, QC, UI, XI, GB, qC, hs, mb, Hb, Sw, xb, Si, UN, bb, UE, wi, WI, Tb, tg, fb, CQ, KC, iC, BI, pT, cI, YT, aJ, GC, Nr, $l, lK, _B, Mi, Mr, bl, UB, fC, Fi, WC, cS, VF, kC, qQ, LK, oQ, wH, Uu, zl, yo, ub, HK;
 let __tla = Promise.all([
   (() => {
     try {
@@ -30179,7 +30179,7 @@ No matching component was found for:
       });
     }
   }
-  Jb = function(B, A, I) {
+  ub = function(B, A, I) {
     return p.jsx(_H, {
       children: B,
       container: A,
@@ -30870,7 +30870,7 @@ No matching component was found for:
       }
     ]
   };
-  ub = [
+  Rb = [
     {
       id: "yc",
       name: "YC INTERNSHIP EXPO",
@@ -31225,10 +31225,10 @@ No matching component was found for:
   sx = WK * 120;
   Ve = [];
   let Pe = [], dt = 0;
-  Rb = function() {
+  fb = function() {
     Ve.length = 0, dt = 0;
   };
-  fb = function(B, A, I, g, C) {
+  Yb = function(B, A, I, g, C) {
     dt += B, !(dt < pl || Ve.length >= sx) && (dt -= pl, Ve.push({
       x: A,
       y: I,
@@ -31240,7 +31240,7 @@ No matching component was found for:
     B && Ve.length > 4 && (Pe = Ve.slice()), Ve.length = 0, dt = 0;
   }
   nx = () => Pe.length > 4;
-  Yb = function(B) {
+  qb = function(B) {
     if (Pe.length < 2) return null;
     const A = B / pl, I = Math.floor(A);
     if (I >= Pe.length - 1) return null;
@@ -38039,7 +38039,7 @@ No matching component was found for:
     let B = await p0(() => Promise.resolve().then(() => Lx), void 0);
     return await B.init(), B;
   };
-  qb = (B) => {
+  Lb = (B) => {
     const { colliders: A = "cuboid", children: I, timeStep: g = 1 / 60, paused: C = false, interpolate: Q = true, updatePriority: e, updateLoop: o = "follow", debug: t = false, gravity: a = [
       0,
       -9.81,
@@ -38643,9 +38643,9 @@ No matching component was found for:
   };
   let fT, Bl;
   qC = 118;
-  Lb = qC - 16;
-  mb = 13;
-  Hb = 14;
+  mb = qC - 16;
+  Hb = 13;
+  xb = 14;
   fT = 11;
   Bl = [
     {
@@ -38704,7 +38704,7 @@ No matching component was found for:
       height: o.height + (t.height - o.height) * e
     };
   };
-  xb = function(B) {
+  Tb = function(B) {
     const { radius: A, height: I } = YT(B);
     return {
       x: Math.cos(B) * A,
@@ -38718,8 +38718,35 @@ No matching component was found for:
     const g = Math.cos(M0), C = Math.sin(M0), Q = B * g + A * C;
     return Q < qT - 10 || Q > qC ? false : Math.abs(-B * C + A * g) < fT + I;
   }
-  const UN = LT;
-  function mT(B, A, I) {
+  let mT;
+  UN = LT;
+  mT = [
+    [
+      -46,
+      -46
+    ],
+    [
+      46,
+      -46
+    ],
+    [
+      -54,
+      54
+    ],
+    [
+      54,
+      54
+    ]
+  ];
+  bb = function(B, A, I = 0) {
+    for (const [g, C] of mT) {
+      if (Math.hypot(B - g, A - C) < 22 + I) return true;
+      const Q = Math.max(0, Math.min(1, (B * g + A * C) / (g * g + C * C || 1)));
+      if (Math.hypot(B - g * Q, A - C * Q) < 9 + I) return true;
+    }
+    return false;
+  };
+  function HT(B, A, I) {
     if (Math.hypot(B, A) < 26 + I) return false;
     for (const g of Ni) {
       const [C, Q] = g.position;
@@ -38735,7 +38762,7 @@ No matching component was found for:
     for (; e.length < A && o < A * 40; ) {
       o += 1;
       const t = Q() * Math.PI * 2, a = g + Q() * (C - g), n = Math.cos(t) * a, D = Math.sin(t) * a;
-      mT(n, D, I) && e.push({
+      HT(n, D, I) && e.push({
         position: [
           n,
           0,
@@ -38747,28 +38774,28 @@ No matching component was found for:
     }
     return e;
   }
-  Tb = function() {
+  Ob = function() {
     const B = $.useMemo(() => Ql(7, 130, 5, 36, qC - 8), []), A = $.useMemo(() => Ql(23, 110, 1, 30, qC - 4), []), I = $.useMemo(() => Ql(91, 900, 0, 26, qC - 2), []);
     return p.jsxs("group", {
       children: [
-        p.jsx(HT, {}),
         p.jsx(xT, {}),
-        p.jsx(TT, {
+        p.jsx(TT, {}),
+        p.jsx(bT, {
           trees: B
         }),
-        p.jsx(bT, {
+        p.jsx(OT, {
           rocks: A
         }),
-        p.jsx(OT, {
+        p.jsx(vT, {
           grass: I
         }),
-        p.jsx(vT, {}),
         p.jsx(_T, {}),
-        p.jsx(ZT, {})
+        p.jsx(ZT, {}),
+        p.jsx(PT, {})
       ]
     });
   };
-  function HT() {
+  function xT() {
     return p.jsxs(hs, {
       type: "fixed",
       colliders: false,
@@ -38887,7 +38914,7 @@ No matching component was found for:
       ]
     });
   }
-  function xT() {
+  function TT() {
     return p.jsx("group", {
       children: Ni.map((B) => {
         const [A, I] = B.position, g = Math.hypot(A, I), C = Math.atan2(A, I);
@@ -38981,7 +39008,7 @@ No matching component was found for:
       })
     });
   }
-  function TT({ trees: B }) {
+  function bT({ trees: B }) {
     return p.jsxs("group", {
       children: [
         p.jsxs(UE, {
@@ -39109,7 +39136,7 @@ No matching component was found for:
       ]
     });
   }
-  function bT({ rocks: B }) {
+  function OT({ rocks: B }) {
     return p.jsxs(UE, {
       limit: B.length,
       castShadow: true,
@@ -39146,7 +39173,7 @@ No matching component was found for:
       ]
     });
   }
-  function OT({ grass: B }) {
+  function vT({ grass: B }) {
     return p.jsxs(UE, {
       limit: B.length,
       children: [
@@ -39182,7 +39209,7 @@ No matching component was found for:
       ]
     });
   }
-  function vT() {
+  function _T() {
     const B = $.useMemo(() => {
       const A = [];
       for (let I = 0; I < 12; I += 1) {
@@ -39289,7 +39316,7 @@ No matching component was found for:
     const C = new NU(A);
     return C.needsUpdate = true, C;
   })();
-  function _T() {
+  function ZT() {
     const B = $.useRef(null), { geometry: A, positions: I, drift: g } = $.useMemo(() => {
       const C = MN(404), Q = 260, e = new Float32Array(Q * 3), o = new Float32Array(Q * 3);
       for (let a = 0; a < Q; a += 1) {
@@ -39334,7 +39361,7 @@ No matching component was found for:
       })
     });
   }
-  function ZT() {
+  function PT() {
     return p.jsx(hs, {
       type: "fixed",
       colliders: false,
@@ -39395,13 +39422,13 @@ No matching component was found for:
       }
     }), B;
   })();
-  bb = function() {
+  vb = function() {
     const B = EC((A) => A.garage.ores);
-    return p.jsx(PT, {
+    return p.jsx(jT, {
       collected: B
     });
   };
-  function PT({ collected: B }) {
+  function jT({ collected: B }) {
     const A = $.useRef(null), I = $.useMemo(() => yw.filter((g) => !B.includes(g.id)), [
       B
     ]);
@@ -39463,7 +39490,7 @@ No matching component was found for:
     });
   }
   const eB = 132, Oe = (B) => eB / 2 + B / qC * (eB / 2 - 8);
-  function jT() {
+  function WT() {
     const B = EC((g) => g.visited), A = EC((g) => g.activeZone), I = EC((g) => g.openZone);
     return p.jsxs(p.Fragment, {
       children: [
@@ -39513,16 +39540,16 @@ No matching component was found for:
             })
           ]
         }),
-        p.jsx(Cb, {}),
         p.jsx(Bb, {}),
-        p.jsx(WT, {}),
-        p.jsx(gb, {}),
-        p.jsx($T, {}),
-        p.jsx(Ab, {}),
+        p.jsx(Qb, {}),
         p.jsx(VT, {}),
+        p.jsx(Cb, {}),
+        p.jsx(Ab, {}),
+        p.jsx(Ib, {}),
         p.jsx(XT, {}),
         p.jsx(zT, {}),
-        p.jsx(Ib, {}),
+        p.jsx($T, {}),
+        p.jsx(gb, {}),
         A && !I && p.jsxs("button", {
           type: "button",
           onClick: () => wg.openPanel(A),
@@ -39539,7 +39566,7 @@ No matching component was found for:
       ]
     });
   }
-  function WT() {
+  function VT() {
     const B = $.useRef(null), A = $.useRef(null), I = $.useRef(null), g = $.useRef(null);
     return $.useEffect(() => {
       let C = 0;
@@ -39588,7 +39615,7 @@ No matching component was found for:
       ]
     });
   }
-  function VT() {
+  function XT() {
     const B = $.useRef(null), A = $.useRef(null), I = $.useRef(null);
     return $.useEffect(() => {
       let g = 0;
@@ -39656,7 +39683,7 @@ No matching component was found for:
       ]
     });
   }
-  function XT() {
+  function zT() {
     const B = EC((A) => A.lastTrick);
     return $.useEffect(() => {
       if (!B) return;
@@ -39689,7 +39716,7 @@ No matching component was found for:
       ]
     }) : null;
   }
-  function zT() {
+  function $T() {
     const B = EC((A) => A.circuitPrompt);
     return $.useEffect(() => {
       if (!B) return;
@@ -39734,7 +39761,7 @@ No matching component was found for:
       ]
     }) : null;
   }
-  function $T() {
+  function Ab() {
     const B = $.useRef(null), A = $.useRef(null), I = $.useRef(null), g = $.useRef(null);
     return $.useEffect(() => {
       let C = 0;
@@ -39770,7 +39797,7 @@ No matching component was found for:
       ]
     });
   }
-  function Ab() {
+  function Ib() {
     const B = EC((g) => g.lastLap), A = EC((g) => g.garage.bestLap);
     if ($.useEffect(() => {
       if (!B) return;
@@ -39850,7 +39877,7 @@ No matching component was found for:
       ]
     });
   }
-  function Ib() {
+  function gb() {
     const B = EC((A) => A.awards);
     return $.useEffect(() => {
       if (!B.length) return;
@@ -39878,7 +39905,7 @@ No matching component was found for:
       }, A.id))
     });
   }
-  function gb() {
+  function Cb() {
     const B = EC((C) => C.garage.points), A = EC((C) => C.garage.ores.length), I = EC((C) => C.openZone !== null), g = AN(B);
     return p.jsxs("button", {
       type: "button",
@@ -39927,7 +39954,7 @@ No matching component was found for:
       ]
     });
   }
-  function Cb() {
+  function Bb() {
     const B = $.useRef(null), A = EC((g) => g.visited), I = EC((g) => g.openZone !== null);
     return $.useEffect(() => {
       let g = 0;
@@ -39996,7 +40023,7 @@ No matching component was found for:
       })
     });
   }
-  function Bb() {
+  function Qb() {
     const B = $.useRef(null), A = $.useRef(null), I = $.useRef(null), g = $.useRef(null);
     return $.useEffect(() => {
       let C = 0;
@@ -40064,8 +40091,8 @@ No matching component was found for:
       ]
     });
   }
-  const Qb = (B) => B.startsWith("http") || B.startsWith("mailto:") ? B : `/amritaraj-nair-portfolio/${B}`;
-  function ib() {
+  const ib = (B) => B.startsWith("http") || B.startsWith("mailto:") ? B : `/amritaraj-nair-portfolio/${B}`;
+  function Eb() {
     const B = EC((I) => I.openZone), A = B ? jK[B] : null;
     return $.useEffect(() => {
       if (!A) return;
@@ -40164,7 +40191,7 @@ No matching component was found for:
               I.links && I.links.length > 0 && p.jsx("div", {
                 className: "mt-3.5 flex flex-wrap gap-2",
                 children: I.links.map((g) => p.jsxs("a", {
-                  href: Qb(g.href),
+                  href: ib(g.href),
                   target: "_blank",
                   rel: "noreferrer noopener",
                   className: "rounded-full px-3 py-1.5 text-[0.7rem] font-semibold text-[#0d0a24] transition hover:brightness-110",
@@ -40184,7 +40211,7 @@ No matching component was found for:
     }, A.id) : null;
   }
   let KN, HE;
-  Eb = () => $.useRef({
+  eb = () => $.useRef({
     wheels: [
       null,
       null,
@@ -40216,8 +40243,8 @@ No matching component was found for:
   function kw(B, A = 0.14) {
     return `#${new XA(B).lerp(new XA("#ffffff"), A).getHexString()}`;
   }
-  const eb = -0.3, ob = 0.17;
-  Ob = function(B, { speed: A, steer: I, throttle: g, brake: C, delta: Q, paint: e, lateral: o, vertical: t, braking: a, boosting: n }) {
+  const ob = -0.3, tb = 0.17;
+  _b = function(B, { speed: A, steer: I, throttle: g, brake: C, delta: Q, paint: e, lateral: o, vertical: t, braking: a, boosting: n }) {
     const D = A * Q * 2.2;
     B.wheels.forEach((J) => {
       J && (J.rotation.x -= D);
@@ -40225,7 +40252,7 @@ No matching component was found for:
     const h = Math.min(Math.abs(t) / 18, 1), c = a ? -1 : Math.max(g, 0), S = 1 - Math.pow(6e-4, Q);
     B.mounts.forEach((J, q) => {
       if (!J) return;
-      const x = q < 2, F = q % 2 === 0 ? -1 : 1, u = x ? -c * 0.6 : c * 0.6, T = -I * F * Math.min(o / 8, 1) * 0.9, W = eb + CQ.clamp(u + T + h, -1, 1) * ob;
+      const x = q < 2, F = q % 2 === 0 ? -1 : 1, u = x ? -c * 0.6 : c * 0.6, T = -I * F * Math.min(o / 8, 1) * 0.9, W = ob + CQ.clamp(u + T + h, -1, 1) * tb;
       J.position.y = CQ.lerp(J.position.y, W, S);
     });
     const k = 1 - Math.pow(2e-4, Q);
@@ -40265,30 +40292,30 @@ No matching component was found for:
       ]
     });
   }
-  tb = function({ rig: B, paint: A, design: I, wheel: g = "disc" }) {
+  sb = function({ rig: B, paint: A, design: I, wheel: g = "disc" }) {
     return p.jsx(KN.Provider, {
       value: A,
       children: p.jsxs("group", {
         children: [
-          p.jsx(sb, {}),
           p.jsx(ab, {}),
-          p.jsx(nb, {
+          p.jsx(nb, {}),
+          p.jsx(rb, {
             rig: B
           }),
-          p.jsx(rb, {}),
-          p.jsx(hb, {
+          p.jsx(Db, {}),
+          p.jsx(cb, {
             rig: B,
             covered: I === "hover",
             style: g
           }),
-          p.jsx(Db, {
+          p.jsx(hb, {
             design: I
           })
         ]
       })
     });
   };
-  function sb() {
+  function ab() {
     const B = HE(), A = kw(B.shell);
     return p.jsxs(p.Fragment, {
       children: [
@@ -40422,7 +40449,7 @@ No matching component was found for:
       ]
     });
   }
-  function ab() {
+  function nb() {
     const B = HE();
     return p.jsxs(p.Fragment, {
       children: [
@@ -40499,7 +40526,7 @@ No matching component was found for:
       ]
     });
   }
-  function nb({ rig: B }) {
+  function rb({ rig: B }) {
     const A = HE();
     return p.jsxs(p.Fragment, {
       children: [
@@ -40591,7 +40618,7 @@ No matching component was found for:
       ]
     });
   }
-  function rb() {
+  function Db() {
     const B = HE();
     return p.jsxs(p.Fragment, {
       children: [
@@ -40651,7 +40678,7 @@ No matching component was found for:
       ]
     });
   }
-  function Db({ design: B }) {
+  function hb({ design: B }) {
     const A = HE(), I = kw(A.shell);
     return B === "stripe" ? p.jsxs(p.Fragment, {
       children: [
@@ -41194,7 +41221,7 @@ No matching component was found for:
       ]
     }) : null;
   }
-  function hb({ rig: B, covered: A, style: I }) {
+  function cb({ rig: B, covered: A, style: I }) {
     const g = HE(), C = zK[I] ?? Qr[0], Q = [
       [
         -1.02,
@@ -41373,7 +41400,7 @@ No matching component was found for:
       }, a))
     });
   }
-  function cb({ paint: B, design: A, wheel: I }) {
+  function lb({ paint: B, design: A, wheel: I }) {
     const g = ir[B] ?? iD[0];
     return p.jsxs(ZK, {
       dpr: [
@@ -41447,17 +41474,17 @@ No matching component was found for:
           distance: 20,
           color: Si.cyan
         }),
-        p.jsx(lb, {
+        p.jsx(Sb, {
           paint: g,
           design: A,
           wheel: I
         }),
-        p.jsx(Sb, {})
+        p.jsx(wb, {})
       ]
     });
   }
-  function lb({ paint: B, design: A, wheel: I }) {
-    const g = Eb(), C = $.useRef(null);
+  function Sb({ paint: B, design: A, wheel: I }) {
+    const g = eb(), C = $.useRef(null);
     return yo(({ clock: Q }, e) => {
       C.current && (C.current.rotation.y += e * 0.35, C.current.position.y = Math.sin(Q.elapsedTime * 0.9) * 0.06, g.current.wheels.forEach((o) => {
         o && (o.rotation.x -= e * 0.6);
@@ -41470,7 +41497,7 @@ No matching component was found for:
         0
       ],
       scale: 0.78,
-      children: p.jsx(tb, {
+      children: p.jsx(sb, {
         rig: g,
         paint: B,
         design: A,
@@ -41478,7 +41505,7 @@ No matching component was found for:
       })
     });
   }
-  function Sb() {
+  function wb() {
     return p.jsxs("group", {
       position: [
         0,
@@ -41550,7 +41577,7 @@ No matching component was found for:
       ]
     });
   }
-  const wb = [
+  const yb = [
     {
       id: "paint",
       label: "Paint"
@@ -41568,7 +41595,7 @@ No matching component was found for:
       label: "Trail"
     }
   ];
-  function yb() {
+  function kb() {
     var _a2, _b2, _c2;
     const B = EC((k) => k.garageOpen), A = EC((k) => k.garage), [I, g] = $.useState("paint");
     if ($.useEffect(() => {
@@ -41589,7 +41616,7 @@ No matching component was found for:
             p.jsxs("div", {
               className: "relative min-h-[20rem] overflow-hidden rounded-3xl border border-white/10 bg-[#0b0920] shadow-2xl lg:min-h-full",
               children: [
-                p.jsx(cb, {
+                p.jsx(lb, {
                   paint: t,
                   design: a,
                   wheel: n
@@ -41702,7 +41729,7 @@ No matching component was found for:
                     }),
                     p.jsx("div", {
                       className: "flex gap-1 rounded-full border border-white/10 bg-white/[0.03] p-1",
-                      children: wb.map((k) => p.jsx("button", {
+                      children: yb.map((k) => p.jsx("button", {
                         type: "button",
                         onClick: () => g(k.id),
                         className: `rounded-full px-3 py-1.5 font-mono text-[0.56rem] uppercase tracking-[0.18em] transition ${I === k.id ? "bg-white/90 text-[#140f30]" : "text-[#8f88bd] hover:text-white"}`,
@@ -41909,7 +41936,7 @@ No matching component was found for:
     spinRight: false,
     flipForward: false,
     flipBack: false
-  }, kb = {
+  }, Gb = {
     KeyW: "forward",
     ArrowUp: "forward",
     KeyS: "backward",
@@ -41927,13 +41954,13 @@ No matching component was found for:
     KeyF: "flipForward",
     KeyC: "flipBack"
   };
-  vb = function() {
+  Zb = function() {
     return ZC;
   };
-  function Gb() {
+  function Mb() {
     $.useEffect(() => {
       const B = (C, Q) => {
-        const e = kb[C.code];
+        const e = Gb[C.code];
         if (!e) return;
         const o = C.target;
         o && /^(INPUT|TEXTAREA|SELECT)$/.test(o.tagName) || (C.code === "Space" && C.preventDefault(), e === "brake" || e === "reset" || e === "boost" || e === "spinLeft" || e === "spinRight" || e === "flipForward" || e === "flipBack" ? ZC[e] = Q > 0 : ZC[e] = Q);
@@ -41945,8 +41972,8 @@ No matching component was found for:
       };
     }, []);
   }
-  const Mb = $.lazy(() => p0(() => import("./World-BjAy3E_y.js"), __vite__mapDeps([0,1,2])));
-  function Ub() {
+  const Ub = $.lazy(() => p0(() => import("./World-BPrfBw7_.js"), __vite__mapDeps([0,1,2])));
+  function Kb() {
     try {
       const B = document.createElement("canvas");
       return !!(window.WebGLRenderingContext && (B.getContext("webgl2") || B.getContext("webgl")));
@@ -41954,14 +41981,14 @@ No matching component was found for:
       return false;
     }
   }
-  function Kb() {
+  function Nb() {
     return typeof window > "u" ? true : window.matchMedia("(pointer: fine)").matches && window.innerWidth >= 860;
   }
-  function Nb() {
+  function pb() {
     const B = EC((o) => o.started), [A, I] = $.useState(true), [g, C] = $.useState(true), [Q, e] = $.useState(false);
-    return Gb(), $.useEffect(() => {
-      I(Ub());
-      const o = () => C(Kb());
+    return Mb(), $.useEffect(() => {
+      I(Kb());
+      const o = () => C(Nb());
       return o(), window.addEventListener("resize", o), () => window.removeEventListener("resize", o);
     }, []), $.useEffect(() => {
       const o = document.querySelector("canvas");
@@ -42001,7 +42028,7 @@ No matching component was found for:
           },
           children: p.jsx($.Suspense, {
             fallback: null,
-            children: p.jsx(Mb, {})
+            children: p.jsx(Ub, {})
           })
         }),
         Q && p.jsxs("div", {
@@ -42022,9 +42049,9 @@ No matching component was found for:
         !B && p.jsx(Gx, {}),
         B && p.jsxs(p.Fragment, {
           children: [
-            p.jsx(jT, {}),
-            p.jsx(ib, {}),
-            p.jsx(yb, {}),
+            p.jsx(WT, {}),
+            p.jsx(Eb, {}),
+            p.jsx(kb, {}),
             p.jsx(Rl, {
               to: "/resume",
               className: "pointer-events-auto fixed bottom-1 left-1/2 z-20 -translate-x-1/2 text-[0.6rem] uppercase tracking-[0.2em] text-[#6b649b] transition hover:text-white",
@@ -42065,9 +42092,9 @@ No matching component was found for:
       ]
     });
   }
-  _b = Object.freeze(Object.defineProperty({
+  Pb = Object.freeze(Object.defineProperty({
     __proto__: null,
-    default: Nb
+    default: pb
   }, Symbol.toStringTag, {
     value: "Module"
   }));
@@ -42113,55 +42140,57 @@ export {
   YQ as a7,
   DC as a8,
   ag as a9,
-  qT as aA,
-  wg as aB,
-  NU as aC,
-  MN as aD,
-  nx as aE,
-  Yb as aF,
-  ww as aG,
-  JD as aH,
-  Eb as aI,
-  ir as aJ,
-  iD as aK,
-  tb as aL,
-  Ob as aM,
-  vb as aN,
-  fb as aO,
-  Ni as aP,
-  MB as aQ,
-  qb as aR,
-  Tb as aS,
-  bb as aT,
-  yi as aU,
-  ub as aV,
-  _b as aW,
+  EC as aA,
+  M0 as aB,
+  qT as aC,
+  wg as aD,
+  NU as aE,
+  MN as aF,
+  nx as aG,
+  qb as aH,
+  ww as aI,
+  JD as aJ,
+  eb as aK,
+  ir as aL,
+  iD as aM,
+  sb as aN,
+  _b as aO,
+  Zb as aP,
+  Yb as aQ,
+  Ni as aR,
+  MB as aS,
+  Lb as aT,
+  Ob as aU,
+  vb as aV,
+  yi as aW,
+  Rb as aX,
+  Pb as aY,
   QC as aa,
   UI as ab,
   XI as ac,
   GB as ad,
   qC as ae,
   hs as af,
-  Lb as ag,
-  mb as ah,
+  mb as ag,
+  Hb as ah,
   Sw as ai,
-  Hb as aj,
+  xb as aj,
   Si as ak,
-  UE as al,
-  wi as am,
-  WI as an,
-  xb as ao,
-  tg as ap,
-  Rb as aq,
-  CQ as ar,
-  KC as as,
-  iC as at,
-  BI as au,
-  pT as av,
-  cI as aw,
-  YT as ax,
-  EC as ay,
-  M0 as az,
+  UN as al,
+  bb as am,
+  UE as an,
+  wi as ao,
+  WI as ap,
+  Tb as aq,
+  tg as ar,
+  fb as as,
+  CQ as at,
+  KC as au,
+  iC as av,
+  BI as aw,
+  pT as ax,
+  cI as ay,
+  YT as az,
   aJ as b,
   GC as c,
   Nr as d,
@@ -42185,6 +42214,6 @@ export {
   Uu as v,
   zl as w,
   yo as x,
-  Jb as y,
+  ub as y,
   HK as z
 };
