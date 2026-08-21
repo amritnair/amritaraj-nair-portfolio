@@ -1,8 +1,8 @@
 var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
 var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
-import { r as x, j as l, e as ni } from "./index-C4M9to_t.js";
-import { R as cr, M as Pr, I as ii, S as Ne, D as Je, a as nn, H as ke, F as qe, b as Ft, L as ye, c as nr, d as ai, C as At, e as Sr, O as an, P as on, W as He, U as Ir, f as oi, g as ci, h as ir, T as st, i as li, j as ui, B as di, k as hi, l as et, m as fi, n as gi, o as cn, p as Bs, q as Be, r as Cr, V as ge, N as at, u as lt, s as Tr, t as vi, E as pi, v as Ai, w as mi, x as be, y as xi, z as ln, _ as Ei, A as Ss, G as Or, J as wi, K as Mi, Q as j, X as me, Y as Ci, Z as Di, $ as Bi, a0 as us, a1 as un, a2 as Ct, a3 as Gt, a4 as Si, a5 as Ii, a6 as qt, a7 as Ti, a8 as dn, a9 as Is, aa as yi, ab as lr, ac as yr, ad as Ri, ae as Ts, af as ut, ag as _e, ah as Ut, ai as It, aj as mt, ak as F, al as wt, am as Mt, an as hn, ao as ar, ap as R, aq as bi, ar as Ge, as as rs, at as Tt, au as ds, av as ss, aw as ns, ax as Pi, ay as Rr, az as hs, aA as ys, aB as $e, aC as Oi, aD as Fi, aE as Ui, aF as Li, aG as Gi, aH as Hi, aI as Ni, aJ as zi, aK as ki, aL as Qi, aM as ji, aN as Yi, aO as Wi, aP as is, aQ as Wt, aR as Vi, aS as Xi, aT as _i, aU as Ki, aV as Zi } from "./GamePortfolio-mQ4dMPpH.js";
+import { r as x, j as l, e as ni } from "./index-B4IldweE.js";
+import { R as cr, M as Pr, I as ii, S as Ne, D as Je, a as nn, H as ke, F as qe, b as Ft, L as ye, c as nr, d as ai, C as At, e as Sr, O as an, P as on, W as He, U as Ir, f as oi, g as ci, h as ir, T as st, i as li, j as ui, B as di, k as hi, l as et, m as fi, n as gi, o as cn, p as Bs, q as Be, r as Cr, V as ge, N as at, u as lt, s as Tr, t as vi, E as pi, v as Ai, w as mi, x as be, y as xi, z as ln, _ as Ei, A as Ss, G as Or, J as wi, K as Mi, Q as j, X as me, Y as Ci, Z as Di, $ as Bi, a0 as us, a1 as un, a2 as Ct, a3 as Gt, a4 as Si, a5 as Ii, a6 as qt, a7 as Ti, a8 as dn, a9 as Is, aa as yi, ab as lr, ac as yr, ad as Ri, ae as Ts, af as ut, ag as _e, ah as Ut, ai as It, aj as mt, ak as F, al as wt, am as Mt, an as hn, ao as ar, ap as R, aq as bi, ar as Ge, as as rs, at as Tt, au as ds, av as ss, aw as ns, ax as Pi, ay as Rr, az as hs, aA as ys, aB as $e, aC as Oi, aD as Fi, aE as Ui, aF as Li, aG as Gi, aH as Hi, aI as Ni, aJ as zi, aK as ki, aL as Qi, aM as ji, aN as Yi, aO as Wi, aP as is, aQ as Wt, aR as Vi, aS as Xi, aT as _i, aU as Ki, aV as Zi } from "./GamePortfolio-CEbjNx3_.js";
 const fn = parseInt(cr.replace(/\D+/g, ""));
 var Ke = Uint8Array, xt = Uint16Array, as = Uint32Array, gn = new Ke([0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0, 0, 0, 0]), vn = new Ke([0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 0, 0]), Ji = new Ke([16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15]), pn = function(e3, t) {
   for (var r = new xt(31), s = 0; s < 31; ++s) r[s] = t += 1 << e3[s - 1];
@@ -3893,7 +3893,7 @@ function Qc({ frames: e3 }) {
   const t = x.useMemo(() => e3.filter((r, s) => s % 12 === 0).map((r, s) => ({ base: r.position.clone().addScaledVector(r.right, (s % 2 ? 1 : -1) * (Te + 2.4)), up: r.up.clone() })), [e3]);
   return l.jsxs("group", { children: [l.jsxs(wt, { limit: t.length, range: t.length, children: [l.jsx("cylinderGeometry", { args: [0.7, 1.5, 1, 6] }), l.jsx("meshStandardMaterial", { color: F.deckEdge, roughness: 0.6, flatShading: true }), t.map((r, s) => l.jsx(Mt, { position: [r.base.x, r.base.y / 2 - 5, r.base.z], scale: [1, r.base.y + 10, 1] }, s))] }), l.jsxs(wt, { limit: t.length, range: t.length, children: [l.jsx("octahedronGeometry", { args: [0.65, 0] }), l.jsx("meshStandardMaterial", { color: "#dfe9ff", emissive: "#bcd4ff", emissiveIntensity: 2.4, toneMapped: false }), t.map((r, s) => l.jsx(Mt, { position: [r.base.x, r.base.y + 4.2, r.base.z] }, s))] })] });
 }
-const jc = [0.55, 1.75, 2.9, 4.1, 5.4], tr = 3.6, rr = 13, sr = 3.2, Yc = (() => {
+const jc = [0.55, 1.75, 2.9, 4.1, 5.4], tr = 3.6, rr = 14, sr = 7.2, Yc = (() => {
   const e3 = tr, t = rr, r = sr, s = [[-e3, 0, -t / 2], [e3, 0, -t / 2], [e3, r, t / 2], [-e3, r, t / 2], [-e3, 0, t / 2], [e3, 0, t / 2]], n = (u, h, f) => [...s[u], ...s[h], ...s[f]], a = new Float32Array([...n(0, 1, 2), ...n(0, 2, 3), ...n(4, 5, 1), ...n(4, 1, 0), ...n(5, 2, 1), ...n(4, 0, 3), ...n(4, 3, 5), ...n(3, 2, 5), ...n(3, 5, 4)]), o = new lr();
   return o.setAttribute("position", new ds(a, 3)), o.computeVertexNormals(), o;
 })(), Wc = (() => {
@@ -3903,7 +3903,7 @@ const jc = [0.55, 1.75, 2.9, 4.1, 5.4], tr = 3.6, rr = 13, sr = 3.2, Yc = (() =>
 function Vc({ frames: e3 }) {
   const t = x.useMemo(() => jc.map((r, s) => {
     const n = e3.length - 1, a = Math.round(r / (Math.PI * 2) * n) % n, o = e3[a], u = s % 2 ? 1 : -1, h = new ns().makeBasis(o.right, o.up, o.forward);
-    return { position: o.position.clone().addScaledVector(o.right, u * (Te - tr - 0.8)).addScaledVector(o.up, 0.02), quaternion: new Tt().setFromRotationMatrix(h) };
+    return { position: o.position.clone().addScaledVector(o.right, u * (Te - tr)).addScaledVector(o.up, 0.02), quaternion: new Tt().setFromRotationMatrix(h) };
   }), [e3]);
   return l.jsx("group", { children: t.map((r, s) => l.jsxs("group", { position: r.position, quaternion: r.quaternion, children: [l.jsx("mesh", { geometry: Yc, castShadow: true, receiveShadow: true, children: l.jsx("meshStandardMaterial", { color: "#33306e", emissive: F.lime, emissiveIntensity: 0.28, roughness: 0.5, metalness: 0.35, flatShading: true }) }), l.jsxs("mesh", { position: [0, sr + 0.06, rr / 2], children: [l.jsx("boxGeometry", { args: [tr * 2, 0.14, 0.3] }), l.jsx("meshStandardMaterial", { color: F.lime, emissive: F.lime, emissiveIntensity: 3, toneMapped: false })] }), [-1, 1].map((n) => l.jsxs("mesh", { position: [n * tr, sr / 2 - 0.1, 0], rotation: [Math.atan2(sr, rr), 0, 0], children: [l.jsx("boxGeometry", { args: [0.12, 0.12, rr] }), l.jsx("meshStandardMaterial", { color: F.amber, emissive: F.amber, emissiveIntensity: 2.6, toneMapped: false })] }, n)), l.jsx(ut, { type: "fixed", colliders: false, friction: 1, children: l.jsx(ss, { args: [Wc] }) })] }, s)) });
 }
@@ -4071,7 +4071,7 @@ function en({ position: e3 }) {
   }, [e3]);
   return l.jsx(l.Fragment, { children: t.map((r, s) => l.jsxs(ut, { position: r, colliders: false, mass: 0.5, restitution: 0.2, children: [l.jsx(It, { args: [0.78, 0.78, 0.78] }), l.jsxs("mesh", { castShadow: true, receiveShadow: true, children: [l.jsx("boxGeometry", { args: [1.56, 1.56, 1.56] }), l.jsx("meshStandardMaterial", { color: "#6d5cc4", roughness: 0.65, flatShading: true })] }), l.jsxs("mesh", { children: [l.jsx("boxGeometry", { args: [1.62, 0.16, 1.62] }), l.jsx("meshStandardMaterial", { color: "#c3b4ff", emissive: "#8f7bff", emissiveIntensity: 1.4, toneMapped: false })] })] }, s)) });
 }
-const ls = { baseFov: 55 }, Il = 6.2, tn = 5.4, Tl = 4e-4, yl = 0.35, St = Math.PI * 2, Rl = () => ({ spin: 0, flip: 0, active: false });
+const ls = { baseFov: 55 }, Il = 7.6, tn = 6.8, Tl = 4e-4, yl = 0.35, St = Math.PI * 2, Rl = () => ({ spin: 0, flip: 0, active: false });
 function bl(e3, t, r, s, n) {
   if (!t) return;
   if (s) {

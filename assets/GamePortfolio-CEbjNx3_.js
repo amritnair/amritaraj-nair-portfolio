@@ -1,5 +1,5 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/World-B_9aVnin.js","assets/index-C4M9to_t.js","assets/index-DG5bFADg.css"])))=>i.map(i=>d[i]);
-import { r as $, g as bF, e as MI, j as p, T as OF, s as Pk, L as Rl, _ as p0, __tla as __tla_0 } from "./index-C4M9to_t.js";
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/World-BjAy3E_y.js","assets/index-B4IldweE.js","assets/index-DG5bFADg.css"])))=>i.map(i=>d[i]);
+import { r as $, g as bF, e as MI, j as p, T as OF, s as Pk, L as Rl, _ as p0, __tla as __tla_0 } from "./index-B4IldweE.js";
 let $e, ri, Tl, jC, bB, Rt, LC, XA, tQ, Pr, ut, iR, Sg, Yg, eQ, lo, co, MS, kr, aB, dg, Gr, m, sB, yA, io, Di, Xt, Ku, aQ, JQ, gU, fg, vU, tn, MC, YQ, DC, ag, qT, wg, NU, MN, nx, Yb, ww, JD, Eb, ir, iD, tb, Ob, vb, fb, Ni, MB, qb, Tb, bb, yi, ub, _b, QC, UI, XI, GB, qC, hs, Lb, mb, Sw, Hb, Si, UE, wi, WI, xb, tg, Rb, CQ, KC, iC, BI, pT, cI, YT, EC, M0, aJ, GC, Nr, $l, lK, _B, Mi, Mr, bl, UB, fC, Fi, WC, cS, VF, kC, qQ, LK, oQ, wH, Uu, zl, yo, Jb, HK;
 let __tla = Promise.all([
   (() => {
@@ -41945,7 +41945,7 @@ No matching component was found for:
       };
     }, []);
   }
-  const Mb = $.lazy(() => p0(() => import("./World-B_9aVnin.js"), __vite__mapDeps([0,1,2])));
+  const Mb = $.lazy(() => p0(() => import("./World-BjAy3E_y.js"), __vite__mapDeps([0,1,2])));
   function Ub() {
     try {
       const B = document.createElement("canvas");
