@@ -24043,10 +24043,10 @@ Best regards`);
         ]
       })
     });
-  }, vz = b.lazy(() => VA(() => import("./GamePortfolio-C_L5VEjm.js").then(async (m) => {
+  }, vz = b.lazy(() => VA(() => import("./GamePortfolio-rIGL0xP8.js").then(async (m) => {
     await m.__tla;
     return m;
-  }).then((t) => t.aP), [])), bz = new dD(), xz = () => w.jsx("div", {
+  }).then((t) => t.aQ), [])), bz = new dD(), xz = () => w.jsx("div", {
     className: "flex h-[100dvh] items-center justify-center bg-[#160f34] font-mono text-xs uppercase tracking-[0.3em] text-[#9d8bff]",
     children: "Loading world\u2026"
   }), Sz = () => w.jsx(mO, {

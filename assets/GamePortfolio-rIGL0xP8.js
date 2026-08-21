@@ -1,6 +1,6 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/World-DujzJG5i.js","assets/index-B6l2Z9jD.js","assets/index-ad9GBHeS.css"])))=>i.map(i=>d[i]);
-import { r as AA, g as pF, e as kI, j as d, T as FF, s as qG, L as Gl, _ as cU, __tla as __tla_0 } from "./index-B6l2Z9jD.js";
-let eQ, si, Jl, PC, IQ, pt, qC, XA, iQ, Hr, za, Zu, cg, Rg, BQ, ro, no, yA, rr, sB, Ng, Dr, m, tB, go, ai, je, Zt, au, pQ, _U, ug, RK, kC, RQ, nS, rC, BC, MI, tw, kD, HT, kS, zr, xT, hb, cb, Mi, GB, ob, rb, Db, li, eb, lb, XI, gn, tg, yB, ZC, ss, tb, sb, ow, ab, hi, yE, ci, jI, nb, _g, _e, KC, iC, hI, rT, UC, BI, aU, DT, QC, zJ, GC, Sr, bl, E0, TB, yi, hr, dl, kB, fC, Ki, WC, iS, qF, yC, fQ, K0, QQ, iH, su, Tl, co, Eb, p0;
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/World-CYpZKFf-.js","assets/index-CvZo0p48.js","assets/index-ad9GBHeS.css"])))=>i.map(i=>d[i]);
+import { r as AA, g as pF, e as kI, j as d, T as FF, s as qG, L as Gl, _ as cU, __tla as __tla_0 } from "./index-CvZo0p48.js";
+let eQ, si, Jl, PC, IQ, pt, qC, XA, iQ, Hr, za, Zu, cg, Rg, BQ, ro, no, yA, rr, sB, Ng, Dr, m, tB, go, ai, je, Zt, au, pQ, _U, ug, RK, kC, RQ, nS, rC, BC, MI, QC, tw, kD, HT, kS, zr, xT, hb, cb, Mi, GB, ob, rb, Db, li, eb, lb, XI, gn, tg, yB, ZC, ss, tb, sb, ow, ab, hi, yE, ci, jI, nb, _g, _e, KC, iC, BI, ET, hI, rT, UC, aU, DT, zJ, GC, Sr, bl, E0, TB, yi, hr, dl, kB, fC, Ki, WC, iS, qF, yC, fQ, K0, QQ, iH, su, Tl, co, Eb, p0;
 let __tla = Promise.all([
   (() => {
     try {
@@ -38119,7 +38119,7 @@ No matching component was found for:
   })));
   tw.displayName = "CylinderCollider";
   tw.displayName = "RoundCylinderCollider";
-  const ET = kI.forwardRef((B, A) => kI.createElement(aB, EC({}, B, {
+  ET = kI.forwardRef((B, A) => kI.createElement(aB, EC({}, B, {
     shape: "convexHull",
     ref: A
   })));
@@ -40917,7 +40917,7 @@ No matching component was found for:
       };
     }, []);
   }
-  const Ab = AA.lazy(() => cU(() => import("./World-DujzJG5i.js"), __vite__mapDeps([0,1,2])));
+  const Ab = AA.lazy(() => cU(() => import("./World-CYpZKFf-.js"), __vite__mapDeps([0,1,2])));
   function Ib() {
     try {
       const B = document.createElement("canvas");
@@ -41085,22 +41085,23 @@ export {
   rC as a7,
   BC as a8,
   MI as a9,
-  tw as aA,
-  kD as aB,
-  HT as aC,
-  kS as aD,
-  zr as aE,
-  xT as aF,
-  hb as aG,
-  cb as aH,
-  Mi as aI,
-  GB as aJ,
-  ob as aK,
-  rb as aL,
-  Db as aM,
-  li as aN,
-  eb as aO,
-  lb as aP,
+  QC as aA,
+  tw as aB,
+  kD as aC,
+  HT as aD,
+  kS as aE,
+  zr as aF,
+  xT as aG,
+  hb as aH,
+  cb as aI,
+  Mi as aJ,
+  GB as aK,
+  ob as aL,
+  rb as aM,
+  Db as aN,
+  li as aO,
+  eb as aP,
+  lb as aQ,
   XI as aa,
   gn as ab,
   tg as ac,
@@ -41120,13 +41121,13 @@ export {
   _e as aq,
   KC as ar,
   iC as as,
-  hI as at,
-  rT as au,
-  UC as av,
-  BI as aw,
-  aU as ax,
-  DT as ay,
-  QC as az,
+  BI as at,
+  ET as au,
+  hI as av,
+  rT as aw,
+  UC as ax,
+  aU as ay,
+  DT as az,
   zJ as b,
   GC as c,
   Sr as d,
