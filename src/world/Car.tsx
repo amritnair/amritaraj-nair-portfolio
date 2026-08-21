@@ -242,7 +242,20 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
     } else if (throttle !== 0 && Math.abs(alongForward) < limit) {
       const power =
         throttle > 0 ? driveForce(alongForward, limit, wantsBoost) : -REVERSE_ACCELERATION;
-      impulse.copy(forward).multiplyScalar(power * mass * delta);
+      /*
+       * Hill assist. Gravity here is 30, so a 17-degree climb costs about 8.8
+       * of forward force — and since drive force tapers towards the limiter,
+       * near the top of the ramp there was barely more than that left. The car
+       * crawled up a ramp it should have flown up.
+       *
+       * Cancelling the along-slope component keeps the power band the same
+       * uphill as on the flat, which is what an arcade car is expected to do.
+       * Only ever applied under power, and only uphill, so gravity still pulls
+       * you down the far side.
+       */
+      const climb = -forward.y;
+      const assist = throttle > 0 && climb > 0 ? climb * 30 : 0;
+      impulse.copy(forward).multiplyScalar((power + assist) * mass * delta);
       rb.applyImpulse(impulse, true);
     }
 
@@ -430,6 +443,22 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
       visualForward.copy(forward);
     }
 
+    /*
+     * Flatten the chase basis to the horizontal.
+     *
+     * Pitch is free now, so mid-jump the car's forward vector can point at the
+     * sky — and a camera placed along it ends up underneath the car staring
+     * upward, which is what "the camera goes unfocused in the air" was. Track
+     * the heading only: the camera stays behind and above the car no matter
+     * what attitude it is in, and the car is free to tumble in frame.
+     */
+    visualForward.y = 0;
+    if (visualForward.lengthSq() < 0.0004) {
+      // Perfectly nose-up or nose-down: keep the last usable heading.
+      visualForward.set(Math.sin(telemetry.heading), 0, Math.cos(telemetry.heading));
+    }
+    visualForward.normalize();
+
     // Framing reacts to speed: the camera eases back and the lens widens, which
     // is most of what "fast" actually looks like on screen.
     const pace = Math.min(Math.abs(alongForward) / MAX_SPEED, 1.35);
@@ -447,7 +476,13 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
     // Where the camera *wants* to look. Smoothing this as well as the position
     // matters more than it sounds: an instant lookAt on a lagging position is
     // what makes a chase camera feel like it snaps through corners.
-    camLook.copy(visualPosition).addScaledVector(visualForward, 6).add(camLookUp);
+    // On the ground the camera looks up the road; in the air it looks at the
+    // car, so a tumbling landing stays centred instead of swinging the view
+    // off into the sky.
+    camLook
+      .copy(visualPosition)
+      .addScaledVector(visualForward, grounded ? 6 : 1.5)
+      .add(camLookUp);
 
     if (!cameraReady.current) {
       threeState.camera.position.copy(camTarget);

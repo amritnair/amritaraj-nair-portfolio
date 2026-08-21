@@ -4,7 +4,13 @@ import { useFrame } from "@react-three/fiber";
 import { Instance, Instances } from "@react-three/drei";
 import { RigidBody, ConvexHullCollider, CuboidCollider } from "@react-three/rapier";
 import { NEON } from "./palette";
-import { CIRCUIT_RAMP_ANGLE, CIRCUIT_RAMP_START, circuitAt, circuitPoint } from "./layout";
+import {
+  CIRCUIT_RAMP_ANGLE,
+  CIRCUIT_RAMP_START,
+  ISLAND_RADIUS,
+  circuitAt,
+  circuitPoint,
+} from "./layout";
 import BlockText from "./BlockText";
 import { CHECKPOINTS, gateAt, resetRace, updateRace } from "./race";
 import { telemetry, useWorld, worldStore } from "./store";
@@ -451,8 +457,11 @@ function Pylons({ frames }: { frames: Frame[] }) {
         .map((f, i) => ({
           // Alternate sides, so the loop is lit from both edges.
           base: f.position.clone().addScaledVector(f.right, (i % 2 ? 1 : -1) * (HALF + 2.4)),
-          up: f.up.clone(),
-        })),
+        }))
+        // Only where there is sea underneath. On the stretches that cut back
+        // over the island, a leg would come down through the trees and the
+        // roads — better to have no leg there than a column in a path.
+        .filter((leg) => Math.hypot(leg.base.x, leg.base.z) > ISLAND_RADIUS + 6),
     [frames],
   );
 

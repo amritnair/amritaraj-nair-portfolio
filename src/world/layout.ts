@@ -95,3 +95,24 @@ export function onCircuitRamp(x: number, z: number, pad = 0) {
 
 /** True when (x, z) sits on the footprint of a highway ramp. */
 export const onRampCorridor = onCircuitRamp;
+
+/**
+ * Districts and the spoke roads that lead to them, as a single test. Shared so
+ * that anything placed on the island — scenery, supports, scatter — can ask the
+ * same question rather than each re-deriving the layout.
+ */
+const DISTRICT_POSITIONS: [number, number][] = [
+  [-46, -46],
+  [46, -46],
+  [-54, 54],
+  [54, 54],
+];
+
+export function onSpokeOrDistrict(x: number, z: number, pad = 0) {
+  for (const [dx, dz] of DISTRICT_POSITIONS) {
+    if (Math.hypot(x - dx, z - dz) < 22 + pad) return true;
+    const t = Math.max(0, Math.min(1, (x * dx + z * dz) / (dx * dx + dz * dz || 1)));
+    if (Math.hypot(x - dx * t, z - dz * t) < 9 + pad) return true;
+  }
+  return false;
+}

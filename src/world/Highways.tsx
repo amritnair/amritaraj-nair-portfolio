@@ -4,7 +4,14 @@ import { useFrame } from "@react-three/fiber";
 import { Instance, Instances } from "@react-three/drei";
 import { RigidBody, CuboidCollider } from "@react-three/rapier";
 import { NEON } from "./palette";
-import { DECK_WIDTH, ISLAND_RADIUS, RING_HEIGHT, RING_RADIUS } from "./layout";
+import {
+  DECK_WIDTH,
+  ISLAND_RADIUS,
+  RING_HEIGHT,
+  RING_RADIUS,
+  onRampCorridor,
+  onSpokeOrDistrict,
+} from "./layout";
 
 /**
  * The skyway. The ring is still real road — it keeps its colliders, so falling
@@ -163,16 +170,31 @@ function CrossSpan({
   );
 }
 
-/** Support columns under the ring, with a lit collar at deck height. */
+/**
+ * Supports for the ring.
+ *
+ * They used to stand on the road's own centreline, which put a column in open
+ * ground every 40 units at exactly the radius you drive across — extrusions in
+ * the middle of the island with no collision, so you drove straight through
+ * them. They sit under the deck's outer edge now, the way a viaduct's legs
+ * actually do, and any that would land on a spoke road, in a district or in
+ * the climb's corridor is simply left out. A missing leg is invisible; a leg
+ * through the middle of a path is not.
+ */
 function Pylons() {
-  const columns = useMemo(
-    () =>
-      Array.from({ length: 16 }).map((_, i) => {
-        const angle = (i / 16) * Math.PI * 2;
-        return [Math.cos(angle) * RING_RADIUS, Math.sin(angle) * RING_RADIUS] as const;
-      }),
-    [],
-  );
+  const columns = useMemo(() => {
+    const out: (readonly [number, number])[] = [];
+    for (let i = 0; i < 20; i += 1) {
+      const angle = (i / 20) * Math.PI * 2;
+      const radius = RING_RADIUS + DECK_WIDTH / 2 - 1;
+      const x = Math.cos(angle) * radius;
+      const z = Math.sin(angle) * radius;
+      if (onRampCorridor(x, z, 6)) continue;
+      if (onSpokeOrDistrict(x, z, 6)) continue;
+      out.push([x, z] as const);
+    }
+    return out;
+  }, []);
 
   return (
     <group>
