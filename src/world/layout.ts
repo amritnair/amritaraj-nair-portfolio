@@ -108,6 +108,33 @@ const DISTRICT_POSITIONS: [number, number][] = [
   [54, 54],
 ];
 
+/**
+ * Where the ring's legs come down. Exported because two places need to agree
+ * on it: the legs themselves, and the scatter that must not grow a tree inside
+ * one.
+ */
+export const RING_LEG_POSITIONS: [number, number][] = (() => {
+  const out: [number, number][] = [];
+  for (let i = 0; i < 20; i += 1) {
+    const angle = (i / 20) * Math.PI * 2;
+    const radius = RING_RADIUS + DECK_WIDTH / 2 - 1;
+    const x = Math.cos(angle) * radius;
+    const z = Math.sin(angle) * radius;
+    if (onCircuitRamp(x, z, 6)) continue;
+    if (onSpokeOrDistrict(x, z, 6)) continue;
+    out.push([x, z]);
+  }
+  return out;
+})();
+
+/** True when (x, z) is close enough to a ring leg to overlap it. */
+export function onRingLeg(x: number, z: number, pad = 0) {
+  for (const [lx, lz] of RING_LEG_POSITIONS) {
+    if (Math.hypot(x - lx, z - lz) < 4 + pad) return true;
+  }
+  return false;
+}
+
 export function onSpokeOrDistrict(x: number, z: number, pad = 0) {
   for (const [dx, dz] of DISTRICT_POSITIONS) {
     if (Math.hypot(x - dx, z - dz) < 22 + pad) return true;

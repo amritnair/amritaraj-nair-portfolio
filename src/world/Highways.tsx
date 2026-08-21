@@ -2,15 +2,14 @@ import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { Instance, Instances } from "@react-three/drei";
-import { RigidBody, CuboidCollider } from "@react-three/rapier";
+import { RigidBody, CuboidCollider, CylinderCollider } from "@react-three/rapier";
 import { NEON } from "./palette";
 import {
   DECK_WIDTH,
   ISLAND_RADIUS,
   RING_HEIGHT,
+  RING_LEG_POSITIONS,
   RING_RADIUS,
-  onRampCorridor,
-  onSpokeOrDistrict,
 } from "./layout";
 
 /**
@@ -182,19 +181,7 @@ function CrossSpan({
  * through the middle of a path is not.
  */
 function Pylons() {
-  const columns = useMemo(() => {
-    const out: (readonly [number, number])[] = [];
-    for (let i = 0; i < 20; i += 1) {
-      const angle = (i / 20) * Math.PI * 2;
-      const radius = RING_RADIUS + DECK_WIDTH / 2 - 1;
-      const x = Math.cos(angle) * radius;
-      const z = Math.sin(angle) * radius;
-      if (onRampCorridor(x, z, 6)) continue;
-      if (onSpokeOrDistrict(x, z, 6)) continue;
-      out.push([x, z] as const);
-    }
-    return out;
-  }, []);
+  const columns = RING_LEG_POSITIONS;
 
   return (
     <group>
@@ -205,6 +192,14 @@ function Pylons() {
           <Instance key={i} position={[x, RING_HEIGHT / 2, z]} />
         ))}
       </Instances>
+
+      {/* Solid, because they look solid. Driving through a pillar is worse
+          than being stopped by one. */}
+      <RigidBody type="fixed" colliders={false}>
+        {columns.map(([x, z], i) => (
+          <CylinderCollider key={i} args={[RING_HEIGHT / 2, 1.2]} position={[x, RING_HEIGHT / 2, z]} />
+        ))}
+      </RigidBody>
 
       <Instances limit={columns.length}>
         <torusGeometry args={[1.5, 0.16, 6, 16]} />

@@ -5,7 +5,7 @@ import { Instance, Instances } from "@react-three/drei";
 import { RigidBody, CuboidCollider, CylinderCollider } from "@react-three/rapier";
 import { PALETTE, makeRandom } from "./palette";
 import { ZONES } from "./content";
-import { ISLAND_RADIUS, onRampCorridor } from "./layout";
+import { ISLAND_RADIUS, onRampCorridor, onRingLeg } from "./layout";
 import { telemetry } from "./store";
 
 export { ISLAND_RADIUS };
@@ -24,6 +24,8 @@ function isClear(x: number, z: number, pad: number) {
   }
   // Nothing may stand where a highway ramp lands, or trees grow through it.
   if (onRampCorridor(x, z, pad)) return false;
+  // Nor inside one of the ring's legs.
+  if (onRingLeg(x, z, pad)) return false;
   return true;
 }
 
