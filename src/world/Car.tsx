@@ -174,6 +174,8 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
   const lastSpeed = useRef(0);
   /** Decaying camera shake, topped up by hits. */
   const shake = useRef(0);
+  /** Camera roll through corners. */
+  const lean = useRef(0);
 
   const reset = () => {
     const rb = body.current;
@@ -387,6 +389,12 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
       threeState.camera.position.lerp(camTarget, 1 - Math.pow(0.0022, delta));
       smoothedLook.current.lerp(camLook, 1 - Math.pow(0.0006, delta));
     }
+    // Lean the camera into a corner, proportional to how hard the car is
+    // actually turning. Small — this is the difference between a camera that
+    // is bolted behind the car and one that feels like it is riding with it.
+    const leanTarget = -steer * Math.min(Math.abs(alongForward) / MAX_SPEED, 1) * 0.09;
+    lean.current = THREE.MathUtils.lerp(lean.current, leanTarget, 1 - Math.pow(0.02, delta));
+
     // Knock the camera about on impact — the clearest possible signal that you
     // hit something, and it costs nothing.
     if (shake.current > 0.001) {
@@ -396,6 +404,7 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
       threeState.camera.position.z += (Math.random() - 0.5) * amount;
     }
     threeState.camera.lookAt(smoothedLook.current);
+    threeState.camera.rotateZ(lean.current);
   });
 
   return (

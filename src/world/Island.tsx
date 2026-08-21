@@ -6,6 +6,7 @@ import { RigidBody, CuboidCollider, CylinderCollider } from "@react-three/rapier
 import { PALETTE, makeRandom } from "./palette";
 import { ZONES } from "./content";
 import { ISLAND_RADIUS, onRampCorridor } from "./layout";
+import { telemetry } from "./store";
 
 export { ISLAND_RADIUS };
 
@@ -328,41 +329,80 @@ const SPARK_TEXTURE = (() => {
   return texture;
 })();
 
-/** Slow-drifting motes of light — cheap atmosphere, one draw call. */
+/**
+ * Motes of light over the island that get out of your way.
+ *
+ * They used to be a static cloud on a barely-perceptible rotation, which from
+ * the car read as a field of specks pinned in the air. Now each one drifts on
+ * its own, and the car pushes a bubble through them as it passes — so the
+ * first thing you notice about them is that they respond to you.
+ */
 function Fireflies() {
   const points = useRef<THREE.Points>(null);
-  const geometry = useMemo(() => {
+  const { geometry, positions, drift } = useMemo(() => {
     const random = makeRandom(404);
-    const count = 420;
-    const positions = new Float32Array(count * 3);
+    const count = 260;
+    const pos = new Float32Array(count * 3);
+    const vel = new Float32Array(count * 3);
     for (let i = 0; i < count; i += 1) {
       const angle = random() * Math.PI * 2;
       const radius = 20 + random() * (ISLAND_RADIUS - 20);
-      positions[i * 3] = Math.cos(angle) * radius;
-      positions[i * 3 + 1] = 1.5 + random() * 16;
-      positions[i * 3 + 2] = Math.sin(angle) * radius;
+      pos[i * 3] = Math.cos(angle) * radius;
+      pos[i * 3 + 1] = 1.5 + random() * 14;
+      pos[i * 3 + 2] = Math.sin(angle) * radius;
+      vel[i * 3] = (random() - 0.5) * 0.7;
+      vel[i * 3 + 1] = (random() - 0.5) * 0.35;
+      vel[i * 3 + 2] = (random() - 0.5) * 0.7;
     }
     const geo = new THREE.BufferGeometry();
-    geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    return geo;
+    geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+    return { geometry: geo, positions: pos, drift: vel };
   }, []);
 
-  useFrame(({ clock }) => {
-    if (points.current) {
-      points.current.rotation.y = clock.elapsedTime * 0.012;
-      points.current.position.y = Math.sin(clock.elapsedTime * 0.4) * 0.8;
+  useFrame((_, delta) => {
+    const step = Math.min(delta, 1 / 20);
+    const count = positions.length / 3;
+    const PUSH = 16;
+
+    for (let i = 0; i < count; i += 1) {
+      const xi = i * 3;
+      positions[xi] += drift[xi] * step;
+      positions[xi + 1] += drift[xi + 1] * step;
+      positions[xi + 2] += drift[xi + 2] * step;
+
+      // Shoved aside by the car, then left to drift back on their own.
+      const dx = positions[xi] - telemetry.x;
+      const dz = positions[xi + 2] - telemetry.z;
+      const distance = Math.hypot(dx, dz);
+      if (distance < PUSH && distance > 0.01) {
+        const force = (1 - distance / PUSH) * step * 26;
+        positions[xi] += (dx / distance) * force;
+        positions[xi + 2] += (dz / distance) * force;
+        positions[xi + 1] += force * 0.3;
+      }
+
+      // Keep them over the island, and under the skyway.
+      const radius = Math.hypot(positions[xi], positions[xi + 2]);
+      if (radius > ISLAND_RADIUS - 4 || radius < 16) {
+        drift[xi] *= -1;
+        drift[xi + 2] *= -1;
+      }
+      if (positions[xi + 1] > 17 || positions[xi + 1] < 1.2) drift[xi + 1] *= -1;
     }
+
+    geometry.attributes.position.needsUpdate = true;
+    if (points.current) points.current.rotation.y += delta * 0.004;
   });
 
   return (
     <points ref={points} geometry={geometry}>
       <pointsMaterial
-        size={0.45}
+        size={0.5}
         map={SPARK_TEXTURE}
         alphaMap={SPARK_TEXTURE}
         color="#ffd79a"
         transparent
-        opacity={0.9}
+        opacity={0.85}
         sizeAttenuation
         toneMapped={false}
         depthWrite={false}
