@@ -7,6 +7,7 @@ export type Controls = {
   right: number;
   brake: boolean;
   reset: boolean;
+  boost: boolean;
 };
 
 /** Shared mutable input state — read every frame, never through React. */
@@ -17,6 +18,7 @@ export const controls: Controls = {
   right: 0,
   brake: false,
   reset: false,
+  boost: false,
 };
 
 const KEY_MAP: Record<string, keyof Controls> = {
@@ -30,6 +32,8 @@ const KEY_MAP: Record<string, keyof Controls> = {
   ArrowRight: "right",
   Space: "brake",
   KeyR: "reset",
+  ShiftLeft: "boost",
+  ShiftRight: "boost",
 };
 
 export function readControls(): Controls {
@@ -45,7 +49,7 @@ export function useKeyboardControls() {
       const target = event.target as HTMLElement | null;
       if (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)) return;
       if (event.code === "Space") event.preventDefault();
-      if (action === "brake" || action === "reset") {
+      if (action === "brake" || action === "reset" || action === "boost") {
         controls[action] = value > 0;
       } else {
         controls[action] = value;
@@ -61,6 +65,7 @@ export function useKeyboardControls() {
       controls.right = 0;
       controls.brake = false;
       controls.reset = false;
+      controls.boost = false;
     };
 
     window.addEventListener("keydown", down);

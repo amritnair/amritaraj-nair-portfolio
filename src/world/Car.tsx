@@ -11,15 +11,33 @@ import { readControls } from "./controls";
 import { telemetry, useWorld, worldStore } from "./store";
 import { PAINT_BY_ID, PAINTS } from "./garage";
 import { VehicleShell, animateVehicle, useVehicleRig } from "./Vehicle";
+import {
+  BOOST_DRAIN,
+  BOOST_MAX,
+  BOOST_MIN_TO_FIRE,
+  BOOST_PER_DRIFT,
+  BOOST_PER_LANDING,
+  BOOST_SPEED,
+  BRAKE_FORCE,
+  CAM_DISTANCE,
+  CAM_HEIGHT,
+  CAM_SPEED_PULLBACK,
+  DRIFT_GRIP,
+  DRIFT_TURN_GAIN,
+  FOV_BOOST_GAIN,
+  FOV_SPEED_GAIN,
+  GRIP,
+  MAX_SPEED,
+  REVERSE_ACCELERATION,
+  REVERSE_THRESHOLD,
+  TURN_RATE,
+  driveForce,
+} from "./drive";
+import { cameraTuning } from "./camera";
 
 /** Just inside the plaza ring, nose pointed at the title. */
 export const SPAWN: [number, number, number] = [0, 1.6, 11];
 
-const ACCELERATION = 46;
-const REVERSE_ACCELERATION = 38;
-const MAX_SPEED = 26;
-const TURN_RATE = 2.5;
-const GRIP = 0.86;
 
 /** Sideways speed, in units/sec, below which you are simply driving. */
 const DRIFT_ENTRY = 3.4;
@@ -47,7 +65,7 @@ const carPosition = new THREE.Vector3();
 const visualPosition = new THREE.Vector3();
 const visualQuaternion = new THREE.Quaternion();
 const visualForward = new THREE.Vector3();
-const camOffsetUp = new THREE.Vector3(0, 5.6, 0);
+const camOffsetUp = new THREE.Vector3(0, CAM_HEIGHT, 0);
 const camLookUp = new THREE.Vector3(0, 1.2, 0);
 
 type DriftState = { chain: number; held: number; lapsed: number };
@@ -123,6 +141,7 @@ function scoreAir(
   if (air.airborne && air.time >= MIN_AIRTIME) {
     const spins = Math.floor(air.spin / (Math.PI * 2));
     worldStore.landTrick(air.time, spins);
+    telemetry.boost = Math.min(BOOST_MAX, telemetry.boost + BOOST_PER_LANDING);
   }
   air.airborne = false;
   air.time = 0;
@@ -149,6 +168,7 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
   const smoothedLook = useRef(new THREE.Vector3());
   /** Live drift chain: points banked so far and how long since it lapsed. */
   const drift = useRef({ chain: 0, held: 0, lapsed: 0 });
+  const boosting = useRef(false);
 
   const reset = () => {
     const rb = body.current;
@@ -181,24 +201,39 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
     const alongRight = velocity.dot(right);
     const mass = rb.mass();
 
-    // Throttle / reverse.
-    const throttle = input.forward - input.backward;
-    if (throttle !== 0 && Math.abs(alongForward) < MAX_SPEED) {
-      const power = throttle > 0 ? ACCELERATION : -REVERSE_ACCELERATION;
+    // Down means brake while you are still rolling forwards, and only becomes
+    // reverse once you have nearly stopped. Going straight to reverse at speed
+    // is the single most common way an arcade car feels wrong.
+    const braking = input.backward > 0 && alongForward > REVERSE_THRESHOLD;
+    const throttle = braking ? 0 : input.forward - input.backward;
+
+    // Boost: burns the tank for a higher limiter and a much harder shove.
+    const canBoost = telemetry.boost > BOOST_MIN_TO_FIRE || (boosting.current && telemetry.boost > 0);
+    const wantsBoost = input.boost && throttle > 0 && canBoost;
+    boosting.current = wantsBoost;
+    if (wantsBoost) telemetry.boost = Math.max(0, telemetry.boost - BOOST_DRAIN * delta);
+    const limit = wantsBoost ? BOOST_SPEED : MAX_SPEED;
+
+    if (braking) {
+      impulse.copy(forward).multiplyScalar(-BRAKE_FORCE * mass * delta);
+      rb.applyImpulse(impulse, true);
+    } else if (throttle !== 0 && Math.abs(alongForward) < limit) {
+      const power =
+        throttle > 0 ? driveForce(alongForward, limit, wantsBoost) : -REVERSE_ACCELERATION;
       impulse.copy(forward).multiplyScalar(power * mass * delta);
       rb.applyImpulse(impulse, true);
     }
 
     // Lateral grip: bleed off sideways slide so the car carves instead of skating.
-    const gripLoss = input.brake ? GRIP * 0.25 : GRIP;
+    const gripLoss = input.brake ? GRIP * DRIFT_GRIP : GRIP;
     impulse.copy(right).multiplyScalar(-alongRight * gripLoss * mass);
     rb.applyImpulse(impulse, true);
 
     // Rolling resistance and handbrake. Braking *on* the throttle is a drift,
     // not a stop, so it barely scrubs speed — otherwise a slide dies before it
-    // has scored anything. Braking off the throttle still stops the car hard.
+    // has scored anything.
     if (throttle === 0 || input.brake) {
-      const drag = input.brake ? (throttle > 0 ? 0.75 : 3.2) : 0.9;
+      const drag = input.brake ? (throttle > 0 ? 0.7 : 2.4) : 0.85;
       impulse.copy(forward).multiplyScalar(-alongForward * drag * mass * delta);
       rb.applyImpulse(impulse, true);
     }
@@ -213,7 +248,7 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
     const direction = alongForward < -0.4 ? -1 : 1;
     // The handbrake sharpens the turn-in; without it you can break traction but
     // never rotate far enough to hold a slide.
-    const turnRate = TURN_RATE * (input.brake ? 1.4 : 1);
+    const turnRate = TURN_RATE * (input.brake ? DRIFT_TURN_GAIN : 1);
     // Steering drives yaw only. Pitch is left to the physics: zeroing it here
     // pins the car dead level, and a level car on a slope aims its throttle
     // horizontally into the hill instead of up it — which is why the climb to
@@ -239,6 +274,14 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
       speed: Math.abs(alongForward),
       delta,
     });
+
+    // Sliding fills the tank. That loop — drift to earn boost, boost to reach
+    // the next corner faster — is the whole reason to take the long way round.
+    if (telemetry.driftActive) {
+      const fill = Math.min(Math.abs(alongRight) / 9, 1) * BOOST_PER_DRIFT * delta;
+      telemetry.boost = Math.min(BOOST_MAX, telemetry.boost + fill);
+    }
+    telemetry.boosting = wantsBoost;
 
     // Grounded test by ray rather than by contact events: one short cast per
     // frame, and it works the same on the island, the ring and the circuit
@@ -290,10 +333,20 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
       visualForward.copy(forward);
     }
 
+    // Framing reacts to speed: the camera eases back and the lens widens, which
+    // is most of what "fast" actually looks like on screen.
+    const pace = Math.min(Math.abs(alongForward) / MAX_SPEED, 1.35);
     camTarget
       .copy(visualPosition)
-      .addScaledVector(visualForward, -11 - speedFactor * 3)
+      .addScaledVector(visualForward, -CAM_DISTANCE - pace * CAM_SPEED_PULLBACK)
       .add(camOffsetUp);
+    const camera = threeState.camera as THREE.PerspectiveCamera;
+    const targetFov =
+      cameraTuning.baseFov + pace * FOV_SPEED_GAIN + (wantsBoost ? FOV_BOOST_GAIN : 0);
+    if (Math.abs(camera.fov - targetFov) > 0.01) {
+      camera.fov = THREE.MathUtils.lerp(camera.fov, targetFov, 1 - Math.pow(0.02, delta));
+      camera.updateProjectionMatrix();
+    }
     // Where the camera *wants* to look. Smoothing this as well as the position
     // matters more than it sounds: an instant lookAt on a lagging position is
     // what makes a chase camera feel like it snaps through corners.
@@ -328,7 +381,11 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
       ccd
       name="player"
     >
-      <CuboidCollider args={[1.0, 0.5, 2.05]} density={2.6} />
+      {/* Low friction on purpose. Grip on the road is applied as an impulse in
+          the frame loop, so the collider's friction only ever decides what
+          happens when you touch a barrier — and high friction there means
+          scraping a wall stops you dead instead of sliding along it. */}
+      <CuboidCollider args={[1.0, 0.5, 2.05]} density={2.6} friction={0.15} />
       <group ref={chassis}>
         <VehicleShell rig={rig} paint={paint} design={garage.design} />
       </group>

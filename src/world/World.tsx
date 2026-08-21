@@ -8,12 +8,14 @@ import Island from "./Island";
 import Highways from "./Highways";
 import Circuit from "./Circuit";
 import Ores from "./Ores";
+import Effects from "./Effects";
 import District, { CrateStack, Ramp, TrophyPins } from "./District";
 import BlockText from "./BlockText";
 import Car from "./Car";
 import { PALETTE } from "./palette";
 import { PROFILE, UPCOMING, ZONES } from "./content";
 import { worldStore } from "./store";
+import { cameraTuning } from "./camera";
 
 export default function World() {
   const inside = useRef<string | null>(null);
@@ -99,6 +101,7 @@ export default function World() {
       </Physics>
 
       <Ores />
+      <Effects />
 
       <Beacons />
 
@@ -129,7 +132,10 @@ function AdaptiveFov() {
     const aspect = size.width / size.height;
     const targetHorizontal = THREE.MathUtils.degToRad(78);
     const vertical = 2 * Math.atan(Math.tan(targetHorizontal / 2) / Math.max(aspect, 0.3));
-    camera.fov = THREE.MathUtils.clamp(THREE.MathUtils.radToDeg(vertical), 45, 82);
+    // Published rather than applied: the driving loop widens this with speed,
+    // so it owns the actual fov from here on.
+    cameraTuning.baseFov = THREE.MathUtils.clamp(THREE.MathUtils.radToDeg(vertical), 45, 82);
+    camera.fov = cameraTuning.baseFov;
     camera.updateProjectionMatrix();
   }, [camera, size]);
 

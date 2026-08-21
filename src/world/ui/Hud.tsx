@@ -423,13 +423,25 @@ function Minimap() {
 function Speedo() {
   const value = useRef<HTMLSpanElement>(null);
   const bar = useRef<HTMLDivElement>(null);
+  const boostBar = useRef<HTMLDivElement>(null);
+  const boostWrap = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let frame = 0;
     const tick = () => {
       const kph = Math.round(telemetry.speed * 3.6);
       if (value.current) value.current.textContent = String(kph);
-      if (bar.current) bar.current.style.transform = `scaleX(${Math.min(kph / 110, 1)})`;
+      if (bar.current) bar.current.style.transform = `scaleX(${Math.min(kph / 160, 1)})`;
+      if (boostBar.current) {
+        boostBar.current.style.transform = `scaleX(${Math.min(telemetry.boost / 100, 1)})`;
+      }
+      if (boostWrap.current) {
+        // Ready to fire reads differently from still filling.
+        boostWrap.current.style.opacity = telemetry.boost > 1 ? "1" : "0.35";
+        boostWrap.current.style.boxShadow = telemetry.boosting
+          ? "0 0 18px -2px rgba(125,255,208,0.9)"
+          : "none";
+      }
       frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
@@ -452,6 +464,24 @@ function Speedo() {
           className="h-full w-full origin-left rounded-full bg-gradient-to-r from-[#5b4bff] to-[#ff4d9d]"
           style={{ transform: "scaleX(0)" }}
         />
+      </div>
+
+      <div ref={boostWrap} className="mt-2 rounded-md transition-opacity">
+        <div className="flex items-center justify-between">
+          <span className="font-mono text-[0.52rem] uppercase tracking-[0.28em] text-[#7dffd0]">
+            Boost
+          </span>
+          <span className="font-mono text-[0.52rem] uppercase tracking-widest text-[#6f68a0]">
+            Shift
+          </span>
+        </div>
+        <div className="mt-1 h-1.5 w-28 overflow-hidden rounded-full bg-white/10">
+          <div
+            ref={boostBar}
+            className="h-full w-full origin-left rounded-full bg-gradient-to-r from-[#7dffd0] to-[#31d8ff]"
+            style={{ transform: "scaleX(0)" }}
+          />
+        </div>
       </div>
     </div>
   );
