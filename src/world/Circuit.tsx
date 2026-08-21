@@ -2,7 +2,7 @@ import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { Instance, Instances } from "@react-three/drei";
-import { RigidBody, CuboidCollider } from "@react-three/rapier";
+import { RigidBody, ConvexHullCollider, CuboidCollider } from "@react-three/rapier";
 import { NEON } from "./palette";
 import { CIRCUIT_RAMP_ANGLE, CIRCUIT_RAMP_START, circuitAt, circuitPoint } from "./layout";
 import BlockText from "./BlockText";
@@ -130,7 +130,7 @@ export default function Circuit() {
   return (
     <group>
       <Deck frames={frames} />
-      <Surface segments={segments} />
+      <Surface frames={frames} />
       <Pylons frames={frames} />
       <ClimbRamp />
       <Kickers frames={frames} />
@@ -191,6 +191,35 @@ function sweep(profile: [number, number][], frames: Frame[], closed = true) {
 }
 
 const HALF = WIDTH / 2;
+
+/**
+ * A flat arrowhead pointing along the direction of travel (+z): head plus a
+ * short tail. Drawn as one shape rather than a pair of overlapping triangles,
+ * which is what the first attempt was — from the car it read as a white blob.
+ */
+const CHEVRON_GEOMETRY = (() => {
+  const geometry = new THREE.BufferGeometry();
+  const tri = (
+    ax: number, az: number,
+    bx: number, bz: number,
+    cx: number, cz: number,
+  ) => [ax, 0, az, bx, 0, bz, cx, 0, cz];
+  geometry.setAttribute(
+    "position",
+    new THREE.Float32BufferAttribute(
+      [
+        // Head
+        ...tri(-1.7, 0.1, 1.7, 0.1, 0, 2.4),
+        // Tail, as two triangles
+        ...tri(-0.7, -2.2, 0.7, -2.2, 0.7, 0.1),
+        ...tri(-0.7, -2.2, 0.7, 0.1, -0.7, 0.1),
+      ],
+      3,
+    ),
+  );
+  geometry.computeVertexNormals();
+  return geometry;
+})();
 
 function Deck({ frames }: { frames: Frame[] }) {
   const deck = useMemo(
@@ -280,10 +309,13 @@ function Markings({ frames }: { frames: Frame[] }) {
     return out;
   }, [frames]);
 
+  // Chevrons rather than dashes: a dash is just a dash, but an arrow tells you
+  // which way the lap runs, which matters the moment you arrive off the ramp
+  // facing across the track.
   const dashes = useMemo(() => {
     const out: { position: THREE.Vector3; quaternion: THREE.Quaternion }[] = [];
     const basis = new THREE.Matrix4();
-    for (let i = 0; i < frames.length - 1; i += 6) {
+    for (let i = 0; i < frames.length - 1; i += 5) {
       const f = frames[i];
       basis.makeBasis(f.right, f.up, f.forward);
       out.push({
@@ -310,12 +342,13 @@ function Markings({ frames }: { frames: Frame[] }) {
       </Instances>
 
       <Instances limit={dashes.length} range={dashes.length}>
-        <boxGeometry args={[0.5, 0.06, 4]} />
+        <primitive object={CHEVRON_GEOMETRY} attach="geometry" />
         <meshStandardMaterial
           color={NEON.lime}
           emissive={NEON.lime}
           emissiveIntensity={1.6}
           toneMapped={false}
+          side={THREE.DoubleSide}
         />
         {dashes.map((dash, i) => (
           <Instance key={i} position={dash.position} quaternion={dash.quaternion} />
@@ -326,29 +359,73 @@ function Markings({ frames }: { frames: Frame[] }) {
 }
 
 /**
- * Physics for the loop: one smooth trimesh for the road, cuboid barriers along
- * the edges. The barriers stay boxy on purpose — you only ever scrape them, so
- * they cost nothing to approximate, while the surface under the wheels is the
- * one thing that has to be seamless.
+ * Corner points of a slice of road between two frames, as a flat array for a
+ * convex hull. `l0`/`l1` are lateral offsets from the centreline, `v0`/`v1`
+ * heights above it, both in the banked frame.
  */
-function Surface({ segments }: { segments: Segment[] }) {
+function slab(a: Frame, b: Frame, l0: number, l1: number, v0: number, v1: number) {
+  const out = new Float32Array(24);
+  let i = 0;
+  for (const f of [a, b]) {
+    for (const [l, v] of [
+      [l0, v0],
+      [l1, v0],
+      [l1, v1],
+      [l0, v1],
+    ]) {
+      out[i++] = f.position.x + f.right.x * l + f.up.x * v;
+      out[i++] = f.position.y + f.right.y * l + f.up.y * v;
+      out[i++] = f.position.z + f.right.z * l + f.up.z * v;
+    }
+  }
+  return out;
+}
+
+/**
+ * Physics for the loop.
+ *
+ * Each piece is a convex hull built from the road's own cross-sections, and
+ * neighbouring pieces are built from the *same* cross-section — so their top
+ * faces meet exactly, edge to edge, all the way round.
+ *
+ * The previous version chained rotated boxes. A box only matches the road at
+ * its centre: where the track turns or banks, each box's end corners stand
+ * proud of the next box's surface, and every one of those corners is a lip to
+ * catch a wheel. That is what "stuck on random curves" was — no amount of
+ * extra segments fixes it, because halving the segment length also halves the
+ * spacing between lips.
+ */
+function Surface({ frames }: { frames: Frame[] }) {
+  const pieces = useMemo(() => {
+    const out: { road: Float32Array; walls: { side: number; points: Float32Array }[] }[] = [];
+    // Every other frame: the ends are still exact points on the curve, so the
+    // surface stays continuous — only the chord between them gets longer.
+    for (let i = 0; i + 2 < frames.length; i += 2) {
+      const a = frames[i];
+      const b = frames[i + 2];
+      const angle = (i / (frames.length - 1)) * Math.PI * 2;
+      const walls: { side: number; points: Float32Array }[] = [];
+      for (const side of [-1, 1]) {
+        if (side < 0 && inMergeGap(angle)) continue;
+        walls.push({
+          side,
+          points: slab(a, b, side * HALF - 0.4, side * HALF + 0.4, 1.9, 0),
+        });
+      }
+      // Deep below the surface so a hard landing has something to hit.
+      out.push({ road: slab(a, b, -HALF, HALF, 0, -3.5), walls });
+    }
+    return out;
+  }, [frames]);
+
   return (
     <RigidBody type="fixed" colliders={false} friction={1}>
-      {segments.map((s, i) => (
-        <group key={i} position={s.position} rotation={euler(s) as unknown as THREE.Euler}>
-          {/* Deep, and offset so its *top* face is the road surface. Depth is
-              what stops a car coming down off a jump at 40+ units/sec from
-              passing clean through between solver steps. */}
-          <CuboidCollider args={[WIDTH / 2, 1.6, s.length / 2]} position={[0, -1.6, 0]} />
-          {[-1, 1].map((side) =>
-            side < 0 && inMergeGap(s.angle) ? null : (
-              <CuboidCollider
-                key={side}
-                args={[0.36, 1.0, s.length / 2]}
-                position={[(side * WIDTH) / 2, 0.75, 0]}
-              />
-            ),
-          )}
+      {pieces.map((piece, i) => (
+        <group key={i}>
+          <ConvexHullCollider args={[piece.road]} />
+          {piece.walls.map((wall) => (
+            <ConvexHullCollider key={wall.side} args={[wall.points]} />
+          ))}
         </group>
       ))}
     </RigidBody>
@@ -356,37 +433,57 @@ function Surface({ segments }: { segments: Segment[] }) {
 }
 
 /**
- * Legs down to the sea with a lit head, instanced. These carry no real lights:
- * a point light per pylon is fifteen more lights for every lit material in the
- * scene to loop over, and the deck's own glow already reads at night.
+ * Roadside lamp posts on legs down to the sea, instanced.
+ *
+ * Offset clear of the barrier on purpose: the first version put them on the
+ * track's centreline, so every lamp head hung as a white diamond floating in
+ * the middle of the racing line, and every leg ran down through the road.
+ *
+ * They carry no real lights — a point light per post is a dozen more lights
+ * for every material in the scene to loop over, and the deck's own glow
+ * already reads at night.
  */
 function Pylons({ frames }: { frames: Frame[] }) {
-  const legs = useMemo(() => frames.filter((_, i) => i % 12 === 0), [frames]);
+  const legs = useMemo(
+    () =>
+      frames
+        .filter((_, i) => i % 12 === 0)
+        .map((f, i) => ({
+          // Alternate sides, so the loop is lit from both edges.
+          base: f.position.clone().addScaledVector(f.right, (i % 2 ? 1 : -1) * (HALF + 2.4)),
+          up: f.up.clone(),
+        })),
+    [frames],
+  );
 
   return (
     <group>
       <Instances limit={legs.length} range={legs.length}>
-        <cylinderGeometry args={[0.9, 1.8, 1, 6]} />
+        <cylinderGeometry args={[0.7, 1.5, 1, 6]} />
         <meshStandardMaterial color={NEON.deckEdge} roughness={0.6} flatShading />
-        {legs.map((f, i) => (
+        {legs.map((leg, i) => (
           <Instance
             key={i}
-            position={[f.position.x, f.position.y / 2 - 5, f.position.z]}
-            scale={[1, f.position.y + 10, 1]}
+            position={[leg.base.x, leg.base.y / 2 - 5, leg.base.z]}
+            scale={[1, leg.base.y + 10, 1]}
           />
         ))}
       </Instances>
 
+      {/* Lamp heads, up on a short mast beside the road rather than over it. */}
       <Instances limit={legs.length} range={legs.length}>
-        <octahedronGeometry args={[0.7, 0]} />
+        <octahedronGeometry args={[0.65, 0]} />
         <meshStandardMaterial
           color="#dfe9ff"
           emissive="#bcd4ff"
-          emissiveIntensity={2.6}
+          emissiveIntensity={2.4}
           toneMapped={false}
         />
-        {legs.map((f, i) => (
-          <Instance key={i} position={[f.position.x, f.position.y + 5.4, f.position.z]} />
+        {legs.map((leg, i) => (
+          <Instance
+            key={i}
+            position={[leg.base.x, leg.base.y + 4.2, leg.base.z]}
+          />
         ))}
       </Instances>
     </group>
@@ -396,11 +493,55 @@ function Pylons({ frames }: { frames: Frame[] }) {
 /**
  * Mini jump ramps, sitting on the deck out of the racing line.
  *
- * Each is a wedge you can take or leave: they sit against one barrier rather
- * than across the road, so a clean lap never has to touch one, and a session
- * spent chasing hangtime never has to care about the lap.
+ * These are wedges, not slabs: the leading edge lies flush with the road and
+ * the face climbs to a lip, so you ride up them. The first version was a
+ * tipped box, which meant its leading edge hung in the air with a corner
+ * buried in the deck — you hit it like a kerb instead of driving up it, and
+ * from behind it read as nothing at all.
  */
 const KICKER_ANGLES = [0.55, 1.75, 2.9, 4.1, 5.4];
+const KICKER_HALF_WIDTH = 2.9;
+const KICKER_LENGTH = 8;
+const KICKER_LIP = 1.5;
+
+/** Wedge geometry: flat on the deck at the back, rising to the lip in front. */
+const WEDGE_GEOMETRY = (() => {
+  const w = KICKER_HALF_WIDTH;
+  const l = KICKER_LENGTH;
+  const h = KICKER_LIP;
+  // Local space: -z is the approach (flush), +z is the lip.
+  const p = [
+    [-w, 0, -l / 2],
+    [w, 0, -l / 2],
+    [w, h, l / 2],
+    [-w, h, l / 2],
+    [-w, 0, l / 2],
+    [w, 0, l / 2],
+  ];
+  const tri = (a: number, b: number, c: number) => [...p[a], ...p[b], ...p[c]];
+  const verts = new Float32Array([
+    ...tri(0, 1, 2), ...tri(0, 2, 3), // ramp face
+    ...tri(4, 5, 1), ...tri(4, 1, 0), // underside
+    ...tri(5, 2, 1), // right flank
+    ...tri(4, 0, 3), ...tri(4, 3, 5), // left flank + back
+    ...tri(3, 2, 5), ...tri(3, 5, 4), // lip end
+  ]);
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute(verts, 3));
+  geometry.computeVertexNormals();
+  return geometry;
+})();
+
+const WEDGE_HULL = (() => {
+  const w = KICKER_HALF_WIDTH;
+  const l = KICKER_LENGTH;
+  const h = KICKER_LIP;
+  return new Float32Array([
+    -w, 0, -l / 2, w, 0, -l / 2,
+    -w, 0, l / 2, w, 0, l / 2,
+    -w, h, l / 2, w, h, l / 2,
+  ]);
+})();
 
 function Kickers({ frames }: { frames: Frame[] }) {
   const kickers = useMemo(
@@ -415,8 +556,8 @@ function Kickers({ frames }: { frames: Frame[] }) {
         return {
           position: f.position
             .clone()
-            .addScaledVector(f.right, side * (HALF - 3.4))
-            .addScaledVector(f.up, 0.05),
+            .addScaledVector(f.right, side * (HALF - KICKER_HALF_WIDTH - 0.8))
+            .addScaledVector(f.up, 0.02),
           quaternion: new THREE.Quaternion().setFromRotationMatrix(basis),
         };
       }),
@@ -427,34 +568,46 @@ function Kickers({ frames }: { frames: Frame[] }) {
     <group>
       {kickers.map((k, i) => (
         <group key={i} position={k.position} quaternion={k.quaternion}>
-          {/* A wedge: a thin slab tipped nose-up, so the leading edge is flush
-              with the deck and the trailing edge is the lip you launch off. */}
-          <group rotation={[-0.34, 0, 0]}>
-            <mesh castShadow receiveShadow position={[0, 0.42, 0]}>
-              <boxGeometry args={[5.6, 0.85, 7.4]} />
-              <meshStandardMaterial
-                color="#2b2f66"
-                emissive={NEON.lime}
-                emissiveIntensity={0.35}
-                roughness={0.5}
-                metalness={0.4}
-                flatShading
-              />
-            </mesh>
-            <RigidBody type="fixed" colliders={false} friction={1}>
-              <CuboidCollider args={[2.8, 0.42, 3.7]} position={[0, 0.42, 0]} />
-            </RigidBody>
-          </group>
-          {/* Chevron on the face so you can read the direction to hit it from. */}
-          <mesh position={[0, 0.95, 1.4]} rotation={[-0.34, 0, 0]}>
-            <boxGeometry args={[4.2, 0.08, 0.8]} />
+          <mesh geometry={WEDGE_GEOMETRY} castShadow receiveShadow>
+            <meshStandardMaterial
+              color="#33306e"
+              emissive={NEON.lime}
+              emissiveIntensity={0.28}
+              roughness={0.5}
+              metalness={0.35}
+              flatShading
+            />
+          </mesh>
+          {/* Lit lip and side stripes, so it reads as a ramp from a distance
+              and you can see which way to take it. */}
+          <mesh position={[0, KICKER_LIP + 0.06, KICKER_LENGTH / 2]}>
+            <boxGeometry args={[KICKER_HALF_WIDTH * 2, 0.14, 0.3]} />
             <meshStandardMaterial
               color={NEON.lime}
               emissive={NEON.lime}
-              emissiveIntensity={2.4}
+              emissiveIntensity={3}
               toneMapped={false}
             />
           </mesh>
+          {[-1, 1].map((side) => (
+            <mesh
+              key={side}
+              position={[side * KICKER_HALF_WIDTH, KICKER_LIP / 2 - 0.1, 0]}
+              rotation={[Math.atan2(KICKER_LIP, KICKER_LENGTH), 0, 0]}
+            >
+              <boxGeometry args={[0.12, 0.12, KICKER_LENGTH]} />
+              <meshStandardMaterial
+                color={NEON.amber}
+                emissive={NEON.amber}
+                emissiveIntensity={2.6}
+                toneMapped={false}
+              />
+            </mesh>
+          ))}
+
+          <RigidBody type="fixed" colliders={false} friction={1}>
+            <ConvexHullCollider args={[WEDGE_HULL]} />
+          </RigidBody>
         </group>
       ))}
     </group>
@@ -555,7 +708,11 @@ function ClimbRamp() {
   );
 }
 
-/** Start/finish arch, straddling the circuit's main straight. */
+/**
+ * Start/finish. Signed on both faces and flanked by a lit run-up, because the
+ * line is the same line either way round and the only thing that distinguishes
+ * a start from a finish is which way you are pointing when you cross it.
+ */
 function StartGate() {
   const p = circuitPoint(0);
   const ahead = circuitPoint(0.02);
@@ -564,36 +721,72 @@ function StartGate() {
   return (
     <group position={[p.x, p.y, p.z]} rotation={[0, yaw, 0]}>
       {[-1, 1].map((side) => (
-        <mesh key={side} position={[(side * WIDTH) / 2, 4.5, 0]} castShadow>
-          <boxGeometry args={[0.9, 9, 0.9]} />
+        <mesh key={side} position={[(side * WIDTH) / 2, 5, 0]} castShadow>
+          <boxGeometry args={[1.1, 10, 1.1]} />
           <meshStandardMaterial color={NEON.deckEdge} roughness={0.5} metalness={0.5} flatShading />
         </mesh>
       ))}
-      <mesh position={[0, 9, 0]}>
-        <boxGeometry args={[WIDTH + 1, 0.8, 0.8]} />
-        <meshStandardMaterial color={NEON.lime} emissive={NEON.lime} emissiveIntensity={1.1} />
-      </mesh>
-      {Array.from({ length: 10 }).map((_, i) => (
-        <mesh key={i} position={[-WIDTH / 2 + 0.75 + i * 1.5, 0.3, 0]}>
-          <boxGeometry args={[1.5, 0.08, 2.4]} />
-          <meshStandardMaterial
-            color={i % 2 ? "#f2f5ff" : "#141634"}
-            emissive={i % 2 ? "#f2f5ff" : "#000000"}
-            emissiveIntensity={i % 2 ? 0.5 : 0}
-          />
+      {/* Twin banner beams, lit like a start light. */}
+      {[8.4, 9.6].map((y) => (
+        <mesh key={y} position={[0, y, 0]}>
+          <boxGeometry args={[WIDTH + 1.6, 0.5, 0.6]} />
+          <meshStandardMaterial color={NEON.lime} emissive={NEON.lime} emissiveIntensity={1.2} />
         </mesh>
       ))}
+
+      {/* Chequers across the road. */}
+      {Array.from({ length: 10 }).map((_, i) =>
+        [0, 1].map((row) => (
+          <mesh
+            key={`${i}-${row}`}
+            position={[-WIDTH / 2 + 0.75 + i * 1.5, 0.3, row * 1.5 - 0.75]}
+          >
+            <boxGeometry args={[1.5, 0.08, 1.5]} />
+            <meshStandardMaterial
+              color={(i + row) % 2 ? "#f2f5ff" : "#141634"}
+              emissive={(i + row) % 2 ? "#f2f5ff" : "#000000"}
+              emissiveIntensity={(i + row) % 2 ? 0.5 : 0}
+            />
+          </mesh>
+        )),
+      )}
+
+      {/* Read as START on the way in, FINISH on the way out. */}
       <BlockText
-        position={[0, 11.5, 0]}
+        position={[0, 11.6, -0.6]}
         rotation={[0, Math.PI / 2, 0]}
-        size={0.42}
+        size={0.5}
         depth={0.4}
-        color="#dfe6ff"
+        color="#eaf3ff"
         emissive={NEON.lime}
-        emissiveIntensity={0.9}
+        emissiveIntensity={1.1}
       >
-        CIRCUIT
+        START
       </BlockText>
+      <BlockText
+        position={[0, 11.6, 0.6]}
+        rotation={[0, -Math.PI / 2, 0]}
+        size={0.5}
+        depth={0.4}
+        color="#eaf3ff"
+        emissive={NEON.amber}
+        emissiveIntensity={1.1}
+      >
+        FINISH
+      </BlockText>
+
+      {/* A big arrow on the road just past the line, so the direction of the
+          lap is unmistakable from the moment you cross it. */}
+      <mesh geometry={CHEVRON_GEOMETRY} position={[0, 0.34, 8]} scale={[2, 1, 2]}>
+        <meshStandardMaterial
+          color={NEON.lime}
+          emissive={NEON.lime}
+          emissiveIntensity={2.6}
+          toneMapped={false}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+      <pointLight position={[0, 7, 0]} color={NEON.lime} intensity={26} distance={38} decay={2} />
     </group>
   );
 }
@@ -640,6 +833,19 @@ function Gates() {
                 <meshStandardMaterial color={NEON.deckEdge} roughness={0.6} flatShading />
               </mesh>
             ))}
+            {/* Numbered, so a gate you have already taken is distinguishable
+                from the one you still owe. */}
+            <BlockText
+              position={[0, 5.4, 0]}
+              rotation={[0, Math.PI / 2, 0]}
+              size={0.34}
+              depth={0.3}
+              color="#f6e6ff"
+              emissive={NEON.magenta}
+              emissiveIntensity={1}
+            >
+              {String(i + 1)}
+            </BlockText>
           </group>
         );
       })}
