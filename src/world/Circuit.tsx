@@ -501,10 +501,15 @@ function Pylons({ frames }: { frames: Frame[] }) {
  */
 const KICKER_ANGLES = [0.55, 1.75, 2.9, 4.1, 5.4];
 const KICKER_HALF_WIDTH = 3.6;
-/** Long and tall: the old ones barely unweighted the car, let alone launched
- *  it. This gradient throws a car at speed well clear of the deck. */
-const KICKER_LENGTH = 13;
-const KICKER_LIP = 3.2;
+/**
+ * Sized from the flight time, not by eye. Gravity here is 30, so a shallow
+ * kicker barely unweights the car: at 13 long with a 3.2 lip the launch angle
+ * is under 14 degrees, which is 0.6s of air at boost speed — not even one
+ * rotation. At 14 by 7.2 the angle is 27 degrees, which is a second-plus in
+ * the air and room for a trick to land.
+ */
+const KICKER_LENGTH = 14;
+const KICKER_LIP = 7.2;
 
 /** Wedge geometry: flat on the deck at the back, rising to the lip in front. */
 const WEDGE_GEOMETRY = (() => {
@@ -558,7 +563,9 @@ function Kickers({ frames }: { frames: Frame[] }) {
         return {
           position: f.position
             .clone()
-            .addScaledVector(f.right, side * (HALF - KICKER_HALF_WIDTH - 0.8))
+            // Hard against the barrier: the inner half of the track stays a
+            // clean racing line for anyone who isn't jumping.
+            .addScaledVector(f.right, side * (HALF - KICKER_HALF_WIDTH))
             .addScaledVector(f.up, 0.02),
           quaternion: new THREE.Quaternion().setFromRotationMatrix(basis),
         };

@@ -16,8 +16,8 @@ import { telemetry, worldStore } from "./store";
  */
 
 /** Radians per second while a trick key is held. */
-const SPIN_RATE = 6.2;
-const FLIP_RATE = 5.4;
+const SPIN_RATE = 7.6;
+const FLIP_RATE = 6.8;
 /** How quickly the shell returns to level once the wheels are down. */
 const RECOVER = 0.0004;
 /** Within this of level counts as a clean landing. */
