@@ -10,6 +10,7 @@ import Circuit from "./Circuit";
 import Ores from "./Ores";
 import Effects from "./Effects";
 import Skyline from "./Skyline";
+import Ghost from "./Ghost";
 import District, { CrateStack, Ramp, TrophyPins } from "./District";
 import BlockText from "./BlockText";
 import Car from "./Car";
@@ -104,6 +105,7 @@ export default function World() {
 
       <Ores />
       <Effects />
+      <Ghost />
 
       <Beacons />
 

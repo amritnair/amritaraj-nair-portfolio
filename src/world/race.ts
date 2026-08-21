@@ -1,5 +1,6 @@
 import { circuitPoint } from "./layout";
 import { telemetry } from "./store";
+import { startRecording } from "./ghostLap";
 
 /**
  * Lap timing for the speedway.
@@ -78,6 +79,7 @@ export function updateRace(x: number, z: number, delta: number, sink: Sink) {
     state.checkpoint = 0;
     state.time = 0;
     sink.startLap();
+    startRecording();
     state.armed = false;
   }
 

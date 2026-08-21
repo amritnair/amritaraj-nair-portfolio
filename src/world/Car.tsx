@@ -34,6 +34,7 @@ import {
   driveForce,
 } from "./drive";
 import { cameraTuning } from "./camera";
+import { record } from "./ghostLap";
 
 /** Just inside the plaza ring, nose pointed at the title. */
 export const SPAWN: [number, number, number] = [0, 1.6, 11];
@@ -286,6 +287,11 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
       telemetry.boost = Math.min(BOOST_MAX, telemetry.boost + fill);
     }
     telemetry.boosting = wantsBoost;
+
+    // Lay down the ghost trace for this lap as we go.
+    if (telemetry.raceRunning) {
+      record(delta, carPosition.x, carPosition.y, carPosition.z, telemetry.heading);
+    }
 
     // An impact is a sudden loss of speed you did not ask for. Cheaper and
     // steadier than collision events, which also fire on every landing and on

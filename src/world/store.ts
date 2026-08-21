@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import { commitRecording } from "./ghostLap";
 import {
   DEFAULT_GARAGE,
   ORE_VALUE,
@@ -210,6 +211,7 @@ export const worldStore = {
       bestLap: result.best ? time : state.garage.bestLap,
     };
     saveGarage(garage);
+    commitRecording(result.best);
     set({ garage, lastLap: result });
   },
 

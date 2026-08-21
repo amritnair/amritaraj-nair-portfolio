@@ -4,6 +4,7 @@ import { PROFILE, ZONE_BY_ID, ZONES } from "../content";
 import { telemetry, useWorld, worldStore } from "../store";
 import { ORES } from "../Ores";
 import { rankFor } from "../garage";
+import { hasGhost } from "../ghostLap";
 
 const MAP = 132;
 const toMap = (v: number) => MAP / 2 + (v / ISLAND_RADIUS) * (MAP / 2 - 8);
@@ -251,6 +252,7 @@ function RaceTimer() {
   const wrap = useRef<HTMLDivElement>(null);
   const clock = useRef<HTMLSpanElement>(null);
   const gates = useRef<HTMLSpanElement>(null);
+  const ghost = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let frame = 0;
@@ -260,6 +262,9 @@ function RaceTimer() {
         if (clock.current) clock.current.textContent = telemetry.raceTime.toFixed(2);
         if (gates.current) {
           gates.current.textContent = `${telemetry.raceCheckpoint}/${telemetry.raceTotal}`;
+        }
+        if (ghost.current) {
+          ghost.current.textContent = hasGhost() ? "Racing your best lap" : "";
         }
       }
       frame = requestAnimationFrame(tick);
@@ -283,6 +288,7 @@ function RaceTimer() {
       <span ref={gates} className="ml-2 font-mono text-xs text-[#8f88bd]">
         0/3
       </span>
+      <div ref={ghost} className="font-mono text-[0.55rem] uppercase tracking-widest text-[#31d8ff]" />
     </div>
   );
 }
