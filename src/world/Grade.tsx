@@ -28,11 +28,15 @@ import { MAX_SPEED } from "./drive";
 export default function Grade() {
   const { bloom, aberration, vignette } = useMemo(() => {
     return {
+      // Threshold and radius are the two numbers keeping the frame crisp: at
+      // 0.75/default-radius a chrome paint plus the start gate's chequers put
+      // enough white on screen that the mipmap blur hazed the entire sky.
       bloom: new BloomEffect({
-        intensity: 1.15,
-        luminanceThreshold: 0.75,
-        luminanceSmoothing: 0.28,
+        intensity: 1.0,
+        luminanceThreshold: 0.82,
+        luminanceSmoothing: 0.2,
         mipmapBlur: true,
+        radius: 0.6,
         kernelSize: KernelSize.LARGE,
       }),
       aberration: new ChromaticAberrationEffect({

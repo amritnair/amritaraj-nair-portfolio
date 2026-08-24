@@ -49,6 +49,45 @@ function scatter(seed: number, count: number, pad: number, minR: number, maxR: n
   return out;
 }
 
+/**
+ * Baked ground texture: base colour, speckle noise, and a faint grid.
+ *
+ * A single flat colour across a 240-unit disc reads as untextured plastic; a
+ * canvas texture with subtle variation reads as terrain, and a whisper of grid
+ * ties the ground into the tron language the roads already speak. Baked once,
+ * repeats 10x, costs one texture.
+ */
+const GROUND_TEXTURE = (() => {
+  const size = 256;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d")!;
+  ctx.fillStyle = PALETTE.ground;
+  ctx.fillRect(0, 0, size, size);
+  // Speckle: slightly lighter and darker flecks.
+  for (let i = 0; i < 900; i += 1) {
+    const light = Math.random() > 0.5;
+    ctx.fillStyle = light ? "rgba(120,116,196,0.10)" : "rgba(10,8,32,0.14)";
+    ctx.fillRect(Math.random() * size, Math.random() * size, 1.6, 1.6);
+  }
+  // Grid lines, barely there.
+  ctx.strokeStyle = "rgba(140,130,240,0.10)";
+  ctx.lineWidth = 1;
+  for (const p of [0, size / 2]) {
+    ctx.beginPath();
+    ctx.moveTo(p, 0);
+    ctx.lineTo(p, size);
+    ctx.moveTo(0, p);
+    ctx.lineTo(size, p);
+    ctx.stroke();
+  }
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(10, 10);
+  return texture;
+})();
+
 export default function Island() {
   // Sparse enough to drive through — dense woods turn into an invisible wall.
   const trees = useMemo(() => scatter(7, 130, 5, 36, ISLAND_RADIUS - 8), []);
@@ -77,7 +116,7 @@ function Terrain() {
 
       <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <circleGeometry args={[ISLAND_RADIUS, 96]} />
-        <meshStandardMaterial color={PALETTE.ground} roughness={0.95} />
+        <meshStandardMaterial map={GROUND_TEXTURE} color="#cfcfe8" roughness={0.95} />
       </mesh>
       {/* Skirt so the island reads as a floating slab, not a decal. */}
       <mesh position={[0, -5, 0]}>

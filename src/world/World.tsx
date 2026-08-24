@@ -10,6 +10,7 @@ import Circuit from "./Circuit";
 import Ores from "./Ores";
 import Effects from "./Effects";
 import Skyline from "./Skyline";
+import Scenery from "./Scenery";
 import Ghost from "./Ghost";
 import Grade from "./Grade";
 import District, { CrateStack, Ramp, TrophyPins } from "./District";
@@ -77,6 +78,7 @@ export default function World() {
       <Environment preset="night" />
       <Moon />
       <Skyline />
+      <Scenery />
 
       {/* A fixed step keeps the solver stable and lets rapier interpolate the
           car's transform between steps — "vary" feeds every render hitch

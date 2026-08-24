@@ -38,6 +38,18 @@ export const BOOST_PER_ORE = 30;
 /** You cannot tap into an empty tank; it has to build past this to fire. */
 export const BOOST_MIN_TO_FIRE = 12;
 
+/**
+ * Aerodynamics. Downforce presses the car into the road as speed rises, so it
+ * stops skipping off every joint and crest; air alignment eases the body's
+ * pitch toward its flight path while airborne, so it arrives wheels-first
+ * instead of nose-first — the landing is smooth without taking the tumble
+ * away from the trick system, which spins the visual shell, not the body.
+ */
+export const DOWNFORCE = 16;
+export const AIR_ALIGN = 3.4;
+/** Steepest attitude the air alignment will aim for, in radians. */
+export const AIR_ALIGN_LIMIT = 0.55;
+
 /** Camera framing. Field of view widens with speed to sell it. */
 export const FOV_SPEED_GAIN = 13;
 export const FOV_BOOST_GAIN = 7;

@@ -31,6 +31,9 @@ import {
   REVERSE_ACCELERATION,
   REVERSE_THRESHOLD,
   TURN_RATE,
+  AIR_ALIGN,
+  AIR_ALIGN_LIMIT,
+  DOWNFORCE,
   driveForce,
 } from "./drive";
 import { cameraTuning } from "./camera";
@@ -378,6 +381,21 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
         { x: -pitch * RIGHTING_TORQUE - spinNow.x * 0.6, y: spinNow.y, z: spinNow.z },
         true,
       );
+    } else if (!grounded) {
+      // Ease the body's pitch toward its flight path, so it lands wheels-first
+      // instead of holding the launch attitude all the way down.
+      const glide = Math.asin(
+        THREE.MathUtils.clamp(linvel.y / Math.max(velocity.length(), 4), -1, 1),
+      );
+      const target = THREE.MathUtils.clamp(glide, -AIR_ALIGN_LIMIT, AIR_ALIGN_LIMIT);
+      const spinNow = rb.angvel();
+      rb.setAngvel({ x: (target - pitch) * AIR_ALIGN, y: spinNow.y, z: spinNow.z }, true);
+    }
+
+    // Downforce: grip and composure rise with speed instead of falling away.
+    if (grounded && Math.abs(alongForward) > 8) {
+      impulse.set(0, -DOWNFORCE * Math.min(Math.abs(alongForward) / MAX_SPEED, 1.4) * mass * delta, 0);
+      rb.applyImpulse(impulse, true);
     }
 
     if (grounded && Math.abs(pitch) > BEACHED_PITCH && Math.abs(alongForward) < 2) {

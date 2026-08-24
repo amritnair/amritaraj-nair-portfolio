@@ -103,7 +103,38 @@ function MuteButton() {
       }}
       className="pointer-events-auto fixed bottom-4 left-44 z-20 rounded-xl border border-white/10 bg-[#0d0a24]/70 px-3 py-2 font-mono text-[0.6rem] uppercase tracking-widest text-[#9d8bff] backdrop-blur transition hover:text-white"
     >
-      {isMuted() ? "🔇 M" : "🔊 M"}
+      <span className="flex items-center gap-1.5">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M4 9v6h4l5 4V5L8 9H4z"
+            fill="currentColor"
+          />
+          {isMuted() ? (
+            <path
+              d="M16 9l5 6M21 9l-5 6"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+          ) : (
+            <>
+              <path
+                d="M16 9.5a3.5 3.5 0 010 5"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+              <path
+                d="M18.5 7.5a7 7 0 010 9"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </>
+          )}
+        </svg>
+        M
+      </span>
     </button>
   );
 }

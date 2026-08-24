@@ -745,10 +745,12 @@ function StartGate() {
         </mesh>
       ))}
       {/* Twin banner beams, lit like a start light. */}
+      {/* Dim on purpose: these hang right over the camera when you sit on the
+          line, and at full glow they bloomed a mint wash across the whole sky. */}
       {[8.4, 9.6].map((y) => (
         <mesh key={y} position={[0, y, 0]}>
           <boxGeometry args={[WIDTH + 1.6, 0.5, 0.6]} />
-          <meshStandardMaterial color={NEON.lime} emissive={NEON.lime} emissiveIntensity={1.2} />
+          <meshStandardMaterial color={NEON.lime} emissive={NEON.lime} emissiveIntensity={0.55} />
         </mesh>
       ))}
 
