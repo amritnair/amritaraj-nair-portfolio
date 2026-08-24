@@ -32,13 +32,20 @@ import {
   REVERSE_THRESHOLD,
   TURN_RATE,
   AIR_ALIGN,
+  AIR_ALIGN_DELAY,
   AIR_ALIGN_LIMIT,
   DOWNFORCE,
+  FALL_GRAVITY,
+  KICKER_BOOST_FILL,
+  KICKER_RADIUS,
+  KICKER_SURGE,
+  LANDING_KEEP,
   driveForce,
 } from "./drive";
 import { cameraTuning } from "./camera";
 import { record } from "./ghostLap";
 import { createTrickState, updateTricks } from "./tricks";
+import { circuitPoint, kickerPads } from "./layout";
 
 /** Just inside the plaza ring, nose pointed at the title. */
 export const SPAWN: [number, number, number] = [0, 1.6, 11];
@@ -61,7 +68,10 @@ const RIGHTING_TORQUE = 7.5;
 /** Pitch past this, at a standstill, counts as beached rather than driving. */
 const BEACHED_PITCH = 0.55;
 /** Seconds beached before the car is simply set upright. */
-const BEACHED_GRACE = 1.1;
+const BEACHED_GRACE = 0.8;
+/** Pitch past this is wrong at ANY speed — a landing that went badly. */
+const WRECKED_PITCH = 1.0;
+const WRECKED_GRACE = 0.4;
 
 // Scratch objects — allocating inside useFrame would churn the GC every frame.
 const forward = new THREE.Vector3();
@@ -194,12 +204,29 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
   /** The group tricks rotate — separate from the chassis, which the physics
    *  lean already owns. */
   const shell = useRef<THREE.Group>(null);
+  const pads = useRef(kickerPads());
+  const wasAirborne = useRef(false);
 
+  /**
+   * Respawn is contextual: R from the circuit puts you back on the circuit's
+   * start line facing the right way, not all the way down on the island —
+   * losing a whole climb to one bad landing teaches people to stop jumping.
+   */
   const reset = () => {
     const rb = body.current;
     if (!rb) return;
-    rb.setTranslation({ x: SPAWN[0], y: SPAWN[1], z: SPAWN[2] }, true);
-    rb.setRotation({ x: 0, y: 0, z: 0, w: 1 }, true);
+    const onCircuit = Math.hypot(telemetry.x, telemetry.z) > 100 && telemetry.y > 15;
+    if (onCircuit) {
+      const at = circuitPoint(0.03);
+      const ahead = circuitPoint(0.1);
+      const heading = Math.atan2(ahead.x - at.x, ahead.z - at.z);
+      const q = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, heading + Math.PI, 0));
+      rb.setTranslation({ x: at.x, y: at.y + 1.2, z: at.z }, true);
+      rb.setRotation({ x: q.x, y: q.y, z: q.z, w: q.w }, true);
+    } else {
+      rb.setTranslation({ x: SPAWN[0], y: SPAWN[1], z: SPAWN[2] }, true);
+      rb.setRotation({ x: 0, y: 0, z: 0, w: 1 }, true);
+    }
     rb.setLinvel({ x: 0, y: 0, z: 0 }, true);
     rb.setAngvel({ x: 0, y: 0, z: 0 }, true);
   };
@@ -381,15 +408,55 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
         { x: -pitch * RIGHTING_TORQUE - spinNow.x * 0.6, y: spinNow.y, z: spinNow.z },
         true,
       );
-    } else if (!grounded) {
-      // Ease the body's pitch toward its flight path, so it lands wheels-first
-      // instead of holding the launch attitude all the way down.
+    } else if (!grounded && air.current.time > AIR_ALIGN_DELAY) {
+      /*
+       * Ease the body's pitch toward its flight path so it lands wheels-first —
+       * but not from the first frame, and not at full strength on the way up.
+       * The old version grabbed the body the instant it left the ground and
+       * pitched it over mid-arc, which felt like being tipped off a shelf; the
+       * launch attitude now survives the launch, and the correction firms up
+       * only once the car is falling and a landing actually approaches.
+       */
       const glide = Math.asin(
         THREE.MathUtils.clamp(linvel.y / Math.max(velocity.length(), 4), -1, 1),
       );
       const target = THREE.MathUtils.clamp(glide, -AIR_ALIGN_LIMIT, AIR_ALIGN_LIMIT);
+      const firmness = linvel.y < 0 ? 1 : 0.3;
       const spinNow = rb.angvel();
-      rb.setAngvel({ x: (target - pitch) * AIR_ALIGN, y: spinNow.y, z: spinNow.z }, true);
+      rb.setAngvel(
+        { x: (target - pitch) * AIR_ALIGN * firmness, y: spinNow.y, z: spinNow.z },
+        true,
+      );
+    }
+
+    // Fast fall: extra gravity once past the apex. Floaty up, punchy down.
+    if (!grounded && linvel.y < 0) {
+      impulse.set(0, -FALL_GRAVITY * mass * delta, 0);
+      rb.applyImpulse(impulse, true);
+    }
+
+    // Touchdown: swallow most of the vertical speed so the car plants instead
+    // of pogoing off its own landing.
+    if (grounded && wasAirborne.current && linvel.y < -6) {
+      rb.setLinvel({ x: linvel.x, y: linvel.y * LANDING_KEEP, z: linvel.z }, true);
+    }
+    wasAirborne.current = !grounded;
+
+    // Kicker pads: the ramp supplies the commitment. Driving onto one fires a
+    // surge past the limiter and pours into the boost tank, so a kicker taken
+    // at cruising speed still launches properly.
+    if (grounded) {
+      for (const pad of pads.current) {
+        const dx = carPosition.x - pad.x;
+        const dz = carPosition.z - pad.z;
+        if (dx * dx + dz * dz < KICKER_RADIUS * KICKER_RADIUS) {
+          const help = Math.max(0, 1 - Math.abs(alongForward) / BOOST_SPEED);
+          impulse.copy(forward).multiplyScalar(KICKER_SURGE * help * mass * delta);
+          rb.applyImpulse(impulse, true);
+          telemetry.boost = Math.min(BOOST_MAX, telemetry.boost + KICKER_BOOST_FILL * delta);
+          break;
+        }
+      }
     }
 
     // Downforce: grip and composure rise with speed instead of falling away.
@@ -398,9 +465,17 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
       rb.applyImpulse(impulse, true);
     }
 
-    if (grounded && Math.abs(pitch) > BEACHED_PITCH && Math.abs(alongForward) < 2) {
+    /*
+     * Landing reset. Two tiers: a landing that ends steeply pitched but still
+     * rolling gets stood up quickly; one that ends merely wedged at a
+     * standstill gets a slightly longer grace in case the player can drive
+     * out of it. Either way the car is never stuck for more than a moment.
+     */
+    const wrecked = grounded && Math.abs(pitch) > WRECKED_PITCH;
+    const stuck = grounded && Math.abs(pitch) > BEACHED_PITCH && Math.abs(alongForward) < 2;
+    if (wrecked || stuck) {
       beached.current += delta;
-      if (beached.current > BEACHED_GRACE) {
+      if (beached.current > (wrecked ? WRECKED_GRACE : BEACHED_GRACE)) {
         // Keep the heading, drop everything else.
         const heading = scratchEuler.current.setFromQuaternion(quaternion, "YXZ").y;
         const upright = new THREE.Quaternion().setFromEuler(

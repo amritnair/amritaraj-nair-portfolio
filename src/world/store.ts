@@ -103,6 +103,25 @@ export const telemetry = {
  */
 const lap = { style: 0, impacts: 0 };
 
+/**
+ * The combo. Every scoring act (drift bank, trick, ore) inside the window
+ * bumps the multiplier; letting it lapse resets it. This is what turns "do a
+ * drift, do a jump" into a run you're trying not to drop — the reason to link
+ * a drift into a kicker into an ore line instead of doing each in isolation.
+ */
+const combo = { count: 0, last: 0 };
+const COMBO_WINDOW = 7000;
+const COMBO_STEP = 0.25;
+const COMBO_CAP = 3;
+
+function comboMultiplier() {
+  const now = performance.now();
+  if (now - combo.last > COMBO_WINDOW) combo.count = 0;
+  combo.count += 1;
+  combo.last = now;
+  return Math.min(1 + (combo.count - 1) * COMBO_STEP, COMBO_CAP);
+}
+
 function set(patch: Partial<WorldState>) {
   let changed = false;
   for (const key of Object.keys(patch) as (keyof WorldState)[]) {
@@ -168,21 +187,27 @@ export const worldStore = {
    */
   landTrickRotation(whole: number, partial: number, clean: boolean) {
     const base = whole * 2200 + Math.round(partial * 700);
-    const reward = Math.round(base * (clean ? 1.5 : 1));
-    if (reward <= 0) return;
+    if (base <= 0) return;
+    const multiplier = comboMultiplier();
+    const reward = Math.round(base * (clean ? 1.5 : 1) * multiplier);
     if (telemetry.raceRunning) lap.style += reward;
     const garage = { ...state.garage, points: state.garage.points + reward };
     saveGarage(garage);
     set({
       garage,
-      awards: award(state.awards, clean ? "Stuck it" : "Trick", reward),
+      awards: award(
+        state.awards,
+        `${clean ? "Stuck it" : "Trick"}${multiplier > 1 ? ` x${multiplier.toFixed(2)}` : ""}`,
+        reward,
+      ),
     });
   },
 
   /** A landed jump: airtime plus whole rotations. */
   landTrick(air: number, spins: number) {
-    const reward = Math.round(air * 900 + spins * 1600);
-    if (reward <= 0) return;
+    const base = Math.round(air * 900 + spins * 1600);
+    if (base <= 0) return;
+    const reward = Math.round(base * comboMultiplier());
     if (telemetry.raceRunning) lap.style += reward;
     const garage = { ...state.garage, points: state.garage.points + reward };
     saveGarage(garage);
@@ -202,26 +227,36 @@ export const worldStore = {
   bankDrift(amount: number) {
     const points = Math.round(amount);
     if (points <= 0) return;
-    if (telemetry.raceRunning) lap.style += points;
+    const multiplier = comboMultiplier();
+    const paid = Math.round(points * multiplier);
+    if (telemetry.raceRunning) lap.style += paid;
     const garage = {
       ...state.garage,
-      points: state.garage.points + points,
-      best: Math.max(state.garage.best, points),
+      points: state.garage.points + paid,
+      best: Math.max(state.garage.best, paid),
     };
     saveGarage(garage);
-    set({ garage, awards: award(state.awards, "Drift", points) });
+    set({
+      garage,
+      awards: award(state.awards, multiplier > 1 ? `Drift x${multiplier.toFixed(2)}` : "Drift", paid),
+    });
   },
 
   /** Ore pickup. Idempotent: the collision test fires on every frame in range. */
   collectOre(id: string) {
     if (state.garage.ores.includes(id)) return;
+    const multiplier = comboMultiplier();
+    const paid = Math.round(ORE_VALUE * multiplier);
     const garage = {
       ...state.garage,
       ores: [...state.garage.ores, id],
-      points: state.garage.points + ORE_VALUE,
+      points: state.garage.points + paid,
     };
     saveGarage(garage);
-    set({ garage, awards: award(state.awards, "Ore", ORE_VALUE) });
+    set({
+      garage,
+      awards: award(state.awards, multiplier > 1 ? `Ore x${multiplier.toFixed(2)}` : "Ore", paid),
+    });
   },
 
   /** A completed lap: pays out itemised, and records a personal best. */

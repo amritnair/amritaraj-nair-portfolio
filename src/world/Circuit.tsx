@@ -8,6 +8,7 @@ import {
   CIRCUIT_RAMP_ANGLE,
   CIRCUIT_RAMP_START,
   ISLAND_RADIUS,
+  KICKER_ANGLES,
   circuitAt,
   circuitPoint,
 } from "./layout";
@@ -508,7 +509,7 @@ function Pylons({ frames }: { frames: Frame[] }) {
  * buried in the deck — you hit it like a kerb instead of driving up it, and
  * from behind it read as nothing at all.
  */
-const KICKER_ANGLES = [0.55, 1.75, 2.9, 4.1, 5.4];
+
 const KICKER_HALF_WIDTH = 3.6;
 /**
  * Sized from the flight time, not by eye. Gravity here is 30, so a shallow

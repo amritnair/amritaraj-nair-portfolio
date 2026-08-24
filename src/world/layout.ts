@@ -30,8 +30,8 @@ export const RAMP_CLEARANCE = 11;
  */
 const CIRCUIT_NODES: { radius: number; height: number }[] = [
   { radius: 152, height: 24 }, //   0° — start/finish straight
-  { radius: 172, height: 27 }, //  30°
-  { radius: 178, height: 32 }, //  60° — long outside sweeper, climbing
+  { radius: 184, height: 27 }, //  30° — pushed wide...
+  { radius: 156, height: 32 }, //  60° — ...then cut back: an S on the climb
   { radius: 150, height: 34 }, //  90° — highest point
   { radius: 124, height: 30 }, // 120° — tight tuck in over the island's edge
   { radius: 146, height: 26 }, // 150°
@@ -39,8 +39,8 @@ const CIRCUIT_NODES: { radius: number; height: number }[] = [
   { radius: 168, height: 22 }, // 210°
   { radius: 138, height: 25 }, // 240°
   { radius: 122, height: 28 }, // 270° — second tuck, tightest corner
-  { radius: 158, height: 32 }, // 300°
-  { radius: 164, height: 27 }, // 330°
+  { radius: 172, height: 32 }, // 300° — flicked out...
+  { radius: 140, height: 27 }, // 330° — ...and snapped back before the line
 ];
 
 /** The circuit's radius and height at any angle, interpolated smoothly. */
@@ -126,6 +126,30 @@ export const RING_LEG_POSITIONS: [number, number][] = (() => {
   }
   return out;
 })();
+
+/**
+ * Where the kicker ramps sit on the circuit, in world space. Mirrors the
+ * placement the Circuit component derives from its frames — same angles, same
+ * side alternation, same lateral offset — so the drive loop can treat them as
+ * boost pads without importing the render tree.
+ */
+export const KICKER_ANGLES = [0.55, 1.75, 2.9, 4.1, 5.4];
+
+export function kickerPads() {
+  return KICKER_ANGLES.map((angle, i) => {
+    const p = circuitPoint(angle);
+    const ahead = circuitPoint(angle + 0.01);
+    const fx = ahead.x - p.x;
+    const fz = ahead.z - p.z;
+    const len = Math.hypot(fx, fz) || 1;
+    // In-plane right of the direction of travel.
+    const rx = fz / len;
+    const rz = -fx / len;
+    const side = i % 2 ? 1 : -1;
+    const offset = 7.5 - 3.6; // deck half-width minus kicker half-width
+    return { x: p.x + rx * side * offset, z: p.z + rz * side * offset };
+  });
+}
 
 /** True when (x, z) is close enough to a ring leg to overlap it. */
 export function onRingLeg(x: number, z: number, pad = 0) {

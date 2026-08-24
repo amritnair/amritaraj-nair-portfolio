@@ -1,4 +1,5 @@
 import { useEffect, useReducer, useRef } from "react";
+import { Link } from "react-router-dom";
 import { ISLAND_RADIUS } from "../Island";
 import { PROFILE, ZONE_BY_ID, ZONES } from "../content";
 import { telemetry, useWorld, worldStore } from "../store";
@@ -19,7 +20,15 @@ export default function Hud() {
     <>
       <div className="pointer-events-none fixed inset-x-0 top-0 z-20 flex items-start justify-between p-4 sm:p-6">
         <div className="pointer-events-auto rounded-xl border border-white/10 bg-[#0d0a24]/70 px-4 py-2.5 backdrop-blur">
-          <div className="text-[0.78rem] font-bold tracking-wide text-white">{PROFILE.name}</div>
+          {/* The name is the way out: it leads to the conventional written
+              portfolio for anyone who wants the facts without the driving. */}
+          <Link
+            to="/projects"
+            className="text-[0.78rem] font-bold tracking-wide text-white underline-offset-4 transition hover:underline"
+            title="Open the written portfolio"
+          >
+            {PROFILE.name}
+          </Link>
           <div className="mt-0.5 flex gap-3 font-mono text-[0.6rem] uppercase tracking-widest text-[#9d8bff]">
             {PROFILE.links.slice(0, 3).map((link) => (
               <a

@@ -114,6 +114,50 @@ export const PAINTS: Paint[] = [
     cost: 14000,
   },
   {
+    id: "synthwave",
+    name: "Synthwave",
+    shell: "#2b0f45",
+    trim: "#ff2fd6",
+    accent: "#00e5ff",
+    metalness: 0.6,
+    roughness: 0.25,
+    glow: 1.5,
+    cost: 6500,
+  },
+  {
+    id: "glacier",
+    name: "Glacier",
+    shell: "#cfe6f5",
+    trim: "#6fd8ff",
+    accent: "#ffffff",
+    metalness: 0.35,
+    roughness: 0.15,
+    glow: 1.05,
+    cost: 7500,
+  },
+  {
+    id: "bloodmoon",
+    name: "Blood Moon",
+    shell: "#3a0708",
+    trim: "#ff2222",
+    accent: "#ff7a2f",
+    metalness: 0.7,
+    roughness: 0.3,
+    glow: 1.6,
+    cost: 11000,
+  },
+  {
+    id: "acid",
+    name: "Acid",
+    shell: "#0d0d0d",
+    trim: "#c8ff00",
+    accent: "#00ff88",
+    metalness: 0.45,
+    roughness: 0.4,
+    glow: 1.7,
+    cost: 17000,
+  },
+  {
     id: "void",
     name: "Void",
     shell: "#05060f",
@@ -142,6 +186,7 @@ export const WHEELS: Wheel[] = [
   { id: "split", name: "Split Six", cost: 0, spokes: 6, rim: 0.34 },
   { id: "turbine", name: "Turbine", cost: 3500, spokes: 10, rim: 0.36 },
   { id: "halo", name: "Halo", cost: 8000, spokes: 3, rim: 0.42 },
+  { id: "star", name: "Star", cost: 5200, spokes: 5, rim: 0.38 },
 ];
 
 /** Boost trail colours, chosen separately from paint. */
@@ -152,6 +197,8 @@ export const TRAILS: Trail[] = [
   { id: "sunburst", name: "Sunburst", color: "#ffb347", cost: 2000 },
   { id: "toxic", name: "Toxic", color: "#b6ff3b", cost: 5000 },
   { id: "violet", name: "Violet", color: "#c77bff", cost: 9000 },
+  { id: "inferno", name: "Inferno", color: "#ff6a00", cost: 3800 },
+  { id: "phantom", name: "Phantom", color: "#f2f5ff", cost: 12000 },
 ];
 
 /**

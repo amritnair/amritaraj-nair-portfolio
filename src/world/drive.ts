@@ -46,9 +46,37 @@ export const BOOST_MIN_TO_FIRE = 12;
  * away from the trick system, which spins the visual shell, not the body.
  */
 export const DOWNFORCE = 16;
-export const AIR_ALIGN = 3.4;
-/** Steepest attitude the air alignment will aim for, in radians. */
-export const AIR_ALIGN_LIMIT = 0.55;
+
+/**
+ * Air feel. The first pass set the body's pitch rate hard toward the glide
+ * slope from the instant the wheels left the ground, which nosed the car over
+ * mid-arc and made every jump feel like being tipped off a shelf. Alignment
+ * now waits out the launch, comes in gently, and only firms up on the way
+ * down; extra fall gravity after the apex is the classic arcade trick that
+ * makes a jump feel punchy instead of floaty.
+ */
+export const AIR_ALIGN = 2.2;
+export const AIR_ALIGN_LIMIT = 0.5;
+/** Seconds after takeoff before alignment starts steering the body. */
+export const AIR_ALIGN_DELAY = 0.22;
+/** Extra downward acceleration once past the apex. */
+export const FALL_GRAVITY = 14;
+/** Fraction of vertical speed kept on touchdown — kills the pogo bounce. */
+export const LANDING_KEEP = 0.35;
+
+/**
+ * Kicker pads. Driving onto a kicker face fires a surge and pours into the
+ * boost tank, so a ramp taken at cruising speed still launches properly.
+ *
+ * The surge fades out as your entry speed rises: a flat surge made every
+ * approach identical — 1.4s of air whether you crawled on or arrived on
+ * boost — which threw away the reason to carry speed into a ramp at all.
+ * Slow in gets a big shove, fast in gets almost nothing, and the airtime
+ * curve stays honest at roughly 1.0s / 1.1s / 1.2s.
+ */
+export const KICKER_SURGE = 85;
+export const KICKER_RADIUS = 7.5;
+export const KICKER_BOOST_FILL = 55;
 
 /** Camera framing. Field of view widens with speed to sell it. */
 export const FOV_SPEED_GAIN = 13;

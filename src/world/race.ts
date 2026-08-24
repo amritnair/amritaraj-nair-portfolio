@@ -11,8 +11,13 @@ import { startRecording } from "./ghostLap";
  * back and forth over the start gate.
  */
 
-/** Checkpoint angles around the circuit, in the direction of travel. */
-export const CHECKPOINTS = [Math.PI * 0.5, Math.PI, Math.PI * 1.5];
+/**
+ * Checkpoint angles around the circuit, in the direction of travel. Five gates
+ * rather than three: with the esses in the track, three let you cut a whole
+ * sector and still finish, and more gates also make the "which one is next"
+ * pulse worth watching.
+ */
+export const CHECKPOINTS = [0.4, 0.8, 1.2, 1.6].map((t) => Math.PI * t);
 
 /** A gate's position on the circuit, in world space. */
 export const gateAt = (angle: number) => circuitPoint(angle);
