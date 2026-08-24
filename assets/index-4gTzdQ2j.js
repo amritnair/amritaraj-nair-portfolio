@@ -24043,7 +24043,7 @@ Best regards`);
         ]
       })
     });
-  }, vz = b.lazy(() => VA(() => import("./GamePortfolio-BhhObVT5.js").then(async (m) => {
+  }, vz = b.lazy(() => VA(() => import("./GamePortfolio-DWX2y8rr.js").then(async (m) => {
     await m.__tla;
     return m;
   }).then((t) => t.aX), [])), bz = new dD(), xz = () => w.jsx("div", {
