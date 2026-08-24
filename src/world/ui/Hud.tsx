@@ -1,10 +1,11 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useReducer, useRef } from "react";
 import { ISLAND_RADIUS } from "../Island";
 import { PROFILE, ZONE_BY_ID, ZONES } from "../content";
 import { telemetry, useWorld, worldStore } from "../store";
 import { ORES } from "../Ores";
 import { rankFor } from "../garage";
 import { hasGhost } from "../ghostLap";
+import { isMuted, toggleMute } from "../audio";
 
 const MAP = 132;
 const toMap = (v: number) => MAP / 2 + (v / ISLAND_RADIUS) * (MAP / 2 - 8);
@@ -47,6 +48,7 @@ export default function Hud() {
 
       <Minimap />
       <Speedo />
+      <MuteButton />
       <DriftMeter />
       <GarageButton />
       <RaceTimer />
@@ -72,6 +74,37 @@ export default function Hud() {
         </div>
       )}
     </>
+  );
+}
+
+/** Sound on/off, remembered between sessions. M also toggles it. */
+function MuteButton() {
+  const [, force] = useReducer((n: number) => n + 1, 0);
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)) return;
+      if (event.code === "KeyM") {
+        toggleMute();
+        force();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        toggleMute();
+        force();
+      }}
+      className="pointer-events-auto fixed bottom-4 left-44 z-20 rounded-xl border border-white/10 bg-[#0d0a24]/70 px-3 py-2 font-mono text-[0.6rem] uppercase tracking-widest text-[#9d8bff] backdrop-blur transition hover:text-white"
+    >
+      {isMuted() ? "🔇 M" : "🔊 M"}
+    </button>
   );
 }
 

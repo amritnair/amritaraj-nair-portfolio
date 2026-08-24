@@ -2,6 +2,7 @@ import { useProgress } from "@react-three/drei";
 import { Link } from "react-router-dom";
 import { PROFILE } from "../content";
 import { worldStore } from "../store";
+import { startAudio } from "../audio";
 
 const withBase = (href: string) =>
   href.startsWith("http") || href.startsWith("mailto:")
@@ -20,6 +21,8 @@ export default function Intro() {
   // a dock eating the bottom crops the districts. Offer fullscreen on the way
   // in rather than letting people discover the problem mid-drive.
   const play = async (fullscreen: boolean) => {
+    // The click is the user gesture browsers require before any audio.
+    startAudio();
     if (fullscreen && !document.fullscreenElement) {
       // A refusal here is not worth blocking on — start the world either way.
       await document.documentElement.requestFullscreen?.().catch(() => {});
