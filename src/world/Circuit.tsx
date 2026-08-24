@@ -38,7 +38,7 @@ const SEGMENTS = 180;
  * tried, but the car fell straight through it even at rest, so this stays
  * until that can be worked out properly.
  */
-const COLLIDER_SEGMENTS = 168;
+const COLLIDER_SEGMENTS = 180;
 /** Roll per unit of curvature, capped so the banking never becomes a wall. */
 const BANK_GAIN = 5.2;
 const BANK_LIMIT = 0.34;
@@ -405,19 +405,30 @@ function slab(a: Frame, b: Frame, l0: number, l1: number, v0: number, v1: number
 function Surface({ frames }: { frames: Frame[] }) {
   const pieces = useMemo(() => {
     const out: { road: Float32Array; walls: { side: number; points: Float32Array }[] }[] = [];
-    // Every other frame: the ends are still exact points on the curve, so the
-    // surface stays continuous — only the chord between them gets longer.
-    for (let i = 0; i + 2 < frames.length; i += 2) {
+    /*
+     * One hull per frame. The ends are exact points on the curve either way,
+     * so the surface is continuous at any density — but each hull is a flat
+     * chord between its ends, and the curve bulges above that chord in
+     * between. At every other frame the chords span 11 units and that bulge
+     * is over 10cm on the tight corners: a dip you feel at speed. Halving the
+     * chord quarters the sag.
+     */
+    for (let i = 0; i + 1 < frames.length; i += 1) {
       const a = frames[i];
-      const b = frames[i + 2];
+      const b = frames[i + 1];
       const angle = (i / (frames.length - 1)) * Math.PI * 2;
+      // Barriers stay coarse — you only ever scrape them, so a chord's worth
+      // of sag on a wall is invisible and they are half the collider count.
       const walls: { side: number; points: Float32Array }[] = [];
-      for (const side of [-1, 1]) {
-        if (side < 0 && inMergeGap(angle)) continue;
-        walls.push({
-          side,
-          points: slab(a, b, side * HALF - 0.4, side * HALF + 0.4, 1.9, 0),
-        });
+      if (i % 3 === 0 && i + 3 < frames.length) {
+        const far = frames[i + 3];
+        for (const side of [-1, 1]) {
+          if (side < 0 && inMergeGap(angle)) continue;
+          walls.push({
+            side,
+            points: slab(a, far, side * HALF - 0.4, side * HALF + 0.4, 1.9, 0),
+          });
+        }
       }
       // Deep below the surface so a hard landing has something to hit.
       out.push({ road: slab(a, b, -HALF, HALF, 0, -3.5), walls });

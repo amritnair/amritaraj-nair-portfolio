@@ -253,6 +253,24 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
     const alongRight = velocity.dot(right);
     const mass = rb.mass();
 
+    const translation = rb.translation();
+    carPosition.set(translation.x, translation.y, translation.z);
+
+    /*
+     * Grounded test, hoisted above everything that pushes the car.
+     *
+     * Wheels drive; air does not. Leaving the throttle live in the air meant
+     * you could hold W off a ramp and fly, which trivialised every jump and
+     * let you cross the map without touching the road. One short ray, and
+     * every force below is gated on it.
+     */
+    const ray = new rapier.Ray(
+      { x: carPosition.x, y: carPosition.y, z: carPosition.z },
+      { x: 0, y: -1, z: 0 },
+    );
+    const hit = world.castRay(ray, GROUND_REACH, true, undefined, undefined, undefined, rb);
+    const grounded = hit !== null;
+
     // Down means brake while you are still rolling forwards, and only becomes
     // reverse once you have nearly stopped. Going straight to reverse at speed
     // is the single most common way an arcade car feels wrong.
@@ -261,12 +279,14 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
 
     // Boost: burns the tank for a higher limiter and a much harder shove.
     const canBoost = telemetry.boost > BOOST_MIN_TO_FIRE || (boosting.current && telemetry.boost > 0);
-    const wantsBoost = input.boost && throttle > 0 && canBoost;
+    const wantsBoost = grounded && input.boost && throttle > 0 && canBoost;
     boosting.current = wantsBoost;
     if (wantsBoost) telemetry.boost = Math.max(0, telemetry.boost - BOOST_DRAIN * delta);
     const limit = wantsBoost ? BOOST_SPEED : MAX_SPEED;
 
-    if (braking) {
+    if (!grounded) {
+      // Airborne: no drive, no brakes, no grip. Momentum and gravity only.
+    } else if (braking) {
       impulse.copy(forward).multiplyScalar(-BRAKE_FORCE * mass * delta);
       rb.applyImpulse(impulse, true);
     } else if (throttle !== 0 && Math.abs(alongForward) < limit) {
@@ -289,15 +309,18 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
       rb.applyImpulse(impulse, true);
     }
 
-    // Lateral grip: bleed off sideways slide so the car carves instead of skating.
-    const gripLoss = input.brake ? GRIP * DRIFT_GRIP : GRIP;
-    impulse.copy(right).multiplyScalar(-alongRight * gripLoss * mass);
-    rb.applyImpulse(impulse, true);
+    // Lateral grip: bleed off sideways slide so the car carves instead of
+    // skating. Tyres only grip what they are touching.
+    if (grounded) {
+      const gripLoss = input.brake ? GRIP * DRIFT_GRIP : GRIP;
+      impulse.copy(right).multiplyScalar(-alongRight * gripLoss * mass);
+      rb.applyImpulse(impulse, true);
+    }
 
     // Rolling resistance and handbrake. Braking *on* the throttle is a drift,
     // not a stop, so it barely scrubs speed — otherwise a slide dies before it
     // has scored anything.
-    if (throttle === 0 || input.brake) {
+    if (grounded && (throttle === 0 || input.brake)) {
       const drag = input.brake ? (throttle > 0 ? 0.7 : 2.4) : 0.85;
       impulse.copy(forward).multiplyScalar(-alongForward * drag * mass * delta);
       rb.applyImpulse(impulse, true);
@@ -319,12 +342,11 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
     // horizontally into the hill instead of up it — which is why the climb to
     // the circuit could be ground at but never completed.
     const spin = rb.angvel();
-    rb.setAngvel({ x: spin.x, y: steer * turnRate * steerFactor * direction, z: spin.z }, true);
+    if (grounded) {
+      rb.setAngvel({ x: spin.x, y: steer * turnRate * steerFactor * direction, z: spin.z }, true);
+    }
 
-    const translation = rb.translation();
-    carPosition.set(translation.x, translation.y, translation.z);
-
-    if (input.reset || translation.y < -14) reset();
+    if (input.reset || carPosition.y < -14) reset();
 
     telemetry.x = carPosition.x;
     telemetry.y = carPosition.y;
@@ -364,15 +386,6 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
     lastSpeed.current = Math.abs(alongForward);
     shake.current = Math.max(0, shake.current - delta * 2.6);
 
-    // Grounded test by ray rather than by contact events: one short cast per
-    // frame, and it works the same on the island, the ring and the circuit
-    // without any of them having to know about it.
-    const ray = new rapier.Ray(
-      { x: carPosition.x, y: carPosition.y, z: carPosition.z },
-      { x: 0, y: -1, z: 0 },
-    );
-    const hit = world.castRay(ray, GROUND_REACH, true, undefined, undefined, undefined, rb);
-    const grounded = hit !== null;
     updateTricks(
       tricks.current,
       shell.current,

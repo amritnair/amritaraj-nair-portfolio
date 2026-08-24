@@ -29,35 +29,57 @@ export const RAMP_CLEARANCE = 11;
  * tucks, a climb and a dive.
  */
 const CIRCUIT_NODES: { radius: number; height: number }[] = [
-  { radius: 152, height: 24 }, //   0° — start/finish straight
-  { radius: 184, height: 27 }, //  30° — pushed wide...
-  { radius: 156, height: 32 }, //  60° — ...then cut back: an S on the climb
-  { radius: 150, height: 34 }, //  90° — highest point
-  { radius: 124, height: 30 }, // 120° — tight tuck in over the island's edge
-  { radius: 146, height: 26 }, // 150°
-  { radius: 176, height: 22 }, // 180° — lowest, out west
-  { radius: 168, height: 22 }, // 210°
-  { radius: 138, height: 25 }, // 240°
-  { radius: 122, height: 28 }, // 270° — second tuck, tightest corner
-  { radius: 172, height: 32 }, // 300° — flicked out...
-  { radius: 140, height: 27 }, // 330° — ...and snapped back before the line
+  { radius: 154, height: 24 }, //   0° — start/finish straight
+  { radius: 174, height: 26 }, //  30° — opens out...
+  { radius: 162, height: 30 }, //  60° — ...and tightens: a long ess on the climb
+  { radius: 150, height: 33 }, //  90° — highest point
+  { radius: 132, height: 30 }, // 120° — tuck in over the island's edge
+  { radius: 148, height: 26 }, // 150°
+  { radius: 170, height: 22 }, // 180° — lowest, out west
+  { radius: 166, height: 22 }, // 210° — long flat-out sweeper
+  { radius: 142, height: 25 }, // 240°
+  { radius: 130, height: 28 }, // 270° — tightest corner, where the climb lands
+  { radius: 164, height: 31 }, // 300° — flicks out...
+  { radius: 148, height: 27 }, // 330° — ...and settles before the line
 ];
 
-/** The circuit's radius and height at any angle, interpolated smoothly. */
+/** Catmull-Rom through four control values. */
+function spline(p0: number, p1: number, p2: number, p3: number, t: number) {
+  const t2 = t * t;
+  const t3 = t2 * t;
+  return (
+    0.5 *
+    (2 * p1 +
+      (p2 - p0) * t +
+      (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 +
+      (-p0 + 3 * p1 - 3 * p2 + p3) * t3)
+  );
+}
+
+/**
+ * The circuit's radius and height at any angle.
+ *
+ * Catmull-Rom rather than an eased blend between neighbours. Smoothstep looks
+ * smooth on paper but its derivative is *zero at both ends*, so the radius
+ * stalled at every node and then rushed to the next one — a pump you feel
+ * through the wheel every 30 degrees, which is what made the track ride
+ * bumpy however fine the collision mesh got. A spline is continuous in the
+ * first derivative across nodes, so the curvature flows.
+ */
 export function circuitAt(angle: number) {
   const count = CIRCUIT_NODES.length;
   const span = (Math.PI * 2) / count;
   const raw = ((angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
   const index = Math.floor(raw / span);
   const t = raw / span - index;
-  // Smoothstep between nodes: linear interpolation leaves a crease at every
-  // node, which the car feels as a bump every 30°.
-  const ease = t * t * (3 - 2 * t);
-  const a = CIRCUIT_NODES[index % count];
-  const b = CIRCUIT_NODES[(index + 1) % count];
+  const at = (offset: number) => CIRCUIT_NODES[(index + offset + count * 2) % count];
+  const p0 = at(-1);
+  const p1 = at(0);
+  const p2 = at(1);
+  const p3 = at(2);
   return {
-    radius: a.radius + (b.radius - a.radius) * ease,
-    height: a.height + (b.height - a.height) * ease,
+    radius: spline(p0.radius, p1.radius, p2.radius, p3.radius, t),
+    height: spline(p0.height, p1.height, p2.height, p3.height, t),
   };
 }
 
