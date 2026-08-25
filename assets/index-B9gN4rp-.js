@@ -23852,7 +23852,7 @@ Best regards`);
         ]
       })
     });
-  }, aj = x.lazy(() => RA(() => import("./GamePortfolio-1YcO3-1q.js").then(async (m) => {
+  }, aj = x.lazy(() => RA(() => import("./GamePortfolio-1J2GY-XO.js").then(async (m) => {
     await m.__tla;
     return m;
   }).then((t) => t.aX), [])), sj = new aD(), oj = () => w.jsx("div", {
