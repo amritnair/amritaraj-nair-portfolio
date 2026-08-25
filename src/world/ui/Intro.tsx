@@ -50,7 +50,7 @@ export default function Intro() {
           {PROFILE.tagline}
         </p>
 
-        <div className="mx-auto mt-6 grid max-w-lg grid-cols-3 gap-2 text-left font-mono text-[0.7rem] text-[#8f88bd] sm:grid-cols-6">
+        <div className="mx-auto mt-6 grid max-w-lg grid-cols-4 gap-2 text-left font-mono text-[0.68rem] text-[#8f88bd] sm:grid-cols-7">
           {[
             ["W / ↑", "Drive"],
             ["S / ↓", "Reverse"],
@@ -58,6 +58,7 @@ export default function Intro() {
             ["SPACE", "Drift"],
             ["SHIFT", "Boost"],
             ["Q E F C", "Tricks"],
+            ["X", "Flip over"],
           ].map(([key, label]) => (
             <div key={key} className="rounded-md border border-white/10 bg-white/[0.04] px-2 py-2">
               <div className="text-[#e4dfff]">{key}</div>

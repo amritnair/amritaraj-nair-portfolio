@@ -94,6 +94,12 @@ export const telemetry = {
   trickSpins: 0,
   trickFlips: 0,
   trickAngle: 0,
+  /**
+   * How upright the car is: the dot of its own up vector with world up. 1 is
+   * level, 0 is on its side, -1 is roof-down. This is the only honest measure
+   * — pitch alone says nothing about a car lying on its side.
+   */
+  upright: 1,
 };
 
 /**

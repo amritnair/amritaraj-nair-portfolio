@@ -66,6 +66,7 @@ export default function Hud() {
       <TrickBanner />
       <CircuitPrompt />
       <AwardToasts />
+      <FlipPrompt />
 
       {activeZone && !openZone && (
         <button
@@ -83,6 +84,47 @@ export default function Hud() {
         </div>
       )}
     </>
+  );
+}
+
+/**
+ * Shown whenever the car is not on its wheels. It is also the only place the
+ * game tells you that a jump which ends upside down pays nothing, which is
+ * the moment that lesson actually lands.
+ */
+function FlipPrompt() {
+  const wrap = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let frame = 0;
+    const tick = () => {
+      if (wrap.current) {
+        const tipped = telemetry.upright < 0.55;
+        wrap.current.style.opacity = tipped ? "1" : "0";
+        wrap.current.style.transform = `translate(-50%, ${tipped ? "0" : "0.5rem"})`;
+      }
+      frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  return (
+    <div
+      ref={wrap}
+      className="pointer-events-none fixed left-1/2 top-[30%] z-30 w-max -translate-x-1/2 rounded-2xl border border-[#ff5f70]/60 bg-[#0d0a24]/90 px-7 py-4 text-center backdrop-blur transition-all duration-200"
+      style={{ opacity: 0 }}
+    >
+      <div className="font-mono text-[0.58rem] uppercase tracking-[0.34em] text-[#ff5f70]">
+        Wheels up
+      </div>
+      <div className="mt-1.5 text-lg font-black text-white">
+        Press <span className="text-[#ff5f70]">X</span> to flip
+      </div>
+      <div className="mt-1 font-mono text-[0.56rem] uppercase tracking-widest text-[#8f88bd]">
+        Tricks only pay if you land on your wheels
+      </div>
+    </div>
   );
 }
 

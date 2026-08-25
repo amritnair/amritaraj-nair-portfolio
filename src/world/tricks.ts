@@ -52,6 +52,7 @@ export function updateTricks(
   input: TrickInput,
   airborne: boolean,
   delta: number,
+  upright = true,
 ) {
   if (!shell) return;
 
@@ -81,9 +82,13 @@ export function updateTricks(
     const partial = (spins % 1) + (flips % 1);
 
     const offLevel = Math.abs(wrap(shell.rotation.y)) + Math.abs(wrap(shell.rotation.x));
-    const clean = offLevel < CLEAN_LANDING;
+    // Clean needs both: the shell squared up *and* the car on its wheels.
+    const clean = offLevel < CLEAN_LANDING && upright;
 
-    if (whole > 0 || partial > 0.25) {
+    // Nothing pays if the car is not on its wheels. The rotation still resets
+    // below, so a botched landing costs the trick rather than sticking it to
+    // the next jump.
+    if (upright && (whole > 0 || partial > 0.25)) {
       worldStore.landTrickRotation(whole, partial, clean);
     }
 

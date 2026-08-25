@@ -69,9 +69,15 @@ const RIGHTING_TORQUE = 7.5;
 const BEACHED_PITCH = 0.55;
 /** Seconds beached before the car is simply set upright. */
 const BEACHED_GRACE = 0.8;
-/** Pitch past this is wrong at ANY speed — a landing that went badly. */
-const WRECKED_PITCH = 1.0;
-const WRECKED_GRACE = 0.4;
+/**
+ * Uprightness thresholds, as the dot of the car's own up vector with world up.
+ * 1 is level, 0 is on its side, -1 is roof-down. Pitch alone was never enough:
+ * a car lying on its side has a perfectly ordinary pitch angle.
+ */
+const UPRIGHT_OK = 0.55;
+const WRECKED_GRACE = 0.5;
+/** Seconds tipped over before the car rights itself without being asked. */
+const AUTO_RIGHT = 2.5;
 
 // Scratch objects — allocating inside useFrame would churn the GC every frame.
 const forward = new THREE.Vector3();
@@ -89,6 +95,7 @@ const visualQuaternion = new THREE.Quaternion();
 const visualForward = new THREE.Vector3();
 const camOffsetUp = new THREE.Vector3(0, CAM_HEIGHT, 0);
 const camLookUp = new THREE.Vector3(0, 1.2, 0);
+const carUp = new THREE.Vector3();
 
 type DriftState = { chain: number; held: number; lapsed: number };
 
@@ -145,7 +152,12 @@ type AirState = { airborne: boolean; time: number; spin: number; lastYaw: number
  */
 function scoreAir(
   air: AirState,
-  { grounded, yaw, delta }: { grounded: boolean; yaw: number; delta: number },
+  {
+    grounded,
+    yaw,
+    delta,
+    upright,
+  }: { grounded: boolean; yaw: number; delta: number; upright: boolean },
 ) {
   if (!grounded) {
     let turn = yaw - air.lastYaw;
@@ -160,7 +172,10 @@ function scoreAir(
     return;
   }
 
-  if (air.airborne && air.time >= MIN_AIRTIME) {
+  // Land it on your wheels or it did not happen. Paying out for a jump that
+  // ends on the roof makes the landing — the only part that takes any skill —
+  // worth nothing.
+  if (air.airborne && air.time >= MIN_AIRTIME && upright) {
     const spins = Math.floor(air.spin / (Math.PI * 2));
     worldStore.landTrick(air.time, spins);
     telemetry.boost = Math.min(BOOST_MAX, telemetry.boost + BOOST_PER_LANDING);
@@ -270,6 +285,16 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
     );
     const hit = world.castRay(ray, GROUND_REACH, true, undefined, undefined, undefined, rb);
     const grounded = hit !== null;
+
+    /*
+     * Uprightness, measured as the car's own up vector against world up: 1 is
+     * level, 0 is on its side, -1 is roof-down. Pitch alone was never enough —
+     * a car lying on its side has a perfectly ordinary pitch angle — and the
+     * scorers need this before they decide whether a landing counted.
+     */
+    carUp.set(0, 1, 0).applyQuaternion(quaternion);
+    telemetry.upright = carUp.y;
+    const isUpright = carUp.y > UPRIGHT_OK;
 
     // Down means brake while you are still rolling forwards, and only becomes
     // reverse once you have nearly stopped. Going straight to reverse at speed
@@ -397,11 +422,13 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
       },
       !grounded,
       delta,
+      isUpright,
     );
     scoreAir(air.current, {
       grounded,
       yaw: telemetry.heading,
       delta,
+      upright: isUpright,
     });
 
     /*
@@ -479,35 +506,36 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
     }
 
     /*
-     * Landing reset. Two tiers: a landing that ends steeply pitched but still
-     * rolling gets stood up quickly; one that ends merely wedged at a
-     * standstill gets a slightly longer grace in case the player can drive
-     * out of it. Either way the car is never stuck for more than a moment.
+     * Recovery. X rights the car on demand; if you ignore it, it rights itself
+     * after a couple of seconds. Both keep your heading and drop you a little
+     * above the road, so a bad landing costs momentum rather than the run.
      */
-    const wrecked = grounded && Math.abs(pitch) > WRECKED_PITCH;
-    const stuck = grounded && Math.abs(pitch) > BEACHED_PITCH && Math.abs(alongForward) < 2;
-    if (wrecked || stuck) {
+    const flip = () => {
+      const heading = scratchEuler.current.setFromQuaternion(quaternion, "YXZ").y;
+      const level = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, heading, 0, "YXZ"));
+      rb.setRotation({ x: level.x, y: level.y, z: level.z, w: level.w }, true);
+      rb.setTranslation(
+        { x: carPosition.x, y: carPosition.y + 0.8, z: carPosition.z },
+        true,
+      );
+      rb.setAngvel({ x: 0, y: 0, z: 0 }, true);
+      beached.current = 0;
+    };
+
+    if (grounded && !isUpright) {
       beached.current += delta;
-      if (beached.current > (wrecked ? WRECKED_GRACE : BEACHED_GRACE)) {
-        // Keep the heading, drop everything else.
-        const heading = scratchEuler.current.setFromQuaternion(quaternion, "YXZ").y;
-        const upright = new THREE.Quaternion().setFromEuler(
-          new THREE.Euler(0, heading, 0, "YXZ"),
-        );
-        rb.setRotation(
-          { x: upright.x, y: upright.y, z: upright.z, w: upright.w },
-          true,
-        );
-        rb.setTranslation(
-          { x: carPosition.x, y: carPosition.y + 0.6, z: carPosition.z },
-          true,
-        );
-        rb.setAngvel({ x: 0, y: 0, z: 0 }, true);
-        beached.current = 0;
-      }
+      if (input.recover || beached.current > AUTO_RIGHT) flip();
+    } else if (grounded && Math.abs(alongForward) < 2 && Math.abs(pitch) > BEACHED_PITCH) {
+      // Upright enough, but nosed into something and going nowhere.
+      beached.current += delta;
+      if (input.recover || beached.current > WRECKED_GRACE + 1) flip();
     } else {
       beached.current = 0;
+      // X is available any time you are on the ground and stopped, even when
+      // the game thinks you are fine — the player's judgement wins.
+      if (grounded && input.recover && Math.abs(alongForward) < 4) flip();
     }
+
 
     // The shell banks into a turn and squats under power. Wheels, hubs and
     // thrusters are animated one level down.

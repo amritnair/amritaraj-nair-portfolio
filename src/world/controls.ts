@@ -13,6 +13,8 @@ export type Controls = {
   spinRight: boolean;
   flipForward: boolean;
   flipBack: boolean;
+  /** Right the car after a bad landing. */
+  recover: boolean;
 };
 
 /** Shared mutable input state — read every frame, never through React. */
@@ -28,6 +30,7 @@ export const controls: Controls = {
   spinRight: false,
   flipForward: false,
   flipBack: false,
+  recover: false,
 };
 
 const KEY_MAP: Record<string, keyof Controls> = {
@@ -48,6 +51,7 @@ const KEY_MAP: Record<string, keyof Controls> = {
   KeyE: "spinRight",
   KeyF: "flipForward",
   KeyC: "flipBack",
+  KeyX: "recover",
 };
 
 export function readControls(): Controls {
@@ -70,7 +74,8 @@ export function useKeyboardControls() {
         action === "spinLeft" ||
         action === "spinRight" ||
         action === "flipForward" ||
-        action === "flipBack"
+        action === "flipBack" ||
+        action === "recover"
       ) {
         controls[action] = value > 0;
       } else {
@@ -92,6 +97,7 @@ export function useKeyboardControls() {
       controls.spinRight = false;
       controls.flipForward = false;
       controls.flipBack = false;
+      controls.recover = false;
     };
 
     window.addEventListener("keydown", down);
