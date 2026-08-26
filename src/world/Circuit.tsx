@@ -5,67 +5,54 @@ import { Instance, Instances } from "@react-three/drei";
 import { RigidBody, ConvexHullCollider, CuboidCollider } from "@react-three/rapier";
 import { NEON } from "./palette";
 import {
-  CIRCUIT_RAMP_ANGLE,
-  CIRCUIT_RAMP_START,
+  CIRCUIT_HALF,
   ISLAND_RADIUS,
   KICKER_ANGLES,
-  circuitAt,
+  DECK_WIDTH,
+  RAMP_HALF,
+  RING_RADIUS,
+  circuitFrames,
   circuitPoint,
+  inMergeGap,
+  mergeLaneFrames,
+  onRamp,
+  onRingLeg,
+  onSpokeOrDistrict,
+  rampFrames,
+  type PathFrame,
 } from "./layout";
 import BlockText from "./BlockText";
 import { CHECKPOINTS, gateAt, resetRace, updateRace } from "./race";
 import { telemetry, useWorld, worldStore } from "./store";
 
 /**
- * The sky circuit: a closed race loop hung above the island, reached by a long
- * ramp that climbs off the ground and crosses over the ring road on its way up.
+ * The sky circuit: a closed race loop hung above the island, and the climb
+ * that gets you onto it.
  *
- * The shape comes from `circuitAt` — radius and height both vary, so the lap
- * has sweepers, two tight tucks, a climb to the high point and a dive to the
- * low one. Corners are banked in proportion to how hard they turn, which is
- * what lets you carry speed through the tucks instead of understeering off.
+ * Both roads are the same construction — a centreline of banked frames, one
+ * swept mesh for the look, and convex hulls built from the same
+ * cross-sections for the physics. They are in one file because the join
+ * between them is the interesting part: the climb's last frames are the
+ * circuit's own frames shifted inwards by half of each road, so the slip road
+ * and the track are one continuous surface rather than two that were aimed at
+ * each other and met at an angle.
  */
 
-const WIDTH = 15;
-/** Samples used for the visual sweep. Cheap now that it is one mesh. */
-const SEGMENTS = 180;
+const WIDTH = CIRCUIT_HALF * 2;
+
 /**
- * Physics segments. Dense on purpose: each one is a flat box, so the joints
- * between them are where the surface changes angle, and a coarse chain reads
- * as a bumpy road. At this resolution each joint turns by well under a degree.
- *
- * A single swept trimesh would be smoother still and was the first thing I
- * tried, but the car fell straight through it even at rest, so this stays
- * until that can be worked out properly.
+ * Barrier height, and the only number that decides whether you can leave the
+ * track sideways. It used to be 1.9 on the collider and 0.9 on the thing you
+ * could see, which is the worst of both: high enough to stop you, low enough
+ * to look like a kerb you could ride over, so every save felt like hitting
+ * something invisible. Now one number drives both, and it is tall enough that
+ * the only way off the circuit is over a kicker.
  */
-const COLLIDER_SEGMENTS = 180;
-/** Roll per unit of curvature, capped so the banking never becomes a wall. */
-const BANK_GAIN = 5.2;
-const BANK_LIMIT = 0.34;
-/**
- * Half-width, in radians, of the opening cut in the circuit's inner barrier
- * where the climb arrives. The ramp lands on the track's centreline, so
- * without this the inner guard rail runs straight across the mouth of it and
- * the climb ends in a wall.
- */
-const MERGE_HALF_ANGLE = 0.11;
+const WALL_HEIGHT = 3.2;
+/** The solid part at the bottom. Above this the barrier is a light screen. */
+const KERB_HEIGHT = 0.6;
 
-/** True for a point on the loop that sits in the merge opening. */
-function inMergeGap(angle: number) {
-  const diff = Math.abs(((angle - CIRCUIT_RAMP_ANGLE + Math.PI) % (Math.PI * 2)) - Math.PI);
-  return diff < MERGE_HALF_ANGLE;
-}
-
-type Segment = {
-  position: THREE.Vector3;
-  yaw: number;
-  pitch: number;
-  roll: number;
-  length: number;
-  angle: number;
-};
-
-/** A banked frame on the loop: where it is and which way is right and up. */
+/** A banked frame on a road: where it is and which way is right and up. */
 export type Frame = {
   position: THREE.Vector3;
   forward: THREE.Vector3;
@@ -73,73 +60,33 @@ export type Frame = {
   up: THREE.Vector3;
 };
 
-function buildSegments(count: number): Segment[] {
-  const points: THREE.Vector3[] = [];
-  for (let i = 0; i <= count; i += 1) {
-    const a = (i / count) * Math.PI * 2;
-    const p = circuitPoint(a);
-    points.push(new THREE.Vector3(p.x, p.y, p.z));
-  }
+const vec = (v: { x: number; y: number; z: number }) => new THREE.Vector3(v.x, v.y, v.z);
 
-  const yaws: number[] = [];
-  const lengths: number[] = [];
-  for (let i = 0; i < count; i += 1) {
-    const d = points[i + 1].clone().sub(points[i]);
-    yaws.push(Math.atan2(d.x, d.z));
-    lengths.push(d.length());
-  }
-
-  return Array.from({ length: count }, (_, i) => {
-    const from = points[i];
-    const to = points[i + 1];
-    const d = to.clone().sub(from);
-    const flat = Math.hypot(d.x, d.z);
-
-    // Curvature: how much the heading turns per unit travelled. Wrapped to
-    // ±π so the seam at the start of the loop isn't read as a hairpin.
-    const next = yaws[(i + 1) % count];
-    let turn = next - yaws[i];
-    turn = ((turn + Math.PI) % (Math.PI * 2)) - Math.PI;
-    const curvature = turn / Math.max(lengths[i], 0.001);
-
-    return {
-      position: from.clone().lerp(to, 0.5),
-      yaw: yaws[i],
-      pitch: -Math.atan2(d.y, flat),
-      roll: THREE.MathUtils.clamp(curvature * BANK_GAIN, -BANK_LIMIT, BANK_LIMIT),
-      length: d.length() + 0.6,
-      angle: (i / count) * Math.PI * 2,
-    };
-  });
-}
-
-/** Turns the segment list into banked frames for sweeping and instancing. */
-function buildFrames(segments: Segment[]): Frame[] {
-  const frames = segments.map((s) => {
-    const euler = new THREE.Euler(s.pitch, s.yaw, s.roll, "YXZ");
-    const quaternion = new THREE.Quaternion().setFromEuler(euler);
-    return {
-      position: s.position.clone(),
-      forward: new THREE.Vector3(0, 0, 1).applyQuaternion(quaternion),
-      right: new THREE.Vector3(1, 0, 0).applyQuaternion(quaternion),
-      up: new THREE.Vector3(0, 1, 0).applyQuaternion(quaternion),
-    };
-  });
-  // Close the loop so the sweep has no seam at the start line.
-  frames.push(frames[0]);
-  return frames;
-}
+/**
+ * Frames arrive from `layout` as plain numbers and are lifted into three's
+ * vectors once, here. The circuit and the climb are described in the same
+ * file for one reason: the climb's last frames are built out of the circuit's,
+ * so the two roads meet as one surface rather than as two that were aimed at
+ * each other.
+ */
+const lift = (frames: PathFrame[]): Frame[] =>
+  frames.map((f) => ({
+    position: vec(f.position),
+    forward: vec(f.forward),
+    right: vec(f.right),
+    up: vec(f.up),
+  }));
 
 export default function Circuit() {
-  const segments = useMemo(() => buildSegments(COLLIDER_SEGMENTS), []);
-  const frames = useMemo(() => buildFrames(buildSegments(SEGMENTS)), []);
+  const frames = useMemo(() => lift(circuitFrames()), []);
+  const ramp = useMemo(() => lift(rampFrames()), []);
 
   return (
     <group>
       <Deck frames={frames} />
       <Surface frames={frames} />
       <Pylons frames={frames} />
-      <ClimbRamp />
+      <ClimbRamp frames={ramp} />
       <Kickers frames={frames} />
       <StartGate />
       <Gates />
@@ -149,13 +96,6 @@ export default function Circuit() {
 }
 
 /**
- * Euler order matters here. The default XYZ applies roll in world space, which
- * skews a banked, climbing segment sideways; YXZ yaws first, then pitches and
- * rolls in the segment's own frame, which is what "banked road" means.
- */
-const euler = (s: Segment): [number, number, number, string] => [s.pitch, s.yaw, s.roll, "YXZ"];
-
-/**
  * The whole track surface as one swept mesh.
  *
  * The first version drew a box per segment — 180 segments times a deck plus
@@ -163,7 +103,11 @@ const euler = (s: Segment): [number, number, number, string] => [s.pitch, s.yaw,
  * frame time than everything else in the world put together. Sweeping a 2D
  * profile along the loop gives identical geometry in a single draw call.
  */
-function sweep(profile: [number, number][], frames: Frame[], closed = true) {
+function sweep(
+  profile: [number, number][] | ((i: number) => [number, number][]),
+  frames: Frame[],
+  closed = true,
+) {
   const positions: number[] = [];
   const push = (f: Frame, lateral: number, vertical: number) => {
     positions.push(
@@ -173,21 +117,26 @@ function sweep(profile: [number, number][], frames: Frame[], closed = true) {
     );
   };
 
-  const rings = profile.length;
+  const at = typeof profile === "function" ? profile : () => profile;
   for (let i = 0; i < frames.length - 1; i += 1) {
     const a = frames[i];
     const b = frames[i + 1];
+    // Each end of the step gets its own cross-section, so a road may change
+    // width along its length — which is how the slip road closes itself off
+    // instead of stopping dead at a barrier.
+    const pa = at(i);
+    const pb = at(i + 1);
+    const rings = pa.length;
     for (let j = 0; j < (closed ? rings : rings - 1); j += 1) {
-      const [l0, v0] = profile[j];
-      const [l1, v1] = profile[(j + 1) % rings];
+      const k = (j + 1) % rings;
       // Two triangles per profile edge per step.
-      push(a, l0, v0);
-      push(b, l0, v0);
-      push(b, l1, v1);
+      push(a, pa[j][0], pa[j][1]);
+      push(b, pb[j][0], pb[j][1]);
+      push(b, pb[k][0], pb[k][1]);
 
-      push(a, l0, v0);
-      push(b, l1, v1);
-      push(a, l1, v1);
+      push(a, pa[j][0], pa[j][1]);
+      push(b, pb[k][0], pb[k][1]);
+      push(a, pa[k][0], pa[k][1]);
     }
   }
 
@@ -243,26 +192,7 @@ function Deck({ frames }: { frames: Frame[] }) {
     [frames],
   );
 
-  const rails = useMemo(() => {
-    const profile = (side: number): [number, number][] => [
-      [side * HALF - 0.18, 0],
-      [side * HALF + 0.18, 0],
-      [side * HALF + 0.18, 0.9],
-      [side * HALF - 0.18, 0.9],
-    ];
-
-    // `right` points radially outward, so -1 is the inner rail — the one the
-    // climb crosses. Sweep it as an open ribbon that starts after the opening
-    // and wraps around to just before it.
-    const steps = frames.length - 1;
-    const centre = Math.round((CIRCUIT_RAMP_ANGLE / (Math.PI * 2)) * steps);
-    const half = Math.ceil(MERGE_HALF_ANGLE / ((Math.PI * 2) / steps));
-    const from = (centre + half) % steps;
-    const to = (centre - half + steps) % steps;
-    const innerFrames = [...frames.slice(from, steps), ...frames.slice(0, to + 1)];
-
-    return [sweep(profile(-1), innerFrames), sweep(profile(1), frames)];
-  }, [frames]);
+  const rails = useMemo(() => barrierGeometry(frames, HALF, openInner(frames)), [frames]);
 
   return (
     <group>
@@ -278,17 +208,114 @@ function Deck({ frames }: { frames: Frame[] }) {
           flatShading
         />
       </mesh>
-      {rails.map((geometry, i) => (
-        <mesh key={i} geometry={geometry}>
-          <meshStandardMaterial
-            color={i ? NEON.amber : NEON.cyan}
-            emissive={i ? NEON.amber : NEON.cyan}
-            emissiveIntensity={3}
+      <Barrier {...rails} />
+      <Markings frames={frames} />
+    </group>
+  );
+}
+
+/**
+ * The frames of the inner edge that still need a barrier: everything outside
+ * the merge opening. The climb arrives alongside this edge and runs there, so
+ * a rail across that stretch would be a rail across the slip road.
+ */
+function openInner(frames: Frame[]) {
+  const steps = frames.length - 1;
+  const kept: Frame[] = [];
+  const runs: Frame[][] = [];
+  for (let i = 0; i <= steps; i += 1) {
+    if (inMergeGap(((i / steps) * Math.PI * 2) % (Math.PI * 2))) {
+      if (kept.length > 1) runs.push([...kept]);
+      kept.length = 0;
+      continue;
+    }
+    kept.push(frames[i]);
+  }
+  if (kept.length > 1) runs.push(kept);
+  // Rejoin the run that straddles the start line, so the barrier has no seam
+  // where the lap does.
+  if (runs.length > 1 && runs[0][0] === frames[0]) {
+    const first = runs.shift()!;
+    runs[runs.length - 1] = [...runs[runs.length - 1], ...first];
+  }
+  return runs.map((run) => ({ run, from: 0 }));
+}
+
+type BarrierGeometry = {
+  kerbs: THREE.BufferGeometry[];
+  screens: THREE.BufferGeometry[];
+  caps: THREE.BufferGeometry[];
+};
+
+/**
+ * A barrier is three ribbons: a solid kerb you can lean on, a light screen
+ * above it, and a bright cap along the top. The screen is what makes the
+ * height readable — a wall this tall drawn as solid geometry would box the
+ * track in and hide the island, and drawn as nothing at all would be the
+ * invisible wall the old one effectively was.
+ */
+function barrierGeometry(
+  frames: Frame[],
+  edge: number | ((i: number) => number),
+  innerRuns?: { run: Frame[]; from: number }[],
+  outerRuns?: { run: Frame[]; from: number }[],
+): BarrierGeometry {
+  const out: BarrierGeometry = { kerbs: [], screens: [], caps: [] };
+  const edgeAt = typeof edge === "function" ? edge : () => edge;
+  const band =
+    (side: number, from: number, v0: number, v1: number, thickness: number) =>
+    (i: number): [number, number][] => {
+      const l = side * edgeAt(from + i);
+      return [
+        [l - thickness, v0],
+        [l + thickness, v0],
+        [l + thickness, v1],
+        [l - thickness, v1],
+      ];
+    };
+
+  for (const side of [-1, 1]) {
+    const runs = (side < 0 ? innerRuns : outerRuns) ?? [{ run: frames, from: 0 }];
+    for (const { run, from } of runs) {
+      if (run.length < 2) continue;
+      out.kerbs.push(sweep(band(side, from, 0, KERB_HEIGHT, 0.32), run));
+      out.screens.push(sweep(band(side, from, KERB_HEIGHT, WALL_HEIGHT, 0.07), run));
+      out.caps.push(sweep(band(side, from, WALL_HEIGHT, WALL_HEIGHT + 0.16, 0.2), run));
+    }
+  }
+  return out;
+}
+
+function Barrier({ kerbs, screens, caps }: BarrierGeometry) {
+  return (
+    <group>
+      {kerbs.map((geometry, i) => (
+        <mesh key={`k${i}`} geometry={geometry}>
+          <meshStandardMaterial color="#1b2050" roughness={0.6} metalness={0.35} flatShading />
+        </mesh>
+      ))}
+      {screens.map((geometry, i) => (
+        <mesh key={`s${i}`} geometry={geometry}>
+          <meshBasicMaterial
+            color={NEON.cyan}
+            transparent
+            opacity={0.14}
+            depthWrite={false}
+            side={THREE.DoubleSide}
             toneMapped={false}
           />
         </mesh>
       ))}
-      <Markings frames={frames} />
+      {caps.map((geometry, i) => (
+        <mesh key={`c${i}`} geometry={geometry}>
+          <meshStandardMaterial
+            color={NEON.cyan}
+            emissive={NEON.cyan}
+            emissiveIntensity={2.4}
+            toneMapped={false}
+          />
+        </mesh>
+      ))}
     </group>
   );
 }
@@ -370,15 +397,25 @@ function Markings({ frames }: { frames: Frame[] }) {
  * convex hull. `l0`/`l1` are lateral offsets from the centreline, `v0`/`v1`
  * heights above it, both in the banked frame.
  */
-function slab(a: Frame, b: Frame, l0: number, l1: number, v0: number, v1: number) {
+function slab(
+  a: Frame,
+  b: Frame,
+  l0: number,
+  l1: number,
+  v0: number,
+  v1: number,
+  ends?: [number, number],
+) {
   const out = new Float32Array(24);
   let i = 0;
-  for (const f of [a, b]) {
+  for (const [n, f] of [a, b].entries()) {
+    const m0 = ends ? (n ? ends[0] : l0) : l0;
+    const m1 = ends ? (n ? ends[1] : l1) : l1;
     for (const [l, v] of [
-      [l0, v0],
-      [l1, v0],
-      [l1, v1],
-      [l0, v1],
+      [m0, v0],
+      [m1, v0],
+      [m1, v1],
+      [m0, v1],
     ]) {
       out[i++] = f.position.x + f.right.x * l + f.up.x * v;
       out[i++] = f.position.y + f.right.y * l + f.up.y * v;
@@ -426,7 +463,7 @@ function Surface({ frames }: { frames: Frame[] }) {
           if (side < 0 && inMergeGap(angle)) continue;
           walls.push({
             side,
-            points: slab(a, far, side * HALF - 0.4, side * HALF + 0.4, 1.9, 0),
+            points: slab(a, far, side * HALF - 0.45, side * HALF + 0.45, WALL_HEIGHT, 0),
           });
         }
       }
@@ -470,10 +507,16 @@ function Pylons({ frames }: { frames: Frame[] }) {
           // Alternate sides, so the loop is lit from both edges.
           base: f.position.clone().addScaledVector(f.right, (i % 2 ? 1 : -1) * (HALF + 2.4)),
         }))
-        // Only where there is sea underneath. On the stretches that cut back
-        // over the island, a leg would come down through the trees and the
-        // roads — better to have no leg there than a column in a path.
-        .filter((leg) => Math.hypot(leg.base.x, leg.base.z) > ISLAND_RADIUS + 6),
+        // Only where there is sea underneath, and never where the climb runs
+        // beneath. On the stretches that cut back over the island a leg comes
+        // down through the trees and the roads, and along the merge the inner
+        // legs land squarely in the slip road — better no leg than a column
+        // standing in a lane.
+        .filter(
+          (leg) =>
+            Math.hypot(leg.base.x, leg.base.z) > ISLAND_RADIUS + 6 &&
+            !onRamp(leg.base.x, leg.base.z, 3),
+        ),
     [frames],
   );
 
@@ -644,96 +687,188 @@ function Kickers({ frames }: { frames: Frame[] }) {
   );
 }
 
-/**
- * The climb. A straight run from the island out to the circuit's southern
- * tuck, steep enough that it is already 7 units clear of the ring deck by the
- * time it crosses it — you drive over the ring road on the way up, and under
- * this ramp when you're on the ring.
- */
-function ClimbRamp() {
-  const angle = CIRCUIT_RAMP_ANGLE;
-  const landing = circuitAt(angle);
-  const dirX = Math.cos(angle);
-  const dirZ = Math.sin(angle);
+function ClimbRamp({ frames }: { frames: Frame[] }) {
+  /*
+   * The lane's width, frame by frame. It runs full width alongside the track
+   * and then closes to nothing over the last few frames.
+   *
+   * Without the taper the slip road simply stopped: its inner barrier ended
+   * twelve metres inside the circuit's, so anyone who came up the lane and
+   * didn't merge met the end of the deck and the start of the track's barrier
+   * at the same moment. The taper turns that into a gore — the inner edge
+   * swings out to meet the track's, and running out of lane means being
+   * eased across rather than hitting the corner of a wall.
+   */
+  const widths = useMemo(() => {
+    const lane = mergeLaneFrames();
+    const close = Math.min(lane - 1, 7);
+    return frames.map((_, i) => {
+      const left = frames.length - 1 - i;
+      if (left >= close) return RAMP_HALF;
+      const t = left / close;
+      return 0.45 + (RAMP_HALF - 0.45) * t * t;
+    });
+  }, [frames]);
 
-  // Stop at the track's inner edge rather than its centreline. Landing in the
-  // middle means arriving perpendicular with only half the width left to turn
-  // in, so at any speed you cross the track and meet the outer wall.
-  // ...with a couple of units of overlap onto the deck, so any small mismatch
-  // between the straight ramp and the banked track is a lip you drive over
-  // rather than a gap you drop through.
-  const run = landing.radius - HALF + 2 - CIRCUIT_RAMP_START;
-  const rise = landing.height;
-  const pitch = Math.atan2(rise, run);
-  const span = Math.hypot(rise, run);
+  const deck = useMemo(
+    () =>
+      sweep(
+        (i) => [
+          [-widths[i], 0],
+          [widths[i], 0],
+          [widths[i], -0.5],
+          [-widths[i], -0.5],
+        ],
+        frames,
+        true,
+      ),
+    [frames, widths],
+  );
 
-  // Same trick as the ring ramps: drop by half the slab thickness so the top
-  // face — not the centreline — meets the ground, and bury the bottom so
-  // there's no lip to catch.
-  const BURIED = 16;
-  const drop = 0.3 / Math.cos(pitch);
-  const deckSpan = span + BURIED;
-  const radial = CIRCUIT_RAMP_START + run / 2 - (BURIED / 2) * Math.cos(pitch);
+  /*
+   * The ramp is walled on the inside all the way up and on the outside only
+   * until it reaches the lane. Past that point its outer edge *is* the
+   * circuit's inner edge, and a barrier there would be a barrier down the
+   * middle of the merge.
+   */
+  const walls = useMemo(
+    () =>
+      barrierGeometry(
+        frames,
+        (i) => widths[i],
+        [{ run: frames, from: 0 }],
+        [{ run: frames.slice(0, Math.max(frames.length - mergeLaneFrames(), 2)), from: 0 }],
+      ),
+    [frames, widths],
+  );
 
-  const centreY = rise / 2 - drop - (BURIED / 2) * Math.sin(pitch);
+  const dashes = useMemo(() => {
+    const out: { position: THREE.Vector3; quaternion: THREE.Quaternion }[] = [];
+    const basis = new THREE.Matrix4();
+    for (let i = 2; i < frames.length - 1; i += 4) {
+      const f = frames[i];
+      basis.makeBasis(f.right, f.up, f.forward);
+      out.push({
+        position: f.position.clone().addScaledVector(f.up, 0.06),
+        quaternion: new THREE.Quaternion().setFromRotationMatrix(basis),
+      });
+    }
+    return out;
+  }, [frames]);
 
   return (
-    <group
-      position={[dirX * radial, centreY, dirZ * radial]}
-      rotation={[0, -angle + Math.PI / 2, 0]}
-    >
-      <group rotation={[-pitch, 0, 0]}>
-        <mesh receiveShadow castShadow>
-          <boxGeometry args={[WIDTH, 0.6, deckSpan]} />
-          <meshStandardMaterial color={NEON.deck} roughness={0.5} metalness={0.5} flatShading />
-        </mesh>
-        {[-1, 1].map((side) => (
-          <mesh key={side} position={[(side * WIDTH) / 2, 0.5, 0]}>
-            <boxGeometry args={[0.32, 0.5, deckSpan]} />
-            <meshStandardMaterial
-              color={side > 0 ? NEON.amber : NEON.cyan}
-              emissive={side > 0 ? NEON.amber : NEON.cyan}
-              emissiveIntensity={3.2}
-              toneMapped={false}
-            />
-          </mesh>
+    <group>
+      <mesh geometry={deck} receiveShadow>
+        <meshStandardMaterial
+          color="#232858"
+          emissive="#2a3170"
+          emissiveIntensity={0.5}
+          roughness={0.55}
+          metalness={0.4}
+          flatShading
+        />
+      </mesh>
+      <Barrier {...walls} />
+      <Instances limit={dashes.length} geometry={DASH_GEOMETRY}>
+        <meshStandardMaterial
+          color={NEON.lime}
+          emissive={NEON.lime}
+          emissiveIntensity={2}
+          toneMapped={false}
+        />
+        {dashes.map((d, i) => (
+          <Instance key={i} position={d.position} quaternion={d.quaternion} />
         ))}
-        {Array.from({ length: Math.floor(deckSpan / 8) }).map((_, i) => (
-          <mesh key={i} position={[0, 0.34, -deckSpan / 2 + 5 + i * 8]}>
-            <boxGeometry args={[3.6, 0.08, 0.8]} />
-            <meshStandardMaterial
-              color={NEON.lime}
-              emissive={NEON.lime}
-              emissiveIntensity={2}
-              toneMapped={false}
-            />
-          </mesh>
-        ))}
+      </Instances>
+      <RampSurface frames={frames} widths={widths} />
+      <RampLegs frames={frames} />
+    </group>
+  );
+}
 
-        <RigidBody type="fixed" colliders={false} friction={1}>
-          <CuboidCollider args={[WIDTH / 2, 0.3, deckSpan / 2]} />
-          {[-1, 1].map((side) => (
-            <CuboidCollider
-              key={side}
-              args={[0.32, 0.8, deckSpan / 2]}
-              position={[(side * WIDTH) / 2, 0.8, 0]}
-            />
-          ))}
-        </RigidBody>
-      </group>
+const DASH_GEOMETRY = new THREE.BoxGeometry(3.4, 0.08, 1.1);
 
-      {/* Legs, only along the stretch that is actually in the air. */}
-      {Array.from({ length: 5 }).map((_, i) => {
-        const t = (i + 1) / 6;
-        const z = -deckSpan / 2 + deckSpan * t;
-        const y = -centreY + Math.sin(pitch) * z * 0.5;
-        return (
-          <mesh key={i} position={[0, y / 2 + centreY / 2 - 2, z * Math.cos(pitch)]}>
-            <cylinderGeometry args={[0.7, 1.4, Math.max(centreY + Math.sin(pitch) * z, 2), 6]} />
-            <meshStandardMaterial color={NEON.deckEdge} roughness={0.65} flatShading />
-          </mesh>
+/**
+ * True once a ramp frame has reached the merge lane — that is, once its outer
+ * edge is sitting on the circuit's inner edge rather than short of it.
+ */
+function onLane(frames: Frame[], i: number) {
+  return i >= frames.length - mergeLaneFrames();
+}
+
+/** Physics for the climb: the same hulls the circuit uses, same rules. */
+function RampSurface({ frames, widths }: { frames: Frame[]; widths: number[] }) {
+  const pieces = useMemo(() => {
+    const out: { road: Float32Array; walls: Float32Array[] }[] = [];
+    for (let i = 0; i + 1 < frames.length; i += 1) {
+      const a = frames[i];
+      const b = frames[i + 1];
+      const wa = widths[i];
+      const wb = widths[i + 1];
+      const walls: Float32Array[] = [];
+      if (i % 2 === 0 && i + 2 < frames.length) {
+        const far = frames[i + 2];
+        const wf = widths[i + 2];
+        // Inner side always; outer side only below the merge lane.
+        walls.push(
+          slab(a, far, -wa - 0.45, -wa + 0.45, WALL_HEIGHT, 0, [-wf - 0.45, -wf + 0.45]),
         );
-      })}
+        if (!onLane(frames, i))
+          walls.push(slab(a, far, wa - 0.45, wa + 0.45, WALL_HEIGHT, 0, [wf - 0.45, wf + 0.45]));
+      }
+      out.push({ road: slab(a, b, -wa, wa, 0, -0.9, [-wb, wb]), walls });
+    }
+    return out;
+  }, [frames, widths]);
+
+  return (
+    <RigidBody type="fixed" colliders={false} friction={1}>
+      {pieces.map((piece, i) => (
+        <group key={i}>
+          <ConvexHullCollider args={[piece.road]} />
+          {piece.walls.map((points, w) => (
+            <ConvexHullCollider key={w} args={[points]} />
+          ))}
+        </group>
+      ))}
+    </RigidBody>
+  );
+}
+
+/**
+ * Legs down to whatever is under each one. They stand on the road's edge
+ * rather than its centreline: a column on the centreline of a road that
+ * crosses over another road comes down in the middle of it.
+ */
+function RampLegs({ frames }: { frames: Frame[] }) {
+  const legs = useMemo(() => {
+    const out: { position: THREE.Vector3; height: number }[] = [];
+    for (let i = 4; i < frames.length - mergeLaneFrames(); i += 7) {
+      const f = frames[i];
+      const { x, z } = f.position;
+      const radius = Math.hypot(x, z);
+      // Never on top of the ring road it crosses, and never in a district or
+      // a spoke: a support that lands in a road you can drive is worse than
+      // an unsupported span in a world lit like this one, where nobody is
+      // counting the columns anyway.
+      if (Math.abs(radius - RING_RADIUS) < DECK_WIDTH / 2 + 3) continue;
+      if (onSpokeOrDistrict(x, z, 3) || onRingLeg(x, z, 3)) continue;
+      const foot = radius < ISLAND_RADIUS ? 0 : -8;
+      const height = f.position.y - foot;
+      if (height < 3) continue;
+      out.push({ position: new THREE.Vector3(x, (f.position.y + foot) / 2 - 0.5, z), height });
+    }
+    return out;
+  }, [frames]);
+
+  return (
+    <group>
+      {legs.map((leg, i) => (
+        <mesh key={i} position={leg.position}>
+          <cylinderGeometry args={[0.75, 1.5, leg.height, 6]} />
+          <meshStandardMaterial color={NEON.deckEdge} roughness={0.65} flatShading />
+        </mesh>
+      ))}
     </group>
   );
 }

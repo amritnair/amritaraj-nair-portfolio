@@ -8,7 +8,7 @@ import {
   DECK_WIDTH,
   ISLAND_RADIUS,
   RING_HEIGHT,
-  RING_LEG_POSITIONS,
+  ringLegPositions,
   RING_RADIUS,
 } from "./layout";
 
@@ -31,9 +31,6 @@ export default function Highways() {
     <group>
       <RingSkyway />
       <RingSurface />
-      {/* Purely scenic, and high enough overhead to stay out of the way. */}
-      <CrossSpan rotation={Math.PI / 4} height={30} length={ISLAND_RADIUS * 2.1} />
-      <CrossSpan rotation={-Math.PI / 4} height={37} length={ISLAND_RADIUS * 2.1} />
       <Pylons />
       <RingTraffic />
     </group>
@@ -125,50 +122,6 @@ function RingSkyway() {
   );
 }
 
-/** A straight span crossing the whole island, high enough to clear the signs. */
-function CrossSpan({
-  rotation,
-  height,
-  length,
-}: {
-  rotation: number;
-  height: number;
-  length: number;
-}) {
-  return (
-    <group position={[0, height, 0]} rotation={[0, rotation, 0]}>
-      <mesh receiveShadow castShadow>
-        <boxGeometry args={[DECK_WIDTH, 0.5, length]} />
-        <meshStandardMaterial color={NEON.deck} roughness={0.45} metalness={0.6} flatShading />
-      </mesh>
-      {[-1, 1].map((side) => (
-        <mesh key={side} position={[(side * DECK_WIDTH) / 2, 0.3, 0]}>
-          <boxGeometry args={[0.22, 0.22, length]} />
-          <meshStandardMaterial
-            color={side > 0 ? NEON.magenta : NEON.cyan}
-            emissive={side > 0 ? NEON.magenta : NEON.cyan}
-            emissiveIntensity={3.6}
-            toneMapped={false}
-          />
-        </mesh>
-      ))}
-      {/* Centre dashes give the span a direction and a sense of speed. */}
-      {Array.from({ length: Math.floor(length / 12) }).map((_, i) => (
-        <mesh key={i} position={[0, 0.28, -length / 2 + 6 + i * 12]}>
-          <boxGeometry args={[0.5, 0.1, 4]} />
-          <meshStandardMaterial
-            color={NEON.lime}
-            emissive={NEON.lime}
-            emissiveIntensity={2.2}
-            toneMapped={false}
-          />
-        </mesh>
-      ))}
-      <SpanTraffic length={length} />
-    </group>
-  );
-}
-
 /**
  * Supports for the ring.
  *
@@ -181,7 +134,7 @@ function CrossSpan({
  * through the middle of a path is not.
  */
 function Pylons() {
-  const columns = RING_LEG_POSITIONS;
+  const columns = ringLegPositions();
 
   return (
     <group>
@@ -267,42 +220,3 @@ function RingTraffic() {
   );
 }
 
-function SpanTraffic({ length }: { length: number }) {
-  const group = useRef<THREE.Group>(null);
-  const lanes = useMemo(
-    () =>
-      Array.from({ length: 6 }).map((_, i) => ({
-        t: (i / 6) * length,
-        direction: i % 2 ? 1 : -1,
-        offset: i % 2 ? 1.9 : -1.9,
-        speed: 26 + (i % 3) * 9,
-        color: i % 2 ? NEON.magenta : NEON.cyan,
-      })),
-    [length],
-  );
-
-  useFrame((_, delta) => {
-    if (!group.current) return;
-    group.current.children.forEach((child, i) => {
-      const lane = lanes[i];
-      lane.t = (lane.t + delta * lane.speed + length) % length;
-      child.position.set(lane.offset, 0.45, lane.direction > 0 ? lane.t - length / 2 : length / 2 - lane.t);
-    });
-  });
-
-  return (
-    <group ref={group}>
-      {lanes.map((lane, i) => (
-        <mesh key={i}>
-          {TRAFFIC_GEOMETRY}
-          <meshStandardMaterial
-            color={lane.color}
-            emissive={lane.color}
-            emissiveIntensity={6}
-            toneMapped={false}
-          />
-        </mesh>
-      ))}
-    </group>
-  );
-}

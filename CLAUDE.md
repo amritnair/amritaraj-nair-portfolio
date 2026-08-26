@@ -61,6 +61,25 @@ fresh tab (`tabs_create` + `navigate`) before believing one.
   car fell through it.
 - **Smoothstep between spline nodes has zero derivative at both ends**, which
   reads as a pump every node. Hence Catmull-Rom.
+- **Catmull-Rom must be centripetal**, not uniform, wherever the control points
+  are unevenly spaced — uniform overshoots, and an overshoot in a road is a
+  kink that doubles back on itself. Phantom endpoints by *reflection*; a
+  repeated endpoint gives the curve zero speed as it arrives and bunches the
+  last samples on top of each other.
+- **Curvature drives bank, so smooth it first**, over a fixed length of road
+  rather than a fixed number of frames — otherwise a densely sampled ramp
+  keeps every ripple the sampling put in and the road wobbles like a ribbon.
+- **A road joins another road tangentially or not at all.** The climb used to
+  end perpendicular on the circuit's centreline: flat ramp, banked deck, a
+  two-metre step met side-on. It now arrives alongside the inner edge, built
+  from the circuit's own frames shifted inward by half of each road, so the
+  two decks are one surface. Approaches are authored as a *gap from the lane*
+  near the top and as a *radius* lower down — each is the number that
+  actually matters there, and the other is unusable (backing away from a
+  curve along its tangent leaves the curve; an inset a hundred metres from
+  the lane amplifies a degree of error into fifty metres of drift).
+- **A lane that ends must taper.** Ending it at full width puts the corner of
+  the next barrier where the deck stops.
 - **Emissive + bloom washes out fast.** Threshold 0.82 / radius 0.6 is tuned;
   anything big, white and near the camera (gate beams, a chrome car) will haze
   the sky if raised.
@@ -68,6 +87,13 @@ fresh tab (`tabs_create` + `navigate`) before believing one.
   an ordinary pitch angle.
 - **Airborne means no control**: throttle, brakes, boost, grip and steering are
   all gated on the ground ray. Only the trick keys work in the air.
+- **What you hit must be what you see.** The barriers were 1.9 tall in physics
+  and 0.9 in the mesh, so every save felt like an invisible wall. One constant
+  now drives both.
+- **Nothing may be placed by angle alone.** Kickers, pylons and ring legs are
+  all positioned parametrically, and each needs an explicit test against the
+  ramp's footprint — a kicker in the mouth of the slip road, or a pylon down
+  through it, is a launch ramp or a column where a lane should be.
 
 ## Controls
 
