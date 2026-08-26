@@ -23852,10 +23852,10 @@ Best regards`);
         ]
       })
     });
-  }, aj = x.lazy(() => RA(() => import("./GamePortfolio-1J2GY-XO.js").then(async (m) => {
+  }, aj = x.lazy(() => RA(() => import("./GamePortfolio-_ewHBJbE.js").then(async (m) => {
     await m.__tla;
     return m;
-  }).then((t) => t.aX), [])), sj = new aD(), oj = () => w.jsx("div", {
+  }).then((t) => t.b2), [])), sj = new aD(), oj = () => w.jsx("div", {
     className: "flex h-[100dvh] items-center justify-center bg-[#160f34] font-mono text-xs uppercase tracking-[0.3em] text-[#9d8bff]",
     children: "Loading world\u2026"
   }), rj = () => w.jsx(oO, {
