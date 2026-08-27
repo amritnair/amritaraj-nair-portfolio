@@ -67,6 +67,7 @@ export default function Hud() {
       <CircuitPrompt />
       <AwardToasts />
       <FlipPrompt />
+      <CatchFlash />
 
       {activeZone && !openZone && (
         <button
@@ -92,6 +93,41 @@ export default function Hud() {
  * game tells you that a jump which ends upside down pays nothing, which is
  * the moment that lesson actually lands.
  */
+/**
+ * Announces the catch. Being picked up and set back on the road is a large
+ * thing to do to someone without telling them — unannounced it reads as the
+ * game glitching rather than as the game saving the run.
+ */
+function CatchFlash() {
+  const wrap = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let frame = 0;
+    const tick = () => {
+      if (wrap.current) {
+        const age = performance.now() - telemetry.caught;
+        const shown = telemetry.caught > 0 && age < 1400;
+        wrap.current.style.opacity = shown ? String(1 - age / 1400) : "0";
+      }
+      frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  return (
+    <div
+      ref={wrap}
+      className="pointer-events-none fixed left-1/2 top-[22%] z-30 w-max -translate-x-1/2 rounded-full border border-[#31d8ff]/60 bg-[#0d0a24]/90 px-6 py-2.5 text-center backdrop-blur"
+      style={{ opacity: 0 }}
+    >
+      <div className="font-mono text-[0.58rem] uppercase tracking-[0.34em] text-[#31d8ff]">
+        Back on track
+      </div>
+    </div>
+  );
+}
+
 function FlipPrompt() {
   const wrap = useRef<HTMLDivElement>(null);
 

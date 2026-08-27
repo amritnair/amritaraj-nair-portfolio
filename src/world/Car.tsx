@@ -45,7 +45,7 @@ import {
 import { cameraTuning } from "./camera";
 import { record } from "./ghostLap";
 import { createTrickState, updateTricks } from "./tricks";
-import { circuitPoint, kickerPads } from "./layout";
+import { circuitPoint, kickerPads, nearestSkyRoad } from "./layout";
 
 /** Just inside the plaza ring, nose pointed at the title. */
 export const SPAWN: [number, number, number] = [0, 1.6, 11];
@@ -78,6 +78,28 @@ const UPRIGHT_OK = 0.55;
 const WRECKED_GRACE = 0.5;
 /** Seconds tipped over before the car rights itself without being asked. */
 const AUTO_RIGHT = 2.5;
+
+/*
+ * The catch. Barriers stop you leaving the circuit sideways and catch fencing
+ * covers the jumps, but "impossible to fall off" should not rest on geometry
+ * alone: a hard enough landing on the lip of a wall can still put you over it,
+ * and dropping thirty metres into the sea ends a run for a mistake that lasted
+ * a tenth of a second.
+ *
+ * So if the car was on a road in the sky and is now in free fall below every
+ * one of them, it is set back down on the nearest piece of road, facing the
+ * way that road goes. Deliberately narrow: you have to be falling, not
+ * driving, and below the ring road, which is itself a legitimate place to
+ * land. Driving down the ramp under power never trips it.
+ */
+/** Seconds of having been on a sky road within which the catch still applies. */
+const CATCH_MEMORY = 5;
+/** Height below which there is no road left to land on. */
+const CATCH_FLOOR = 11;
+/** Free fall before the catch decides this is a fall and not a jump. */
+const CATCH_FALL = 0.85;
+/** Sky roads all sit above this; the ring and the island are below it. */
+const SKY_ROAD = 18;
 
 // Scratch objects — allocating inside useFrame would churn the GC every frame.
 const forward = new THREE.Vector3();
@@ -192,6 +214,8 @@ function scoreAir(
 export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void }) {
   const { world, rapier } = useRapier();
   const air = useRef<AirState>({ airborne: false, time: 0, spin: 0, lastYaw: 0 });
+  const skyGround = useRef(CATCH_MEMORY);
+  const falling = useRef(0);
   const body = useRef<RapierRigidBody>(null);
   const chassis = useRef<THREE.Group>(null);
   const rig = useVehicleRig();
@@ -371,7 +395,37 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
       rb.setAngvel({ x: spin.x, y: steer * turnRate * steerFactor * direction, z: spin.z }, true);
     }
 
-    if (input.reset || carPosition.y < -14) reset();
+    /*
+     * The catch, checked before the ordinary respawn so that a fall off the
+     * circuit never reaches it.
+     */
+    if (grounded && carPosition.y > SKY_ROAD) skyGround.current = 0;
+    else skyGround.current += delta;
+    if (!grounded && linvel.y < 0) falling.current += delta;
+    else falling.current = 0;
+
+    if (
+      skyGround.current < CATCH_MEMORY &&
+      falling.current > CATCH_FALL &&
+      carPosition.y < CATCH_FLOOR
+    ) {
+      const { frame } = nearestSkyRoad(carPosition.x, carPosition.z);
+      const heading = Math.atan2(frame.forward.x, frame.forward.z);
+      const level = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, heading, 0, "YXZ"));
+      rb.setRotation({ x: level.x, y: level.y, z: level.z, w: level.w }, true);
+      rb.setTranslation(
+        { x: frame.position.x, y: frame.position.y + 1.6, z: frame.position.z },
+        true,
+      );
+      // Keep some of the speed you arrived with: being put back on the road is
+      // meant to cost you the corner, not the lap.
+      const kept = Math.min(telemetry.speed, 14);
+      rb.setLinvel({ x: frame.forward.x * kept, y: 0, z: frame.forward.z * kept }, true);
+      rb.setAngvel({ x: 0, y: 0, z: 0 }, true);
+      skyGround.current = 0;
+      falling.current = 0;
+      telemetry.caught = performance.now();
+    } else if (input.reset || carPosition.y < -14) reset();
 
     telemetry.x = carPosition.x;
     telemetry.y = carPosition.y;

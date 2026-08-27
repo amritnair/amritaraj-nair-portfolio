@@ -254,7 +254,21 @@ function TreeField({ trees }: { trees: Scatter[] }) {
 
 function RockField({ rocks }: { rocks: Scatter[] }) {
   return (
-    <Instances limit={rocks.length} castShadow receiveShadow>
+    <>
+      {/* Matched to the mesh rather than to a generous bounding box: these sit
+          low, and a collider taller than the rock turns a thing you clip into
+          a thing that stops you. */}
+      <RigidBody type="fixed" colliders={false}>
+        {rocks.map((rock, i) => (
+          <CylinderCollider
+            key={i}
+            args={[rock.scale * 0.5, rock.scale * 0.9]}
+            position={[rock.position[0], rock.scale * 0.5, rock.position[2]]}
+          />
+        ))}
+      </RigidBody>
+
+      <Instances limit={rocks.length} castShadow receiveShadow>
       <dodecahedronGeometry args={[1, 0]} />
       <meshStandardMaterial color={PALETTE.rock} roughness={0.95} flatShading />
       {rocks.map((rock, i) => (
@@ -265,7 +279,8 @@ function RockField({ rocks }: { rocks: Scatter[] }) {
           rotation={[rock.rotation, rock.rotation * 2, rock.rotation * 0.5]}
         />
       ))}
-    </Instances>
+      </Instances>
+    </>
   );
 }
 
@@ -312,6 +327,18 @@ function Lanterns() {
 
   return (
     <group>
+      {/* Solid, because they look solid. A lamp post you drive straight
+          through tells you the whole island is scenery. */}
+      <RigidBody type="fixed" colliders={false}>
+        {posts.map((post, i) => (
+          <CylinderCollider
+            key={i}
+            args={[2.5, 0.3]}
+            position={[post.position[0], 2.5, post.position[2]]}
+          />
+        ))}
+      </RigidBody>
+
       <Instances limit={posts.length} castShadow>
         <cylinderGeometry args={[0.16, 0.22, 5, 6]} />
         <meshStandardMaterial color="#3b3768" roughness={0.7} flatShading />

@@ -100,6 +100,12 @@ export const telemetry = {
    * — pitch alone says nothing about a car lying on its side.
    */
   upright: 1,
+  /**
+   * When the catch last put the car back on the road, as a timestamp. The HUD
+   * watches it so the recovery is announced rather than silently teleporting
+   * the player, which would read as a bug.
+   */
+  caught: 0,
 };
 
 /**

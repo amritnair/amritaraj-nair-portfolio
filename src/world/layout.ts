@@ -165,7 +165,7 @@ export function kickerPads() {
     const rx = fz / len;
     const rz = -fx / len;
     const side = i % 2 ? 1 : -1;
-    const offset = 7.5 - 3.6; // deck half-width minus kicker half-width
+    const offset = 1.9; // must match KICKER_OFFSET in Circuit.tsx
     return { x: p.x + rx * side * offset, z: p.z + rz * side * offset };
   });
 }
@@ -327,11 +327,16 @@ function framesFrom(
   return out;
 }
 
+let circuitCache: PathFrame[] | null = null;
+
 /** The circuit as banked frames. One call: the mesh and the hulls share it. */
 export function circuitFrames(count = CIRCUIT_SEGMENTS): PathFrame[] {
+  if (count === CIRCUIT_SEGMENTS && circuitCache) return circuitCache;
   const points: Vec3[] = [];
   for (let i = 0; i <= count; i += 1) points.push(circuitPoint((i / count) * TAU));
-  return framesFrom(points, true);
+  const frames = framesFrom(points, true);
+  if (count === CIRCUIT_SEGMENTS) circuitCache = frames;
+  return frames;
 }
 
 /* ------------------------------------------------------------------ *
@@ -619,4 +624,31 @@ export function onRamp(x: number, z: number, pad = 0) {
     if (dx * dx + dz * dz < reach * reach) return true;
   }
   return false;
+}
+
+/**
+ * The nearest point on either road in the sky, and which way it faces.
+ *
+ * Used by the one thing that is allowed to move the car without being asked:
+ * the catch that puts you back on the circuit when you have left it entirely.
+ * Searching both roads rather than the circuit alone matters — leave the
+ * track on the inside of the merge and the slip road is the nearer surface,
+ * and being set down on the track facing the wrong way across it would be a
+ * worse outcome than the fall.
+ */
+export function nearestSkyRoad(x: number, z: number) {
+  let best: PathFrame | null = null;
+  let bestDistance = Infinity;
+  for (const road of [circuitFrames(), rampFrames()]) {
+    for (const f of road) {
+      const dx = x - f.position.x;
+      const dz = z - f.position.z;
+      const d = dx * dx + dz * dz;
+      if (d < bestDistance) {
+        bestDistance = d;
+        best = f;
+      }
+    }
+  }
+  return { frame: best as PathFrame, distance: Math.sqrt(bestDistance) };
 }

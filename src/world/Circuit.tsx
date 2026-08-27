@@ -2,7 +2,12 @@ import { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { Instance, Instances } from "@react-three/drei";
-import { RigidBody, ConvexHullCollider, CuboidCollider } from "@react-three/rapier";
+import {
+  RigidBody,
+  ConvexHullCollider,
+  CuboidCollider,
+  CylinderCollider,
+} from "@react-three/rapier";
 import { NEON } from "./palette";
 import {
   CIRCUIT_HALF,
@@ -45,10 +50,24 @@ const WIDTH = CIRCUIT_HALF * 2;
  * track sideways. It used to be 1.9 on the collider and 0.9 on the thing you
  * could see, which is the worst of both: high enough to stop you, low enough
  * to look like a kerb you could ride over, so every save felt like hitting
- * something invisible. Now one number drives both, and it is tall enough that
- * the only way off the circuit is over a kicker.
+ * something invisible. Now one number drives both.
  */
-const WALL_HEIGHT = 3.2;
+const WALL_HEIGHT = 4.6;
+
+/**
+ * Catch fencing: the barrier is much taller for the length of road a kicker
+ * throws you down.
+ *
+ * A kicker's lip stands seven metres above the deck, so anything launched off
+ * one clears an ordinary barrier with room to spare — walling the whole loop
+ * to that height would put the track in a tube and hide the island it is
+ * hung over. Real circuits do exactly this instead: normal barrier
+ * everywhere, catch fencing where the cars actually get air.
+ */
+const CATCH_HEIGHT = 13;
+/** Frames of catch fencing after a kicker, and the blend in and out of it. */
+const CATCH_RUN = 16;
+const CATCH_BLEND = 5;
 /** The solid part at the bottom. Above this the barrier is a light screen. */
 const KERB_HEIGHT = 0.6;
 
@@ -192,7 +211,11 @@ function Deck({ frames }: { frames: Frame[] }) {
     [frames],
   );
 
-  const rails = useMemo(() => barrierGeometry(frames, HALF, openInner(frames)), [frames]);
+  const heights = useMemo(() => wallHeights(frames), [frames]);
+  const rails = useMemo(
+    () => barrierGeometry(frames, HALF, openInner(frames), undefined, heights),
+    [frames, heights],
+  );
 
   return (
     <group>
@@ -219,6 +242,34 @@ function Deck({ frames }: { frames: Frame[] }) {
  * the merge opening. The climb arrives alongside this edge and runs there, so
  * a rail across that stretch would be a rail across the slip road.
  */
+/**
+ * Barrier height frame by frame: the standing height everywhere, rising to
+ * catch fencing across each kicker and the road it throws you down.
+ */
+function wallHeights(frames: Frame[]) {
+  // Keyed by the frame itself, not by its index. The barrier is swept in runs
+  // that are slices of the loop — and one of them wraps past the start line —
+  // so an index into a run says nothing about where on the circuit it is.
+  const steps = frames.length - 1;
+  const out = new Map<Frame, number>(frames.map((f) => [f, WALL_HEIGHT]));
+  for (const angle of KICKER_ANGLES) {
+    const start = Math.round((angle / (Math.PI * 2)) * steps);
+    for (let k = -CATCH_BLEND; k <= CATCH_RUN + CATCH_BLEND; k += 1) {
+      const t =
+        k < 0
+          ? 1 + k / CATCH_BLEND
+          : k > CATCH_RUN
+            ? 1 - (k - CATCH_RUN) / CATCH_BLEND
+            : 1;
+      const ease = t * t * (3 - 2 * t);
+      const frame = frames[(((start + k) % steps) + steps) % steps];
+      const height = WALL_HEIGHT + (CATCH_HEIGHT - WALL_HEIGHT) * ease;
+      out.set(frame, Math.max(out.get(frame) ?? WALL_HEIGHT, height));
+    }
+  }
+  return (f: Frame) => out.get(f) ?? WALL_HEIGHT;
+}
+
 function openInner(frames: Frame[]) {
   const steps = frames.length - 1;
   const kept: Frame[] = [];
@@ -238,13 +289,14 @@ function openInner(frames: Frame[]) {
     const first = runs.shift()!;
     runs[runs.length - 1] = [...runs[runs.length - 1], ...first];
   }
-  return runs.map((run) => ({ run, from: 0 }));
+  return runs;
 }
 
 type BarrierGeometry = {
   kerbs: THREE.BufferGeometry[];
   screens: THREE.BufferGeometry[];
   caps: THREE.BufferGeometry[];
+  cables: THREE.BufferGeometry[];
 };
 
 /**
@@ -256,37 +308,51 @@ type BarrierGeometry = {
  */
 function barrierGeometry(
   frames: Frame[],
-  edge: number | ((i: number) => number),
-  innerRuns?: { run: Frame[]; from: number }[],
-  outerRuns?: { run: Frame[]; from: number }[],
+  edge: number | ((f: Frame) => number),
+  innerRuns?: Frame[][],
+  outerRuns?: Frame[][],
+  height?: (f: Frame) => number,
 ): BarrierGeometry {
-  const out: BarrierGeometry = { kerbs: [], screens: [], caps: [] };
+  const out: BarrierGeometry = { kerbs: [], screens: [], caps: [], cables: [] };
   const edgeAt = typeof edge === "function" ? edge : () => edge;
+  const topAt = height ?? (() => WALL_HEIGHT);
   const band =
-    (side: number, from: number, v0: number, v1: number, thickness: number) =>
+    (side: number, run: Frame[], v0: number | null, v1: number | null, thickness: number) =>
     (i: number): [number, number][] => {
-      const l = side * edgeAt(from + i);
+      const f = run[i];
+      const l = side * edgeAt(f);
+      const top = topAt(f);
+      // A negative height is read as a fraction of the local top, so a cable
+      // rides up the fence where the fence gets tall instead of stopping at
+      // the height it happened to be authored at.
+      const a = v0 === null ? top : v0 < 0 ? top * -v0 : v0;
+      const b = v1 === null ? top + 0.16 : v1 < 0 ? top * -v1 + 0.13 : v1;
       return [
-        [l - thickness, v0],
-        [l + thickness, v0],
-        [l + thickness, v1],
-        [l - thickness, v1],
+        [l - thickness, a],
+        [l + thickness, a],
+        [l + thickness, b],
+        [l - thickness, b],
       ];
     };
 
   for (const side of [-1, 1]) {
-    const runs = (side < 0 ? innerRuns : outerRuns) ?? [{ run: frames, from: 0 }];
-    for (const { run, from } of runs) {
+    const runs = (side < 0 ? innerRuns : outerRuns) ?? [frames];
+    for (const run of runs) {
       if (run.length < 2) continue;
-      out.kerbs.push(sweep(band(side, from, 0, KERB_HEIGHT, 0.32), run));
-      out.screens.push(sweep(band(side, from, KERB_HEIGHT, WALL_HEIGHT, 0.07), run));
-      out.caps.push(sweep(band(side, from, WALL_HEIGHT, WALL_HEIGHT + 0.16, 0.2), run));
+      out.kerbs.push(sweep(band(side, run, 0, KERB_HEIGHT, 0.32), run));
+      out.screens.push(sweep(band(side, run, KERB_HEIGHT, null, 0.07), run));
+      out.caps.push(sweep(band(side, run, null, null, 0.2), run));
+      // Two cables up the fence. They are what makes its height readable:
+      // a plain translucent screen thirteen metres tall reads as haze.
+      for (const at of [-0.42, -0.72]) {
+        out.cables.push(sweep(band(side, run, at, at, 0.13), run));
+      }
     }
   }
   return out;
 }
 
-function Barrier({ kerbs, screens, caps }: BarrierGeometry) {
+function Barrier({ kerbs, screens, caps, cables }: BarrierGeometry) {
   return (
     <group>
       {kerbs.map((geometry, i) => (
@@ -312,6 +378,16 @@ function Barrier({ kerbs, screens, caps }: BarrierGeometry) {
             color={NEON.cyan}
             emissive={NEON.cyan}
             emissiveIntensity={2.4}
+            toneMapped={false}
+          />
+        </mesh>
+      ))}
+      {cables.map((geometry, i) => (
+        <mesh key={`w${i}`} geometry={geometry}>
+          <meshStandardMaterial
+            color={NEON.cyan}
+            emissive={NEON.cyan}
+            emissiveIntensity={1.1}
             toneMapped={false}
           />
         </mesh>
@@ -440,6 +516,7 @@ function slab(
  * spacing between lips.
  */
 function Surface({ frames }: { frames: Frame[] }) {
+  const heights = useMemo(() => wallHeights(frames), [frames]);
   const pieces = useMemo(() => {
     const out: { road: Float32Array; walls: { side: number; points: Float32Array }[] }[] = [];
     /*
@@ -463,7 +540,14 @@ function Surface({ frames }: { frames: Frame[] }) {
           if (side < 0 && inMergeGap(angle)) continue;
           walls.push({
             side,
-            points: slab(a, far, side * HALF - 0.45, side * HALF + 0.45, WALL_HEIGHT, 0),
+            points: slab(
+              a,
+              far,
+              side * HALF - 0.45,
+              side * HALF + 0.45,
+              Math.max(heights(a), heights(far)),
+              0,
+            ),
           });
         }
       }
@@ -471,7 +555,7 @@ function Surface({ frames }: { frames: Frame[] }) {
       out.push({ road: slab(a, b, -HALF, HALF, 0, -3.5), walls });
     }
     return out;
-  }, [frames]);
+  }, [frames, heights]);
 
   return (
     <RigidBody type="fixed" colliders={false} friction={1}>
@@ -566,6 +650,11 @@ function Pylons({ frames }: { frames: Frame[] }) {
 
 const KICKER_HALF_WIDTH = 3.6;
 /**
+ * How far off the centreline a kicker sits. Enough that the racing line past
+ * it is still clean, not so far that it fires you at the barrier.
+ */
+const KICKER_OFFSET = 1.9;
+/**
  * Sized from the flight time, not by eye. Gravity here is 30, so a shallow
  * kicker barely unweights the car: at 13 long with a 3.2 lip the launch angle
  * is under 14 degrees, which is 0.6s of air at boost speed — not even one
@@ -621,15 +710,16 @@ function Kickers({ frames }: { frames: Frame[] }) {
         const steps = frames.length - 1;
         const index = Math.round((angle / (Math.PI * 2)) * steps) % steps;
         const f = frames[index];
-        // Alternate sides so the loop doesn't turn into a slalom.
+        // Alternate sides so the loop doesn't turn into a slalom — but only
+        // just: they used to sit hard against the barrier, which meant every
+        // jump began from the one place on the track where drifting a metre
+        // sideways in the air puts you over the wall.
         const side = i % 2 ? 1 : -1;
         const basis = new THREE.Matrix4().makeBasis(f.right, f.up, f.forward);
         return {
           position: f.position
             .clone()
-            // Hard against the barrier: the inner half of the track stays a
-            // clean racing line for anyone who isn't jumping.
-            .addScaledVector(f.right, side * (HALF - KICKER_HALF_WIDTH))
+            .addScaledVector(f.right, side * KICKER_OFFSET)
             .addScaledVector(f.up, 0.02),
           quaternion: new THREE.Quaternion().setFromRotationMatrix(basis),
         };
@@ -710,6 +800,11 @@ function ClimbRamp({ frames }: { frames: Frame[] }) {
     });
   }, [frames]);
 
+  const widthOf = useMemo(() => {
+    const map = new Map(frames.map((f, i) => [f, widths[i]]));
+    return (f: Frame) => map.get(f) ?? RAMP_HALF;
+  }, [frames, widths]);
+
   const deck = useMemo(
     () =>
       sweep(
@@ -733,13 +828,10 @@ function ClimbRamp({ frames }: { frames: Frame[] }) {
    */
   const walls = useMemo(
     () =>
-      barrierGeometry(
-        frames,
-        (i) => widths[i],
-        [{ run: frames, from: 0 }],
-        [{ run: frames.slice(0, Math.max(frames.length - mergeLaneFrames(), 2)), from: 0 }],
-      ),
-    [frames, widths],
+      barrierGeometry(frames, widthOf, [frames], [
+        frames.slice(0, Math.max(frames.length - mergeLaneFrames(), 2)),
+      ]),
+    [frames, widthOf],
   );
 
   const dashes = useMemo(() => {
@@ -863,6 +955,11 @@ function RampLegs({ frames }: { frames: Frame[] }) {
 
   return (
     <group>
+      <RigidBody type="fixed" colliders={false}>
+        {legs.map((leg, i) => (
+          <CylinderCollider key={i} args={[leg.height / 2, 1.3]} position={leg.position} />
+        ))}
+      </RigidBody>
       {legs.map((leg, i) => (
         <mesh key={i} position={leg.position}>
           <cylinderGeometry args={[0.75, 1.5, leg.height, 6]} />

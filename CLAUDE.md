@@ -20,6 +20,12 @@ exceeds ~10 km/h and tunnels through geometry that is fine in a real browser.
 Never conclude a physics bug from it. Verify geometry by temporarily moving
 `SPAWN` in `Car.tsx` onto the thing being tested, then **always restore it**.
 
+**The preview's clock only runs while it is drawing.** `useFrame` advances
+during a screenshot and stops between tool calls, so a value polled with
+`javascript_tool` is whatever the last drawn frame left behind. To watch
+something evolve you have to keep taking screenshots; to test a fall, shorten
+the fall rather than waiting for one.
+
 **Console errors persist across reloads.** The message buffer is not cleared by
 navigation, so stale HMR errors from a mid-edit state look live. Confirm in a
 fresh tab (`tabs_create` + `navigate`) before believing one.
@@ -90,6 +96,24 @@ fresh tab (`tabs_create` + `navigate`) before believing one.
 - **What you hit must be what you see.** The barriers were 1.9 tall in physics
   and 0.9 in the mesh, so every save felt like an invisible wall. One constant
   now drives both.
+- **A kicker's lip is seven metres up, so no sane barrier contains a jump.**
+  Walling the whole loop to jump height puts the track in a tube and hides the
+  island it hangs over. Real circuits use normal barrier everywhere and catch
+  fencing only where the cars get air; so does this one, and the fence's
+  height is legible because cables ride *up* it rather than sitting at a fixed
+  height.
+- **Geometry alone cannot promise "you can't fall off".** A hard enough
+  landing on the lip of a wall still gets over it. The catch in `Car.tsx` is
+  the backstop: fall below every road with a sky road in recent memory and you
+  are set down on the nearest one. It must be announced — a silent teleport
+  reads as a bug, not a rescue.
+- **Anything that looks solid must be solid.** Lamp posts, rocks, pylons and
+  ramp legs all carry colliders sized to the mesh. A collider bigger than the
+  thing turns a clip into a stop; one smaller lets you drive through the
+  middle of it.
+- **Barrier runs are slices of the loop, and one of them wraps the start
+  line** — so a per-frame lookup keyed by index into a run is wrong. Key by
+  the frame object.
 - **Nothing may be placed by angle alone.** Kickers, pylons and ring legs are
   all positioned parametrically, and each needs an explicit test against the
   ramp's footprint — a kicker in the mouth of the slip road, or a pylon down
