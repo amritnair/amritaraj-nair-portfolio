@@ -1,5 +1,5 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/World-BeqAFbNR.js","assets/index-BbhTN0zs.js","assets/index-DjAQp_1q.css"])))=>i.map(i=>d[i]);
-import { r as X, g as ud, e as MI, j as N, T as Rd, s as GG, P as mt, L as _r, _ as oU, Z as fE, a as tU, __tla as __tla_0 } from "./index-BbhTN0zs.js";
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/World-rcfzu2gv.js","assets/index-B5Jlpu45.js","assets/index-xIDfUlEg.css"])))=>i.map(i=>d[i]);
+import { r as X, g as ud, e as MI, j as N, T as Rd, s as GG, P as mt, L as _r, _ as oU, Z as fE, a as tU, __tla as __tla_0 } from "./index-B5Jlpu45.js";
 let ro, li, DS, WC, OB, zt, mC, XA, aQ, cD, Xt, VR, yg, qg, tQ, fo, Ro, $S, Zr, nB, Jg, Pr, m, aB, yA, yo, wi, Ds, hR, UB, rQ, YQ, mU, Yg, UK, un, UC, HQ, hC, ag, Dp, cI, A2, Ww, vE, Lb, qb, eC, ep, lg, JS, ip, ao, CT, WO, BQ, Ih, yO, pr, dD, NC, zO, MO, I2, B2, Q2, jO, iC, UI, zI, MB, jE, db, XO, jw, Jb, Mi, fb, JE, Ui, fs, VI, iS, bI, PO, tp, Vw, BI, Yb, $O, EC, Mb, jC, gu, VO, g2, C2, i2, MC, Xr, NS, $K, ZB, pi, jr, hS, KB, qC, ui, VC, ZS, xd, GC, xQ, lN, sQ, tx, DR, KS, Lo, ZO, wN;
 let __tla = Promise.all([
   (() => {
@@ -38384,8 +38384,8 @@ No matching component was found for:
     horizon: "#6b3f8f",
     ground: "#2d2b5e",
     groundEdge: "#1d1b42",
-    pavement: "#5d59a0",
-    pavementDark: "#464279",
+    pavement: "#454179",
+    pavementDark: "#353163",
     road: "#3a3773",
     foliageDark: "#1f6b58",
     foliage: "#2e9271",
@@ -38868,7 +38868,7 @@ No matching component was found for:
             }),
             N.jsx("meshStandardMaterial", {
               map: jb,
-              color: "#cfcfe8",
+              color: "#8b88bd",
               roughness: 0.95
             })
           ]
@@ -40303,7 +40303,12 @@ No matching component was found for:
     }, [
       A
     ]), A ? N.jsxs("aside", {
-      className: "pointer-events-auto fixed inset-y-0 right-0 z-30 flex w-[30rem] max-w-[42vw] flex-col border-l border-white/10 bg-[#080616]/[0.98] backdrop-blur-xl",
+      className: "pointer-events-auto fixed inset-y-0 right-0 z-30 flex w-[34rem] max-w-[46vw] flex-col border-l backdrop-blur-xl",
+      style: {
+        borderColor: `${A.color}40`,
+        background: `linear-gradient(200deg, ${A.color}1f, #07051400 42%), #070514f2`,
+        boxShadow: `-30px 0 70px -30px ${A.color}66`
+      },
       children: [
         N.jsx("style", {
           children: `
@@ -40334,11 +40339,11 @@ No matching component was found for:
                     ]
                   }),
                   N.jsx("h2", {
-                    className: "mt-1.5 text-[2.6rem] font-black leading-[0.9] tracking-tight text-white",
+                    className: "mt-2 text-[3.1rem] font-black leading-[0.86] tracking-[-0.02em] text-white",
                     children: A.sign
                   }),
                   N.jsx("p", {
-                    className: "mt-1.5 max-w-[22rem] text-[0.82rem] leading-snug text-[#a9a2d8]",
+                    className: "mt-2 max-w-[24rem] text-[0.9rem] leading-snug text-[#bdb6e4]",
                     children: A.caption
                   })
                 ]
@@ -40356,8 +40361,10 @@ No matching component was found for:
         N.jsx("div", {
           className: "flex-1 space-y-3 overflow-y-auto px-6 py-5",
           children: A.cards.map((I, g) => N.jsxs("article", {
-            className: "relative rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.055] to-white/[0.02] p-5 pl-6",
+            className: "relative overflow-hidden rounded-2xl border p-5 pl-7",
             style: {
+              borderColor: `${A.color}30`,
+              background: `linear-gradient(180deg, ${A.color}14, #ffffff05)`,
               animation: `panel-in 0.42s cubic-bezier(.2,.8,.2,1) ${g * 80}ms both`
             },
             children: [
@@ -40369,18 +40376,26 @@ No matching component was found for:
                   animation: `rail-grow 0.5s ease-out ${g * 80 + 120}ms both`
                 }
               }),
+              N.jsx("span", {
+                "aria-hidden": true,
+                className: "pointer-events-none absolute right-3 top-1 select-none text-[3.2rem] font-black leading-none opacity-[0.09]",
+                style: {
+                  color: A.glow
+                },
+                children: String(g + 1).padStart(2, "0")
+              }),
               N.jsxs("div", {
-                className: "flex items-start justify-between gap-3",
+                className: "relative flex items-start justify-between gap-3",
                 children: [
                   N.jsxs("div", {
                     className: "min-w-0",
                     children: [
                       N.jsx("h3", {
-                        className: "text-[1.05rem] font-black leading-tight tracking-tight text-white",
+                        className: "text-[1.18rem] font-black leading-tight tracking-tight text-white",
                         children: I.title
                       }),
                       N.jsx("p", {
-                        className: "mt-0.5 text-[0.76rem] font-semibold",
+                        className: "mt-1 text-[0.82rem] font-semibold",
                         style: {
                           color: A.glow
                         },
@@ -40395,30 +40410,30 @@ No matching component was found for:
                 ]
               }),
               I.body && N.jsx("p", {
-                className: "mt-3 text-[0.83rem] leading-[1.6] text-[#c2bce6]",
+                className: "relative mt-3 text-[0.9rem] leading-[1.65] text-[#d3cdf2]",
                 children: I.body
               }),
               I.bullets.length > 0 && N.jsx("ul", {
-                className: "mt-3.5 space-y-2 border-t border-white/[0.07] pt-3.5",
+                className: "relative mt-4 space-y-2.5 border-t border-white/[0.09] pt-4",
                 children: I.bullets.map((C) => N.jsxs("li", {
-                  className: "flex gap-2.5 text-[0.79rem] leading-[1.55]",
+                  className: "flex gap-3 text-[0.86rem] leading-[1.6]",
                   children: [
                     N.jsx("span", {
                       "aria-hidden": true,
-                      className: "mt-[0.42rem] h-1 w-1 shrink-0 rounded-full",
+                      className: "mt-[0.46rem] h-1.5 w-1.5 shrink-0 rotate-45",
                       style: {
                         background: A.glow
                       }
                     }),
                     N.jsx("span", {
-                      className: "text-[#a8a1d4]",
+                      className: "text-[#bcb5e2]",
                       children: wO(C, A.glow)
                     })
                   ]
                 }, C))
               }),
               I.tags && I.tags.length > 0 && N.jsx("div", {
-                className: "mt-4 flex flex-wrap gap-1.5",
+                className: "relative mt-4 flex flex-wrap gap-1.5",
                 children: I.tags.map((C) => N.jsx("span", {
                   className: "rounded-md border px-2 py-[0.15rem] font-mono text-[0.58rem] tracking-wide",
                   style: {
@@ -40430,7 +40445,7 @@ No matching component was found for:
                 }, C))
               }),
               I.links && I.links.length > 0 && N.jsx("div", {
-                className: "mt-4 flex flex-wrap gap-2",
+                className: "relative mt-4 flex flex-wrap gap-2",
                 children: I.links.map((C) => N.jsxs("a", {
                   href: lO(C.href),
                   target: "_blank",
@@ -42236,7 +42251,7 @@ No matching component was found for:
       };
     }, []);
   }
-  const mO = X.lazy(() => oU(() => import("./World-BeqAFbNR.js"), __vite__mapDeps([0,1,2])));
+  const mO = X.lazy(() => oU(() => import("./World-rcfzu2gv.js"), __vite__mapDeps([0,1,2])));
   function HO() {
     try {
       const B = document.createElement("canvas");
