@@ -7,20 +7,27 @@
  */
 
 /** Peak forward force at a standstill. Falls off towards top speed. */
-export const ACCELERATION = 62;
+export const ACCELERATION = 84;
 /** Force still available at the speed limiter — keeps the top end from feeling dead. */
 export const ACCELERATION_FLOOR = 0.22;
-export const REVERSE_ACCELERATION = 34;
+export const REVERSE_ACCELERATION = 44;
 /** Deceleration when you ask for reverse while still rolling forwards. */
-export const BRAKE_FORCE = 58;
+export const BRAKE_FORCE = 74;
 /** Speed below which "reverse" means reverse rather than brake. */
 export const REVERSE_THRESHOLD = 1.6;
 
-export const MAX_SPEED = 30;
-export const BOOST_SPEED = 44;
-export const BOOST_ACCELERATION = 96;
+/*
+ * Top speed is set against the size of the world, not against a number that
+ * sounds right. The circuit is the best part of a kilometre around; at the old
+ * thirty a lap was a long, flat cruise, and the island — a hundred and twenty
+ * across — took half a minute to cross. Everything else in this file is scaled
+ * to keep the same shape of power band at the higher ceiling.
+ */
+export const MAX_SPEED = 40;
+export const BOOST_SPEED = 58;
+export const BOOST_ACCELERATION = 132;
 
-export const TURN_RATE = 2.6;
+export const TURN_RATE = 2.9;
 /** Multiplier on turn rate with the handbrake down. */
 export const DRIFT_TURN_GAIN = 1.45;
 export const GRIP = 0.9;
@@ -79,11 +86,11 @@ export const KICKER_RADIUS = 7.5;
 export const KICKER_BOOST_FILL = 55;
 
 /** Camera framing. Field of view widens with speed to sell it. */
-export const FOV_SPEED_GAIN = 13;
-export const FOV_BOOST_GAIN = 7;
-export const CAM_DISTANCE = 11.5;
-export const CAM_SPEED_PULLBACK = 3.4;
-export const CAM_HEIGHT = 5.4;
+export const FOV_SPEED_GAIN = 19;
+export const FOV_BOOST_GAIN = 11;
+export const CAM_DISTANCE = 10.6;
+export const CAM_SPEED_PULLBACK = 5.2;
+export const CAM_HEIGHT = 4.8;
 
 /**
  * Force curve: full push from rest, tapering as you approach the limiter so

@@ -25,7 +25,15 @@ export default function Panel() {
   return (
     <aside
       key={zone.id}
-      className="pointer-events-auto fixed inset-y-0 right-0 z-30 flex w-[30rem] max-w-[42vw] flex-col border-l border-white/10 bg-[#080616]/[0.98] backdrop-blur-xl"
+      className="pointer-events-auto fixed inset-y-0 right-0 z-30 flex w-[34rem] max-w-[46vw] flex-col border-l backdrop-blur-xl"
+      style={{
+        borderColor: `${zone.color}40`,
+        // Tinted towards the district rather than flat black: the panel is
+        // meant to read as this place's readout, not as a browser dialog
+        // parked over the game.
+        background: `linear-gradient(200deg, ${zone.color}1f, #07051400 42%), #070514f2`,
+        boxShadow: `-30px 0 70px -30px ${zone.color}66`,
+      }}
     >
       <style>{`
         @keyframes panel-in { from { opacity:0; transform:translateY(16px) } to { opacity:1; transform:none } }
@@ -49,10 +57,10 @@ export default function Panel() {
             >
               {zone.cards.length} {zone.cards.length === 1 ? "entry" : "entries"}
             </div>
-            <h2 className="mt-1.5 text-[2.6rem] font-black leading-[0.9] tracking-tight text-white">
+            <h2 className="mt-2 text-[3.1rem] font-black leading-[0.86] tracking-[-0.02em] text-white">
               {zone.sign}
             </h2>
-            <p className="mt-1.5 max-w-[22rem] text-[0.82rem] leading-snug text-[#a9a2d8]">
+            <p className="mt-2 max-w-[24rem] text-[0.9rem] leading-snug text-[#bdb6e4]">
               {zone.caption}
             </p>
           </div>
@@ -71,8 +79,12 @@ export default function Panel() {
         {zone.cards.map((card, index) => (
           <article
             key={card.id}
-            className="relative rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.055] to-white/[0.02] p-5 pl-6"
-            style={{ animation: `panel-in 0.42s cubic-bezier(.2,.8,.2,1) ${index * 80}ms both` }}
+            className="relative overflow-hidden rounded-2xl border p-5 pl-7"
+            style={{
+              borderColor: `${zone.color}30`,
+              background: `linear-gradient(180deg, ${zone.color}14, #ffffff05)`,
+              animation: `panel-in 0.42s cubic-bezier(.2,.8,.2,1) ${index * 80}ms both`,
+            }}
           >
             {/* Accent rail, drawn on rather than a border, so it can animate. */}
             <span
@@ -84,13 +96,21 @@ export default function Panel() {
               }}
             />
 
-            <div className="flex items-start justify-between gap-3">
+            <span
+              aria-hidden
+              className="pointer-events-none absolute right-3 top-1 select-none text-[3.2rem] font-black leading-none opacity-[0.09]"
+              style={{ color: zone.glow }}
+            >
+              {String(index + 1).padStart(2, "0")}
+            </span>
+
+            <div className="relative flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <h3 className="text-[1.05rem] font-black leading-tight tracking-tight text-white">
+                <h3 className="text-[1.18rem] font-black leading-tight tracking-tight text-white">
                   {card.title}
                 </h3>
                 <p
-                  className="mt-0.5 text-[0.76rem] font-semibold"
+                  className="mt-1 text-[0.82rem] font-semibold"
                   style={{ color: zone.glow }}
                 >
                   {card.subtitle}
@@ -104,26 +124,26 @@ export default function Panel() {
             </div>
 
             {card.body && (
-              <p className="mt-3 text-[0.83rem] leading-[1.6] text-[#c2bce6]">{card.body}</p>
+              <p className="relative mt-3 text-[0.9rem] leading-[1.65] text-[#d3cdf2]">{card.body}</p>
             )}
 
             {card.bullets.length > 0 && (
-              <ul className="mt-3.5 space-y-2 border-t border-white/[0.07] pt-3.5">
+              <ul className="relative mt-4 space-y-2.5 border-t border-white/[0.09] pt-4">
                 {card.bullets.map((bullet) => (
-                  <li key={bullet} className="flex gap-2.5 text-[0.79rem] leading-[1.55]">
+                  <li key={bullet} className="flex gap-3 text-[0.86rem] leading-[1.6]">
                     <span
                       aria-hidden
-                      className="mt-[0.42rem] h-1 w-1 shrink-0 rounded-full"
+                      className="mt-[0.46rem] h-1.5 w-1.5 shrink-0 rotate-45"
                       style={{ background: zone.glow }}
                     />
-                    <span className="text-[#a8a1d4]">{highlight(bullet, zone.glow)}</span>
+                    <span className="text-[#bcb5e2]">{highlight(bullet, zone.glow)}</span>
                   </li>
                 ))}
               </ul>
             )}
 
             {card.tags && card.tags.length > 0 && (
-              <div className="mt-4 flex flex-wrap gap-1.5">
+              <div className="relative mt-4 flex flex-wrap gap-1.5">
                 {card.tags.map((tag) => (
                   <span
                     key={tag}
@@ -141,7 +161,7 @@ export default function Panel() {
             )}
 
             {card.links && card.links.length > 0 && (
-              <div className="mt-4 flex flex-wrap gap-2">
+              <div className="relative mt-4 flex flex-wrap gap-2">
                 {card.links.map((link) => (
                   <a
                     key={link.label}

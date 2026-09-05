@@ -54,11 +54,17 @@ export default function World() {
       <color attach="background" args={[PALETTE.fog]} />
       <fogExp2 attach="fog" args={[PALETTE.fog, 0.0075]} />
 
-      <hemisphereLight args={[PALETTE.horizon, PALETTE.ground, 1.55]} />
-      <ambientLight intensity={0.5} color="#6c5fbb" />
+      {/*
+        Fill is deliberately low. The old values lit every surface evenly
+        enough that the island read as a pale grey slab in daylight — and a
+        world lit flat has nothing left for the neon to do. Most of what you
+        see here should come from things that glow.
+      */}
+      <hemisphereLight args={[PALETTE.horizon, PALETTE.ground, 0.72]} />
+      <ambientLight intensity={0.28} color="#6c5fbb" />
       <directionalLight
         position={[48, 70, 28]}
-        intensity={1.9}
+        intensity={1.35}
         color={PALETTE.moon}
         castShadow
         // 1024 is plenty for a night scene lit mostly by bloom: the shadow

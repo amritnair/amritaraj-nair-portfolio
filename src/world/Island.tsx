@@ -116,7 +116,7 @@ function Terrain() {
 
       <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <circleGeometry args={[ISLAND_RADIUS, 96]} />
-        <meshStandardMaterial map={GROUND_TEXTURE} color="#cfcfe8" roughness={0.95} />
+        <meshStandardMaterial map={GROUND_TEXTURE} color="#8b88bd" roughness={0.95} />
       </mesh>
       {/* Skirt so the island reads as a floating slab, not a decal. */}
       <mesh position={[0, -5, 0]}>

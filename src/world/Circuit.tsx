@@ -908,7 +908,7 @@ function RampSurface({ frames, widths }: { frames: Frame[]; widths: number[] }) 
         if (!onLane(frames, i))
           walls.push(slab(a, far, wa - 0.45, wa + 0.45, WALL_HEIGHT, 0, [wf - 0.45, wf + 0.45]));
       }
-      out.push({ road: slab(a, b, -wa, wa, 0, -0.9, [-wb, wb]), walls });
+      out.push({ road: slab(a, b, -wa, wa, 0, -2.6, [-wb, wb]), walls });
     }
     return out;
   }, [frames, widths]);
