@@ -23914,10 +23914,10 @@ Best regards`);
         ]
       })
     });
-  }, sj = x.lazy(() => RA(() => import("./GamePortfolio-D4qJVHYK.js").then(async (m) => {
+  }, sj = x.lazy(() => RA(() => import("./GamePortfolio-CiZoWX6K.js").then(async (m) => {
     await m.__tla;
     return m;
-  }).then((t) => t.b3), [])), oj = new aD(), rj = () => w.jsx("div", {
+  }).then((t) => t.b4), [])), oj = new aD(), rj = () => w.jsx("div", {
     className: "flex h-[100dvh] items-center justify-center bg-[#160f34] font-mono text-xs uppercase tracking-[0.3em] text-[#9d8bff]",
     children: "Loading world\u2026"
   }), lj = () => w.jsx(oO, {
