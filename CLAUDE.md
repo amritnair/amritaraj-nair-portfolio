@@ -49,6 +49,22 @@ fresh tab (`tabs_create` + `navigate`) before believing one.
       audio.ts      procedural WebAudio, no asset files
       ui/           Hud, Panel (in-world résumé), Garage (shop), CarPreview
     src/pages/      AllProjects (written portfolio), Resume (PDF), NotFound
+    tools/car.py    Blender script for the car's shell. `npm run model:car`
+    public/models/  its output, committed — CI has no Blender
+
+## The one asset
+
+Everything in this world is generated in code except the car's shell, which
+is lofted and bevelled in Blender by `tools/car.py`. Two things justify the
+pipeline: a silhouette that tapers (a car built from boxes is a stack of
+rectangles) and bevelled edges (a hard 90° edge catches no light, so low-poly
+reads as flat shapes). The export carries **no materials** — paint comes from
+the garage — and the `.glb` is committed because the deploy runner has no
+Blender. Regenerate with `npm run model:car` after editing the script.
+
+Blender is Z-up and the exporter converts to glTF's Y-up: a station's height
+goes in Z and its position down the car in **-Y**. Built the obvious way
+round, the car exports standing on its nose.
 
 ## Rules that came from real bugs
 

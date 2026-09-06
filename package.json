@@ -8,7 +8,8 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "model:car": "'/Applications/Blender.app/Contents/MacOS/Blender' --background --python tools/car.py -- public/models/car.glb"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

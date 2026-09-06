@@ -1,5 +1,6 @@
 import { createContext, useContext, useRef } from "react";
 import * as THREE from "three";
+import { useGLTF } from "@react-three/drei";
 import { PAINTS, WHEEL_BY_ID, WHEELS, type Paint } from "./garage";
 
 /**
@@ -203,57 +204,32 @@ export function VehicleShell({
   );
 }
 
+const CAR_MODEL = `${import.meta.env.BASE_URL}models/car.glb`;
+
+/**
+ * The body and canopy, lofted and bevelled in Blender — see `tools/car.py`.
+ *
+ * Only the shell comes from the file. Paint, trim, wheels, thrusters and the
+ * body kits stay in code, because every one of them either changes with the
+ * garage or animates per frame, and a static mesh can do neither. The export
+ * carries no materials for the same reason: the colour is the player's.
+ */
 function Hull() {
   const paint = usePaint();
-  const panel = lighten(paint.shell);
+  const { nodes } = useGLTF(CAR_MODEL) as unknown as { nodes: Record<string, THREE.Mesh> };
 
   return (
     <>
-      {/* Main hull — wide, flat and low. */}
-      <mesh castShadow receiveShadow position={[0, 0.02, 0]}>
-        <boxGeometry args={[1.96, 0.44, 4.0]} />
+      <mesh castShadow receiveShadow geometry={nodes.Body.geometry}>
         <meshStandardMaterial
           color={paint.shell}
           roughness={paint.roughness}
           metalness={paint.metalness}
-          flatShading
         />
       </mesh>
-      {/* Nose, stepped down and narrowed so the front reads as a blade. */}
-      <mesh castShadow position={[0, -0.06, -2.14]}>
-        <boxGeometry args={[1.62, 0.28, 0.72]} />
-        <meshStandardMaterial
-          color={paint.shell}
-          roughness={paint.roughness}
-          metalness={paint.metalness}
-          flatShading
-        />
-      </mesh>
-      <mesh castShadow position={[0, -0.13, -2.62]}>
-        <boxGeometry args={[1.24, 0.16, 0.42]} />
-        <meshStandardMaterial
-          color={panel}
-          roughness={paint.roughness}
-          metalness={paint.metalness}
-          flatShading
-        />
-      </mesh>
-      {/* Shoulders over the rear wheels. */}
-      {[-0.94, 0.94].map((x) => (
-        <mesh key={x} castShadow position={[x, 0.16, 1.28]}>
-          <boxGeometry args={[0.42, 0.5, 1.5]} />
-          <meshStandardMaterial
-            color={panel}
-            roughness={paint.roughness}
-            metalness={paint.metalness}
-            flatShading
-          />
-        </mesh>
-      ))}
-      {/* Canopy: a single tinted wedge, no frame — frames read as clutter at
+      {/* Canopy: a single tinted volume, no frame — frames read as clutter at
           this scale and kill the silhouette. */}
-      <mesh castShadow position={[0, 0.42, -0.16]} rotation={[0.06, 0, 0]}>
-        <boxGeometry args={[1.32, 0.46, 1.9]} />
+      <mesh castShadow geometry={nodes.Canopy.geometry}>
         <meshStandardMaterial
           color="#0d1b3a"
           emissive={paint.trim}
@@ -267,6 +243,9 @@ function Hull() {
     </>
   );
 }
+
+useGLTF.preload(CAR_MODEL);
+
 
 function Trim() {
   const paint = usePaint();
