@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { Instance, Instances } from "@react-three/drei";
 import { RigidBody, CuboidCollider, CylinderCollider } from "@react-three/rapier";
+import { useGLTF } from "@react-three/drei";
 import { PALETTE, makeRandom } from "./palette";
 import { ZONES } from "./content";
 import { ISLAND_RADIUS, onRampCorridor, onRingLeg } from "./layout";
@@ -195,44 +196,48 @@ function Roads() {
   );
 }
 
+const PROPS = `${import.meta.env.BASE_URL}models/props.glb`;
+
+/** Both scatter props come from one file — see `tools/props.py`. */
+function useProps() {
+  const { nodes } = useGLTF(PROPS) as unknown as { nodes: Record<string, THREE.Mesh> };
+  return nodes;
+}
+
 function TreeField({ trees }: { trees: Scatter[] }) {
+  const nodes = useProps();
+
   return (
     <group>
-      <Instances limit={trees.length} castShadow receiveShadow>
-        <cylinderGeometry args={[0.34, 0.5, 2.4, 6]} />
-        <meshStandardMaterial color={PALETTE.bark} roughness={0.9} flatShading />
-        {trees.map((tree, i) => (
-          <Instance
-            key={i}
-            position={[tree.position[0], 1.2 * tree.scale, tree.position[2]]}
-            scale={[tree.scale, tree.scale, tree.scale]}
-            rotation={[0, tree.rotation, 0]}
-          />
-        ))}
-      </Instances>
-
-      <Instances limit={trees.length} castShadow>
-        <coneGeometry args={[2.5, 4.6, 7]} />
+      {/* The solid tree: trunk and three tapered tiers, bevelled in Blender.
+          One instanced draw for all of them. */}
+      <Instances limit={trees.length} geometry={nodes.Tree.geometry} castShadow receiveShadow>
         <meshStandardMaterial color={PALETTE.foliageDark} roughness={0.85} flatShading />
         {trees.map((tree, i) => (
           <Instance
             key={i}
-            position={[tree.position[0], 3.6 * tree.scale, tree.position[2]]}
-            scale={[tree.scale, tree.scale, tree.scale]}
+            position={[tree.position[0], 0, tree.position[2]]}
+            scale={tree.scale}
             rotation={[0, tree.rotation, 0]}
           />
         ))}
       </Instances>
 
-      <Instances limit={trees.length} castShadow>
-        <coneGeometry args={[1.7, 3.4, 7]} />
-        <meshStandardMaterial color={PALETTE.foliage} roughness={0.8} flatShading />
+      {/* The lit rim under each tier. Without it the trees are black cutouts:
+          nothing in this world is lit by anything except things that glow. */}
+      <Instances limit={trees.length} geometry={nodes.TreeGlow.geometry}>
+        <meshStandardMaterial
+          color={PALETTE.foliageLight}
+          emissive={PALETTE.foliageLight}
+          emissiveIntensity={1.5}
+          toneMapped={false}
+        />
         {trees.map((tree, i) => (
           <Instance
             key={i}
-            position={[tree.position[0], 6.0 * tree.scale, tree.position[2]]}
-            scale={[tree.scale, tree.scale, tree.scale]}
-            rotation={[0, tree.rotation * 1.7, 0]}
+            position={[tree.position[0], 0, tree.position[2]]}
+            scale={tree.scale}
+            rotation={[0, tree.rotation, 0]}
           />
         ))}
       </Instances>
@@ -253,6 +258,8 @@ function TreeField({ trees }: { trees: Scatter[] }) {
 }
 
 function RockField({ rocks }: { rocks: Scatter[] }) {
+  const nodes = useProps();
+
   return (
     <>
       {/* Matched to the mesh rather than to a generous bounding box: these sit
@@ -268,17 +275,16 @@ function RockField({ rocks }: { rocks: Scatter[] }) {
         ))}
       </RigidBody>
 
-      <Instances limit={rocks.length} castShadow receiveShadow>
-      <dodecahedronGeometry args={[1, 0]} />
-      <meshStandardMaterial color={PALETTE.rock} roughness={0.95} flatShading />
-      {rocks.map((rock, i) => (
-        <Instance
-          key={i}
-          position={[rock.position[0], rock.scale * 0.42, rock.position[2]]}
-          scale={[rock.scale, rock.scale * 0.6, rock.scale]}
-          rotation={[rock.rotation, rock.rotation * 2, rock.rotation * 0.5]}
-        />
-      ))}
+      <Instances limit={rocks.length} geometry={nodes.Rock.geometry} castShadow receiveShadow>
+        <meshStandardMaterial color={PALETTE.rock} roughness={0.95} flatShading />
+        {rocks.map((rock, i) => (
+          <Instance
+            key={i}
+            position={[rock.position[0], rock.scale * 0.45, rock.position[2]]}
+            scale={rock.scale}
+            rotation={[0, rock.rotation, rock.rotation * 0.35]}
+          />
+        ))}
       </Instances>
     </>
   );
@@ -500,3 +506,5 @@ function Boundary() {
     </RigidBody>
   );
 }
+
+useGLTF.preload(PROPS);
