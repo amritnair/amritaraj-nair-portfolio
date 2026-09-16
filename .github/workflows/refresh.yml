@@ -17,14 +17,8 @@ jobs:
       matrix:
         repo:
           - amritaraj-nair-portfolio
-          - Thorp
-          - tradingjournal-lab
-          - signal-lab
-          - Dedalus-Labs-VM-Migration
-          - ImpactBundle
-          - Datify.AI
-          - AutoDrafter.AI
-          - cattle-pulse-sim
+          - Harbor
+          - hookemhacks
     steps:
       - uses: actions/checkout@v4
         with:
