@@ -14,6 +14,12 @@ export type Card = {
   bullets: string[];
   tags?: string[];
   links?: Link[];
+  /**
+   * A screenshot of the thing itself, under `public/shots/`. Captured from the
+   * live site by `npm run shots`, so it cannot drift from what is deployed.
+   * The 3D world ignores this; only the written page uses it.
+   */
+  shot?: string;
 };
 
 export type Zone = {
@@ -146,10 +152,8 @@ export const ZONES: Zone[] = [
           "Built the social layer — posts, follows, paper-trading P&L — on PostgreSQL",
         ],
         tags: ["iOS", "TypeScript", "PostgreSQL", "Serverless"],
-        links: [
-          { label: "App Store", href: "https://apps.apple.com/app/thorp" },
-          { label: "thorp-trade.vercel.app", href: "https://thorp-trade.vercel.app" },
-        ],
+        shot: "shots/thorp-home.jpg",
+        links: [{ label: "thorp-trade.vercel.app", href: "https://thorp-trade.vercel.app" }],
       },
       {
         id: "clinicalhours",
@@ -164,6 +168,8 @@ export const ZONES: Zone[] = [
           "Shipped AI resume and application tools; partnered with clinics including BCS Free Health Clinic",
         ],
         tags: ["OpenAI", "Gemini", "Gmail API", "MapBox"],
+        shot: "shots/clinicalhours.jpg",
+        links: [{ label: "clinicalhours.org", href: "https://clinicalhours.org" }],
       },
       {
         id: "shotsensei",
@@ -178,6 +184,11 @@ export const ZONES: Zone[] = [
           "Invited to McCombs School of Business to pitch Pear VC",
         ],
         tags: ["OpenCV", "YOLOv8", "Gemini", "ElevenLabs", "Supabase"],
+        shot: "shots/shotsensei.jpg",
+        links: [
+          { label: "playshotsensei.com", href: "https://playshotsensei.com" },
+          { label: "Demo video", href: "https://www.youtube.com/watch?v=v3SNs0O3G5g" },
+        ],
       },
     ],
   },

@@ -53,6 +53,7 @@ fresh tab (`tabs_create` + `navigate`) before believing one.
     tools/props.py  Blender: island trees and rocks. `npm run model:props`
     tools/hero.py   Blender: the landing still. `npm run model:hero`
     tools/reel.py   Blender frames + ffmpeg encode. `npm run model:reel`
+    tools/shots.sh  headless Chrome screenshots of the live projects. `npm run shots`
     public/models/  public/hero/  their output, committed — CI has no Blender
 
 ## Routes
@@ -103,6 +104,14 @@ hidden and the film transparent, because against a lit floor the car is a dark
 silhouette and a luminance ramp inverts it; and a ramp mapping must be
 **measured from the image**, not fixed, or a deliberately dark scene lands
 entirely on two characters.
+
+**Screenshots come from the live sites** (`npm run shots`), so they cannot
+drift from what is deployed. Two traps: `--virtual-time-budget` never
+completes on a page with a continuous animation loop and Chrome hangs
+forever, so the script caps on wall-clock instead; and anything behind a
+sign-in or lazily loaded captures as skeleton placeholders — Thorp's /feed and
+/build both did, and were thrown away. **Look at every capture before shipping
+it.** A screenshot of an empty state is worse than no screenshot.
 
 **A muted autoplay is still refused often enough** — data saver, background
 tab, Low Power Mode — that any hero video needs an explicit `play()` on

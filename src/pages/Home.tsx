@@ -264,6 +264,19 @@ export default function Home() {
                     </div>
                   )}
                 </div>
+
+                {card.shot && (
+                  <figure className="col-span-full mt-4 border border-black bg-black">
+                    <img
+                      src={withBase(card.shot)}
+                      alt={`${card.title} — screenshot of the live product`}
+                      width={1600}
+                      height={1000}
+                      loading="lazy"
+                      className="block w-full"
+                    />
+                  </figure>
+                )}
               </Reveal>
             ))}
           </div>
