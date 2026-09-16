@@ -18922,12 +18922,12 @@ Error generating stack: ` + i.message + `
             S.jsx(Xf, {
               className: "u-reveal border-t border-[var(--ink)] bg-[var(--panel)] px-6 py-10 sm:px-10",
               children: S.jsx("img", {
-                src: yn("resume-preview.jpg"),
+                src: yn("resume-preview.png"),
                 alt: "Amritaraj Nair's r\xE9sum\xE9",
-                width: 1400,
-                height: 1812,
+                width: 1891,
+                height: 2448,
                 loading: "lazy",
-                className: "mx-auto block w-full max-w-3xl border border-[var(--ink)] bg-[var(--paper)]"
+                className: "mx-auto block w-full max-w-3xl border border-[var(--ink)] bg-white"
               })
             })
           ]
@@ -24390,7 +24390,7 @@ Best regards`);
         ]
       })
     });
-  }, A4 = b.lazy(() => BA(() => import("./GamePortfolio-Dqd8ijUg.js").then(async (m) => {
+  }, A4 = b.lazy(() => BA(() => import("./GamePortfolio-BfSVivpc.js").then(async (m) => {
     await m.__tla;
     return m;
   }).then((t) => t.b4), [])), C4 = new hO(), M4 = () => S.jsx("div", {
