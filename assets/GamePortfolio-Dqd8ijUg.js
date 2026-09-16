@@ -1,5 +1,5 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/World-sYYnZdbN.js","assets/index-JJtujX-4.js","assets/index-DZvSN1L_.css"])))=>i.map(i=>d[i]);
-import { r as X, g as cJ, e as MI, j as p, T as lJ, s as AM, P as is, L as nD, _ as ZU, Z as vE, a as PU, __tla as __tla_0 } from "./index-JJtujX-4.js";
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/World-DbVRgIO6.js","assets/index-BWdVoLIa.js","assets/index-DAIg9Gyh.css"])))=>i.map(i=>d[i]);
+import { r as X, g as cJ, e as MI, j as p, T as lJ, s as AM, P as is, L as nD, _ as ZU, Z as vE, a as PU, __tla as __tla_0 } from "./index-BWdVoLIa.js";
 let dQ, XN, TS, TC, pB, ls, bC, pQ, wi, mD, bA, cs, rg, fg, ci, Ee, zt, Jf, KC, DB, kg, aD, m, rB, dw, yA, Ht, ds, zR, n4, Jt, Gi, Oi, GK, Rg, BN, za, NC, li, jg, XC, Vp, nI, l4, Ny, Be, I2, A2, sC, Op, wg, Qw, Tp, ji, yb, a4, PB, Gh, H2, Wr, XD, pC, h4, b2, S4, G4, k4, ag, Xg, UI, HI, dB, oe, jO, D4, Ky, WO, fQ, zO, vt, $E, zs, WI, RS, vI, s4, _p, py, BI, $O, c4, Pg, bO, mu, JB, r4, w4, y4, M4, lD, Ls, Aw, JN, $B, mQ, DD, bS, uB, HC, nB, dC, ww, UJ, UC, hB, Ws, Si, vx, dT, XR, $S, go, o4;
 let __tla = Promise.all([
   (() => {
@@ -40655,7 +40655,7 @@ No matching component was found for:
   };
   let BS = null;
   Vp = function(B, A, I = 0) {
-    BS || (BS = py().map((C) => C.position));
+    BS || (BS = py().filter((C, i) => i % 2 === 0).map((C) => C.position));
     const g = Ny + 5 + I;
     for (const C of BS) {
       const i = B - C.x, Q = A - C.z;
@@ -44001,7 +44001,7 @@ No matching component was found for:
       };
     }, []);
   }
-  const g4 = X.lazy(() => ZU(() => import("./World-sYYnZdbN.js"), __vite__mapDeps([0,1,2])));
+  const g4 = X.lazy(() => ZU(() => import("./World-DbVRgIO6.js"), __vite__mapDeps([0,1,2])));
   function C4() {
     try {
       const B = document.createElement("canvas");

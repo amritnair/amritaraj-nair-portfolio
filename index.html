@@ -17,8 +17,20 @@
 
     <meta name="twitter:card" content="summary_large_image" />
 
-    <script type="module" crossorigin src="/amritaraj-nair-portfolio/assets/index-JJtujX-4.js"></script>
-    <link rel="stylesheet" crossorigin href="/amritaraj-nair-portfolio/assets/index-DZvSN1L_.css">
+    <script>
+      // Set the theme before first paint. Doing it from React means one frame
+      // of the wrong theme on every load — a white flash for anyone in dark
+      // mode — because React has not run yet when the page first draws.
+      (function () {
+        try {
+          var saved = localStorage.getItem("theme");
+          var dark = saved ? saved === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+          if (dark) document.documentElement.classList.add("dark");
+        } catch (e) {}
+      })();
+    </script>
+    <script type="module" crossorigin src="/amritaraj-nair-portfolio/assets/index-BWdVoLIa.js"></script>
+    <link rel="stylesheet" crossorigin href="/amritaraj-nair-portfolio/assets/index-DAIg9Gyh.css">
   </head>
 
   <body>
