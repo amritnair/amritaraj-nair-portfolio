@@ -18560,8 +18560,8 @@ Error generating stack: ` + i.message + `
                       ]
                     }),
                     w.jsx("p", {
-                      className: "u-grotesk mt-6 max-w-lg text-[clamp(1.05rem,2.2vw,1.5rem)] font-medium leading-tight tracking-[-0.02em] text-[#1a1a1a]",
-                      children: "I build AI products that ship."
+                      className: "u-grotesk mt-6 max-w-lg text-[clamp(1.05rem,2.2vw,1.5rem)] font-medium leading-tight tracking-[-0.02em] text-[#6a6a6a]",
+                      children: "portfolio website"
                     })
                   ]
                 }),
@@ -24016,7 +24016,7 @@ Best regards`);
         ]
       })
     });
-  }, dj = b.lazy(() => jA(() => import("./GamePortfolio-CO4_Rrch.js").then(async (m) => {
+  }, dj = b.lazy(() => jA(() => import("./GamePortfolio-Dor-RvJc.js").then(async (m) => {
     await m.__tla;
     return m;
   }).then((t) => t.b4), [])), hj = new lO(), mj = () => w.jsx("div", {
