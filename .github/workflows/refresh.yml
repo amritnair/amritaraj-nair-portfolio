@@ -6,7 +6,7 @@ name: refresh
 
 on:
   schedule:
-    - cron: "0 6 */2 * *"
+    - cron: "0 6 * * *"
   workflow_dispatch:
 
 jobs:
@@ -21,20 +21,26 @@ jobs:
           - hookemhacks
     timeout-minutes: 330
     steps:
-      # Start each repo at a random time between 06:00 and 11:00 UTC.
-      - name: Random delay
+      # Scheduled runs: each repo refreshes on about half of days, at a
+      # random time between 06:00 and 11:00 UTC.
+      - name: Random day and time
+        id: roll
         if: github.event_name == 'schedule'
-        run: sleep $((RANDOM % 18000))
+        run: |
+          if [ $((RANDOM % 2)) = 0 ]; then echo skip=1 >> "$GITHUB_OUTPUT"; exit 0; fi
+          sleep $((RANDOM % 18000))
       - uses: actions/checkout@v4
+        if: steps.roll.outputs.skip != '1'
         with:
           repository: amritnair/${{ matrix.repo }}
           token: ${{ secrets.REFRESH_TOKEN }}
       - uses: actions/setup-node@v4
-        if: hashFiles('package-lock.json') != ''
+        if: steps.roll.outputs.skip != '1' && hashFiles('package-lock.json') != ''
         with:
           node-version: 22
       - name: Update and verify
         id: update
+        if: steps.roll.outputs.skip != '1'
         continue-on-error: true
         run: |
           if [ -f package-lock.json ]; then
@@ -45,6 +51,7 @@ jobs:
             git diff --quiet || cargo build
           fi
       - name: Commit
+        if: steps.roll.outputs.skip != '1'
         run: |
           git config user.name amritnair
           git config user.email 171728749+amritnair@users.noreply.github.com
