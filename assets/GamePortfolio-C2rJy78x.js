@@ -1,5 +1,5 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/World-BbQ8fRTW.js","assets/index-CZJgsmHV.js","assets/index-C_hwvt1T.css"])))=>i.map(i=>d[i]);
-import { r as X, g as cJ, e as MI, j as p, T as lJ, s as AM, P as is, L as nD, _ as ZU, Z as vE, a as PU, __tla as __tla_0 } from "./index-CZJgsmHV.js";
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/World-B7_v5C0W.js","assets/index-CHgrczqq.js","assets/index-BQ_Dr_MQ.css"])))=>i.map(i=>d[i]);
+import { r as X, g as cJ, e as MI, j as p, T as lJ, s as AM, P as is, L as nD, _ as ZU, Z as vE, a as PU, __tla as __tla_0 } from "./index-CHgrczqq.js";
 let dQ, XN, TS, TC, pB, ls, bC, pQ, wi, mD, bA, cs, rg, fg, ci, Ee, zt, Jf, KC, DB, kg, aD, m, rB, dw, yA, Ht, ds, zR, n4, Jt, Gi, Oi, GK, Rg, BN, za, NC, li, jg, XC, Vp, nI, l4, Ny, Be, I2, A2, sC, Op, wg, Qw, Tp, ji, yb, a4, PB, Gh, H2, Wr, XD, pC, h4, b2, S4, G4, k4, ag, Xg, UI, HI, dB, oe, jO, D4, Ky, WO, fQ, zO, vt, $E, zs, WI, RS, vI, s4, _p, py, BI, $O, c4, Pg, bO, mu, JB, r4, w4, y4, M4, lD, Ls, Aw, JN, $B, mQ, DD, bS, uB, HC, nB, dC, ww, UJ, UC, hB, Ws, Si, vx, dT, XR, $S, go, o4;
 let __tla = Promise.all([
   (() => {
@@ -44001,7 +44001,7 @@ No matching component was found for:
       };
     }, []);
   }
-  const g4 = X.lazy(() => ZU(() => import("./World-BbQ8fRTW.js"), __vite__mapDeps([0,1,2])));
+  const g4 = X.lazy(() => ZU(() => import("./World-B7_v5C0W.js"), __vite__mapDeps([0,1,2])));
   function C4() {
     try {
       const B = document.createElement("canvas");
