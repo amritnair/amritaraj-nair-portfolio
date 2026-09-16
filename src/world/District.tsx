@@ -150,12 +150,11 @@ function Trophy({ position }: { position: [number, number, number] }) {
     if (!rb) return;
     const p = rb.translation();
     // Recover if it gets flung off the deck or falls through the world.
-    if (
-      p.y < -6 ||
-      new THREE.Vector3(p.x, 0, p.z).distanceTo(
-        new THREE.Vector3(home.current.x, 0, home.current.z),
-      ) > 40
-    ) {
+    // Compared squared and in place: this ran every frame for every trophy and
+    // built two vectors each time to answer a question two subtractions can.
+    const dx = p.x - home.current.x;
+    const dz = p.z - home.current.z;
+    if (p.y < -6 || dx * dx + dz * dz > 40 * 40) {
       rb.setTranslation({ x: home.current.x, y: home.current.y + 6, z: home.current.z }, true);
       rb.setLinvel({ x: 0, y: 0, z: 0 }, true);
       rb.setAngvel({ x: 0, y: 0, z: 0 }, true);

@@ -55,6 +55,40 @@
   }
 }
 
+/*
+ * The written pages' palette, light and dark.
+ *
+ * Semantic names rather than colours, so a page says "the rule between
+ * sections" instead of "black" and both themes stay coherent by construction.
+ * Anything sitting on top of a photograph or a video deliberately does not
+ * use these: a caption over an image has to contrast with the image, not
+ * with the page around it.
+ *
+ * The 3D world ignores all of this. It is a night scene in either theme.
+ */
+:root {
+  --paper: #ffffff;
+  --paper-glass: rgba(255, 255, 255, 0.92);
+  --ink: #0b0b0b;
+  --ink-2: #3d3d3d;
+  --ink-3: #5a5a5a;
+  --ink-4: #8a8a8a;
+  --rule-soft: #dcdcdc;
+  --panel: #f4f4f4;
+}
+
+.dark {
+  --paper: #0c0c0e;
+  --paper-glass: rgba(12, 12, 14, 0.9);
+  --ink: #f1f1f3;
+  --ink-2: #c7c7cd;
+  --ink-3: #a3a3ab;
+  --ink-4: #7b7b84;
+  --rule-soft: #26262c;
+  --panel: #141417;
+  color-scheme: dark;
+}
+
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: hsl(254 46% 8%); }
 ::-webkit-scrollbar-thumb { background: hsl(258 60% 45% / 0.6); border-radius: 4px; }

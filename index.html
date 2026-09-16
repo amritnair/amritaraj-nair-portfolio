@@ -17,6 +17,18 @@
 
     <meta name="twitter:card" content="summary_large_image" />
 
+    <script>
+      // Set the theme before first paint. Doing it from React means one frame
+      // of the wrong theme on every load — a white flash for anyone in dark
+      // mode — because React has not run yet when the page first draws.
+      (function () {
+        try {
+          var saved = localStorage.getItem("theme");
+          var dark = saved ? saved === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+          if (dark) document.documentElement.classList.add("dark");
+        } catch (e) {}
+      })();
+    </script>
   </head>
 
   <body>

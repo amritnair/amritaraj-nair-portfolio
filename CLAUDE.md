@@ -65,7 +65,22 @@ does not exist, and the visitor gets a 404. Every in-page jump goes through
 nav and the name in the corner before anyone noticed, because the links were
 only ever tested by calling `scrollIntoView` from the console.
 
-**The landing page is black-on-white and editorial; the world is neon.** That
+**The written pages have a light and a dark theme; the world is always
+night.** Colours on those pages are semantic CSS variables (`--paper`,
+`--ink`, `--ink-2`…`--ink-4`, `--rule-soft`, `--panel`) defined in
+`index.css`, flipped by a `.dark` class on `<html>`. Never write a raw
+`bg-black` or `text-white` onto a page element — the one exception is
+anything sitting *over a photo or video*, which has to contrast with the image
+rather than the page, and is deliberately left fixed. The class is set by a
+script in `index.html` before React runs; setting it from React alone flashes
+the wrong theme for a frame on every load.
+
+**The GitHub count** ships as a snapshot (`pages/contributions.json`) so the
+calendar is on screen at first paint, and is replaced by a live copy from a
+public mirror once it arrives — GitHub's own calendar has no CORS. If the
+mirror is down, the snapshot stays. Refresh the snapshot occasionally.
+
+**The landing page is editorial; the world is neon.** That
 contrast is deliberate — the previous landing page was dark, glowing and
 gradient-lettered, which is the house style of every generated portfolio on
 the internet. Restraint on the page is what makes the world read as a choice.

@@ -616,7 +616,15 @@ let rampPlan: Vec3[] | null = null;
 
 /** True when (x, z) sits under the climb or its merge lane. */
 export function onRamp(x: number, z: number, pad = 0) {
-  if (!rampPlan) rampPlan = rampFrames().map((f) => f.position);
+  if (!rampPlan) {
+    // Every other frame is plenty for a footprint test: the frames are about
+    // two metres apart and the reach below is eleven, so the sampled discs
+    // still overlap comfortably. The island scatter calls this tens of
+    // thousands of times before the first frame is drawn.
+    rampPlan = rampFrames()
+      .filter((_, i) => i % 2 === 0)
+      .map((f) => f.position);
+  }
   const reach = RAMP_HALF + 5 + pad;
   for (const p of rampPlan) {
     const dx = x - p.x;

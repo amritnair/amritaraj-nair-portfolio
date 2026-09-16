@@ -1,7 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { PROFILE, UPCOMING, ZONES } from "@/world/content";
-import { ProjectCard, Reveal, Tag, scrollToSection, withBase } from "./site";
+import {
+  ContributionCalendar,
+  ProjectCard,
+  Reveal,
+  Tag,
+  ThemeToggle,
+  scrollToSection,
+  useContributions,
+  usePaperBackground,
+  withBase,
+} from "./site";
+import SNAPSHOT from "./contributions.json";
 
 /**
  * The landing page.
@@ -155,16 +166,8 @@ function Reel({ className, eager }: { className?: string; eager?: boolean }) {
 }
 
 export default function Home() {
-  // The site is dark everywhere else, so the page has to claim the document
-  // background or an overscroll shows the world's colour behind this one.
-  useEffect(() => {
-    const root = document.documentElement;
-    const previous = root.style.background;
-    root.style.background = "#ffffff";
-    return () => {
-      root.style.background = previous;
-    };
-  }, []);
+  usePaperBackground();
+  const github = useContributions(SNAPSHOT);
 
   const sections = [
     ...ZONES.map((z) => ({ id: z.id, label: z.sign.toLowerCase() })),
@@ -173,40 +176,43 @@ export default function Home() {
   ];
 
   return (
-    <main className="min-h-screen bg-white text-[#0b0b0b] antialiased">
+    <main className="min-h-screen bg-[var(--paper)] text-[var(--ink)] antialiased">
       <style>{`
         .u-grotesk { font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; }
         @media (prefers-reduced-motion: reduce) { .u-reveal { transition: none !important } }
       `}</style>
 
       {/* Top bar */}
-      <header className="sticky top-0 z-50 border-b border-black bg-white/95 backdrop-blur">
+      <header className="sticky top-0 z-50 border-b border-[var(--ink)] bg-[var(--paper-glass)] backdrop-blur">
         <div className="flex items-center gap-6 px-4 py-3 sm:px-7">
           <button
             type="button"
             onClick={() => scrollToSection("top")}
             className="u-grotesk flex items-center gap-2 text-[0.82rem] font-medium tracking-tight"
           >
-            <span aria-hidden className="inline-block h-3 w-3 rounded-full border border-black" />
+            <span aria-hidden className="inline-block h-3 w-3 rounded-full border border-[var(--ink)]" />
             amritaraj nair.
           </button>
 
-          <nav className="u-grotesk ml-auto hidden items-center gap-7 text-[0.82rem] text-[#5a5a5a] md:flex">
+          <nav className="u-grotesk ml-auto hidden items-center gap-7 text-[0.82rem] text-[var(--ink-3)] md:flex">
             {sections.map(({ id, label }) => (
               <button
                 key={id}
                 type="button"
                 onClick={() => scrollToSection(id)}
-                className="transition-colors hover:text-black"
+                className="transition-colors hover:text-[var(--ink)]"
               >
                 {label}
               </button>
             ))}
           </nav>
 
+          <div className="ml-auto md:ml-0">
+            <ThemeToggle />
+          </div>
           <a
             href={`mailto:${PROFILE.email}`}
-            className="u-grotesk ml-auto rounded-[3px] bg-black px-3.5 py-1.5 text-[0.78rem] text-white transition-opacity hover:opacity-80 md:ml-0"
+            className="u-grotesk rounded-[3px] bg-[var(--ink)] px-3.5 py-1.5 text-[0.78rem] text-[var(--paper)] transition-opacity hover:opacity-80 md:ml-0"
           >
             contact
           </a>
@@ -214,8 +220,8 @@ export default function Home() {
       </header>
 
       {/* Hero: moving image on the left, the claim on the right. */}
-      <section id="top" className="grid border-b border-black lg:grid-cols-2">
-        <div className="relative order-2 aspect-[4/3] overflow-hidden border-t border-black bg-black lg:order-1 lg:aspect-auto lg:min-h-[78vh] lg:border-r lg:border-t-0">
+      <section id="top" className="grid border-b border-[var(--ink)] lg:grid-cols-2">
+        <div className="relative order-2 aspect-[4/3] overflow-hidden border-t border-[var(--ink)] bg-black lg:order-1 lg:aspect-auto lg:min-h-[78vh] lg:border-r lg:border-t-0">
           <Slideshow />
         </div>
 
@@ -230,13 +236,13 @@ export default function Home() {
               <br />
               nair
             </h1>
-            <p className="u-grotesk mt-6 max-w-lg text-[clamp(1.05rem,2.2vw,1.5rem)] font-medium leading-tight tracking-[-0.02em] text-[#6a6a6a]">
+            <p className="u-grotesk mt-6 max-w-lg text-[clamp(1.05rem,2.2vw,1.5rem)] font-medium leading-tight tracking-[-0.02em] text-[var(--ink-3)]">
               portfolio website
             </p>
           </div>
 
           <div className="mt-12 max-w-md">
-            <p className="u-grotesk text-[0.98rem] leading-relaxed text-[#3d3d3d]">
+            <p className="u-grotesk text-[0.98rem] leading-relaxed text-[var(--ink-2)]">
               Computer Science Honors at Texas A&amp;M, minor in Mathematics. I work on
               healthcare AI at Matic, run engineering at ClinicalHours, and build Thorp
               solo. Three of the four shipped to real users this year.
@@ -248,7 +254,7 @@ export default function Home() {
                   href={withBase(link.href)}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="u-grotesk border-b border-black pb-0.5 text-[0.82rem] transition-opacity hover:opacity-55"
+                  className="u-grotesk border-b border-[var(--ink)] pb-0.5 text-[0.82rem] transition-opacity hover:opacity-55"
                 >
                   {link.label.toLowerCase()}
                 </a>
@@ -259,6 +265,32 @@ export default function Home() {
       </section>
 
       {/* Each area of the résumé, as an editorial run. */}
+      {/*
+        GitHub activity. Directly under the hero because it is the cheapest
+        proof on the page: everything above says what he does, this shows
+        how often.
+      */}
+      <section id="github" className="scroll-mt-14 border-b border-[var(--ink)]">
+        <div className="grid items-center gap-6 px-6 py-8 sm:px-10 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:gap-10">
+          <div>
+            <a
+              href="https://github.com/amritnair"
+              target="_blank"
+              rel="noreferrer noopener"
+              className="u-grotesk group inline-block"
+            >
+              <span className="block text-[clamp(2.2rem,5vw,3.4rem)] font-medium leading-none tracking-[-0.045em]">
+                {github.total.toLocaleString()}
+              </span>
+              <span className="mt-2 block text-[0.84rem] text-[var(--ink-3)] transition-colors group-hover:text-[var(--ink)]">
+                contributions on github in the last year ↗
+              </span>
+            </a>
+          </div>
+          <ContributionCalendar levels={github.levels} from={github.from} />
+        </div>
+      </section>
+
       {ZONES.map((zone) => {
         // Archived work is real and still live, but it is not what he would
         // lead with — it lives in the gallery so the front page stays short
@@ -266,27 +298,27 @@ export default function Home() {
         const shown = zone.cards.filter((card) => !card.archived);
         const hidden = zone.cards.length - shown.length;
         return (
-        <section key={zone.id} id={zone.id} className="scroll-mt-14 border-b border-black">
+        <section key={zone.id} id={zone.id} className="scroll-mt-14 border-b border-[var(--ink)]">
           <div className="flex items-baseline justify-between gap-6 px-6 py-5 sm:px-10">
             <h2 className="u-grotesk text-[clamp(1.6rem,4vw,2.6rem)] font-medium leading-none tracking-[-0.04em]">
               {zone.sign.toLowerCase()}
             </h2>
-            <p className="u-grotesk text-right text-[0.78rem] text-[#5a5a5a]">{zone.caption}</p>
+            <p className="u-grotesk text-right text-[0.78rem] text-[var(--ink-3)]">{zone.caption}</p>
           </div>
 
-          <div className="border-t border-black">
+          <div className="border-t border-[var(--ink)]">
             {shown.map((card, index) => (
               <ProjectCard key={card.id} card={card} zone={zone} index={index} />
             ))}
           </div>
 
             {hidden > 0 && (
-              <div className="border-t border-black px-6 py-5 sm:px-10">
+              <div className="border-t border-[var(--ink)] px-6 py-5 sm:px-10">
                 <Link
                   to="/projects"
                   className="u-grotesk inline-flex items-center gap-2 text-[0.86rem] transition-opacity hover:opacity-55"
                 >
-                  <span className="border-b border-black pb-0.5">
+                  <span className="border-b border-[var(--ink)] pb-0.5">
                     see all {zone.cards.length} in the gallery
                   </span>
                   <span aria-hidden>→</span>
@@ -306,7 +338,7 @@ export default function Home() {
         megabyte to show one page. This is that page as a picture, with the
         real file one click away for anyone who wants to keep it.
       */}
-      <section id="resume" className="scroll-mt-14 border-b border-black">
+      <section id="resume" className="scroll-mt-14 border-b border-[var(--ink)]">
         <div className="flex flex-wrap items-baseline justify-between gap-4 px-6 py-5 sm:px-10">
           <h2 className="u-grotesk text-[clamp(1.6rem,4vw,2.6rem)] font-medium leading-none tracking-[-0.04em]">
             résumé
@@ -316,34 +348,34 @@ export default function Home() {
               href={withBase("Amritaraj_Nair_Resume.pdf")}
               target="_blank"
               rel="noreferrer noopener"
-              className="u-grotesk inline-block rounded-[3px] bg-black px-3.5 py-1.5 text-[0.78rem] text-white transition-opacity hover:opacity-80"
+              className="u-grotesk inline-block rounded-[3px] bg-[var(--ink)] px-3.5 py-1.5 text-[0.78rem] text-[var(--paper)] transition-opacity hover:opacity-80"
             >
               open pdf ↗
             </a>
             <a
               href={withBase("Amritaraj_Nair_Resume.pdf")}
               download
-              className="u-grotesk border-b border-black pb-0.5 text-[0.8rem] transition-opacity hover:opacity-55"
+              className="u-grotesk border-b border-[var(--ink)] pb-0.5 text-[0.8rem] transition-opacity hover:opacity-55"
             >
               download
             </a>
           </div>
         </div>
 
-        <Reveal className="u-reveal border-t border-black bg-[#f4f4f4] px-6 py-10 sm:px-10">
+        <Reveal className="u-reveal border-t border-[var(--ink)] bg-[var(--panel)] px-6 py-10 sm:px-10">
           <img
             src={withBase("resume-preview.jpg")}
             alt="Amritaraj Nair's résumé"
             width={1400}
             height={1812}
             loading="lazy"
-            className="mx-auto block w-full max-w-3xl border border-black bg-white"
+            className="mx-auto block w-full max-w-3xl border border-[var(--ink)] bg-[var(--paper)]"
           />
         </Reveal>
       </section>
 
       {/* The world. The one place the page lets the colour in. */}
-      <section id="play" className="scroll-mt-14 border-b border-black">
+      <section id="play" className="scroll-mt-14 border-b border-[var(--ink)]">
         <div className="flex items-baseline justify-between gap-6 px-6 py-5 sm:px-10">
           <h2 className="u-grotesk text-[clamp(1.6rem,4vw,2.6rem)] font-medium leading-none tracking-[-0.04em]">
             play
@@ -351,7 +383,7 @@ export default function Home() {
           <Tag tilt={-1.5}>interactive</Tag>
         </div>
 
-        <Reveal className="u-reveal relative border-t border-black bg-black">
+        <Reveal className="u-reveal relative border-t border-[var(--ink)] bg-black">
           <Reel className="aspect-[16/9] w-full object-cover" />
           <span className="u-grotesk absolute bottom-4 left-4 inline-block rounded-[3px] border border-white/70 bg-black/45 px-2.5 py-1 text-[0.68rem] text-white backdrop-blur">
             rendered in blender
@@ -365,7 +397,7 @@ export default function Home() {
             as somewhere you drive
           </h3>
           <div>
-            <p className="u-grotesk max-w-2xl text-[1rem] leading-relaxed text-[#3d3d3d]">
+            <p className="u-grotesk max-w-2xl text-[1rem] leading-relaxed text-[var(--ink-2)]">
               An island with four districts you drive into to read, a race circuit hung
               above them and a garage you spend points in. Built with React Three Fiber
               and Rapier; the car is modelled in Blender. It runs in the browser — no
@@ -374,11 +406,11 @@ export default function Home() {
             <div className="mt-7 flex flex-wrap items-center gap-3">
               <Link
                 to="/play"
-                className="u-grotesk inline-block rounded-[3px] bg-black px-5 py-2.5 text-[0.82rem] text-white transition-opacity hover:opacity-80"
+                className="u-grotesk inline-block rounded-[3px] bg-[var(--ink)] px-5 py-2.5 text-[0.82rem] text-[var(--paper)] transition-opacity hover:opacity-80"
               >
                 enter the world →
               </Link>
-              <span className="u-grotesk text-[0.76rem] text-[#8a8a8a]">
+              <span className="u-grotesk text-[0.76rem] text-[var(--ink-4)]">
                 wasd · best in fullscreen
               </span>
             </div>
@@ -399,7 +431,7 @@ export default function Home() {
             >
               {PROFILE.email}
             </a>
-            <p className="u-grotesk mt-3 text-[0.86rem] text-[#5a5a5a]">{PROFILE.phone}</p>
+            <p className="u-grotesk mt-3 text-[0.86rem] text-[var(--ink-3)]">{PROFILE.phone}</p>
 
             <div className="mt-8 flex flex-wrap gap-x-7 gap-y-3">
               {PROFILE.links.map((link) => (
@@ -408,14 +440,14 @@ export default function Home() {
                   href={withBase(link.href)}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="u-grotesk border-b border-black pb-0.5 text-[0.82rem] transition-opacity hover:opacity-55"
+                  className="u-grotesk border-b border-[var(--ink)] pb-0.5 text-[0.82rem] transition-opacity hover:opacity-55"
                 >
                   {link.label.toLowerCase()} ↗
                 </a>
               ))}
             </div>
 
-            <p className="u-grotesk mt-12 max-w-md text-[0.78rem] leading-relaxed text-[#8a8a8a]">
+            <p className="u-grotesk mt-12 max-w-md text-[0.78rem] leading-relaxed text-[var(--ink-4)]">
               Open to summer 2027 engineering internships.
               {UPCOMING.length > 0 && ` Currently: ${UPCOMING.map((u) => u.name.toLowerCase()).join(", ")}.`}
             </p>
