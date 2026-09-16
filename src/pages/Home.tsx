@@ -250,16 +250,16 @@ export default function Home() {
         <div className="order-1 flex flex-col justify-between p-6 sm:p-10 lg:order-2">
           <div>
             <Tag>student · builder</Tag>
-            {/* The name, not the pitch. A stranger landing here should learn
-                whose site this is before they learn what he thinks of himself;
-                the claim still gets said, one size down. */}
+            {/* The name, not a pitch. What this page is gets said plainly
+                underneath; the paragraph below already makes the case, and
+                making it twice in two sizes was the pitch talking. */}
             <h1 className="u-grotesk mt-8 text-[clamp(2.9rem,8vw,6.2rem)] font-medium leading-[0.88] tracking-[-0.05em]">
               amritaraj
               <br />
               nair
             </h1>
-            <p className="u-grotesk mt-6 max-w-lg text-[clamp(1.05rem,2.2vw,1.5rem)] font-medium leading-tight tracking-[-0.02em] text-[#1a1a1a]">
-              I build AI products that ship.
+            <p className="u-grotesk mt-6 max-w-lg text-[clamp(1.05rem,2.2vw,1.5rem)] font-medium leading-tight tracking-[-0.02em] text-[#6a6a6a]">
+              portfolio website
             </p>
           </div>
 
