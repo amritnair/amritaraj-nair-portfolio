@@ -58,6 +58,13 @@ fresh tab (`tabs_create` + `navigate`) before believing one.
 
 ## Routes
 
+**The site is on a HashRouter, so the hash IS the route.** An in-page
+`href="#work"` does not jump down the page — it navigates to `/work`, which
+does not exist, and the visitor gets a 404. Every in-page jump goes through
+`scrollToSection` in `pages/site.tsx` instead. This broke the entire section
+nav and the name in the corner before anyone noticed, because the links were
+only ever tested by calling `scrollIntoView` from the console.
+
 **The landing page is black-on-white and editorial; the world is neon.** That
 contrast is deliberate — the previous landing page was dark, glowing and
 gradient-lettered, which is the house style of every generated portfolio on
@@ -66,8 +73,10 @@ the internet. Restraint on the page is what makes the world read as a choice.
 site is dark and an overscroll would otherwise show the world's colour.
 
 `/` is the written portfolio and the front door. `/play` is the world, lazily
-loaded so most visitors never pay for three.js at all. `/projects` redirects
-to `/` because the portfolio used to live there. The game asked every visitor
+loaded so most visitors never pay for three.js at all. `/projects` is the full
+gallery: every card, archived ones included. A card marked `archived` in
+content.ts is kept off the front page and shown only there, so the landing
+page can stay short without real work having to be deleted to keep it short. The game asked every visitor
 to learn to drive before they could read a line of the résumé; it does not
 any more.
 

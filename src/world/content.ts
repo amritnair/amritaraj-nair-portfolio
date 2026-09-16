@@ -15,6 +15,11 @@ export type Card = {
   tags?: string[];
   links?: Link[];
   /**
+   * Kept off the landing page and shown only in the full gallery. For work
+   * that is real and still live, but no longer what he would lead with.
+   */
+  archived?: boolean;
+  /**
    * A screenshot of the thing itself, under `public/shots/`. Captured from the
    * live site by `npm run shots`, so it cannot drift from what is deployed.
    * The 3D world ignores this; only the written page uses it.
@@ -183,6 +188,7 @@ export const ZONES: Zone[] = [
           "Live natural-disaster news and an interactive globe, built on Google Gemini",
         ],
         tags: ["React", "Gemini", "Supabase"],
+        archived: true,
         links: [{ label: "harbordisaster.xyz", href: "https://harbordisaster.xyz" }],
       },
       {

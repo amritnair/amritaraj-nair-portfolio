@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { PROFILE, UPCOMING, ZONES } from "@/world/content";
+import { ProjectCard, Reveal, Tag, scrollToSection, withBase } from "./site";
 
 /**
  * The landing page.
@@ -15,11 +16,6 @@ import { PROFILE, UPCOMING, ZONES } from "@/world/content";
  * is the intent: the restraint here is what makes the world read as a choice
  * rather than a default.
  */
-
-const withBase = (href: string) =>
-  href.startsWith("http") || href.startsWith("mailto:")
-    ? href
-    : `${import.meta.env.BASE_URL}${href}`;
 
 const REEL = `${import.meta.env.BASE_URL}hero/reel`;
 const POSTER = `${import.meta.env.BASE_URL}hero/car.jpg`;
@@ -61,18 +57,6 @@ const PHOTOS = [
     position: "50% 46%",
   },
 ];
-
-/** A hairline-boxed label. The reference's one recurring ornament. */
-function Tag({ children, tilt = 0 }: { children: React.ReactNode; tilt?: number }) {
-  return (
-    <span
-      className="inline-block whitespace-nowrap rounded-[3px] border border-black px-2.5 py-1 text-[0.7rem] leading-none"
-      style={{ transform: tilt ? `rotate(${tilt}deg)` : undefined }}
-    >
-      {children}
-    </span>
-  );
-}
 
 /**
  * The hero photographs, one at a time.
@@ -170,37 +154,6 @@ function Reel({ className, eager }: { className?: string; eager?: boolean }) {
   );
 }
 
-/** Fades a block in the first time it is scrolled to. */
-function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [shown, setShown] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => entry.isIntersecting && setShown(true),
-      { rootMargin: "-8% 0px -8% 0px" },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <div
-      ref={ref}
-      className={className}
-      style={{
-        opacity: shown ? 1 : 0,
-        transform: shown ? "none" : "translateY(22px)",
-        transition: "opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1)",
-      }}
-    >
-      {children}
-    </div>
-  );
-}
-
 export default function Home() {
   // The site is dark everywhere else, so the page has to claim the document
   // background or an overscroll shows the world's colour behind this one.
@@ -229,16 +182,25 @@ export default function Home() {
       {/* Top bar */}
       <header className="sticky top-0 z-50 border-b border-black bg-white/95 backdrop-blur">
         <div className="flex items-center gap-6 px-4 py-3 sm:px-7">
-          <a href="#top" className="u-grotesk flex items-center gap-2 text-[0.82rem] font-medium tracking-tight">
+          <button
+            type="button"
+            onClick={() => scrollToSection("top")}
+            className="u-grotesk flex items-center gap-2 text-[0.82rem] font-medium tracking-tight"
+          >
             <span aria-hidden className="inline-block h-3 w-3 rounded-full border border-black" />
             amritaraj nair.
-          </a>
+          </button>
 
           <nav className="u-grotesk ml-auto hidden items-center gap-7 text-[0.82rem] text-[#5a5a5a] md:flex">
             {sections.map(({ id, label }) => (
-              <a key={id} href={`#${id}`} className="transition-colors hover:text-black">
+              <button
+                key={id}
+                type="button"
+                onClick={() => scrollToSection(id)}
+                className="transition-colors hover:text-black"
+              >
                 {label}
-              </a>
+              </button>
             ))}
           </nav>
 
@@ -297,7 +259,13 @@ export default function Home() {
       </section>
 
       {/* Each area of the résumé, as an editorial run. */}
-      {ZONES.map((zone) => (
+      {ZONES.map((zone) => {
+        // Archived work is real and still live, but it is not what he would
+        // lead with — it lives in the gallery so the front page stays short
+        // without anything having to be deleted to keep it that way.
+        const shown = zone.cards.filter((card) => !card.archived);
+        const hidden = zone.cards.length - shown.length;
+        return (
         <section key={zone.id} id={zone.id} className="scroll-mt-14 border-b border-black">
           <div className="flex items-baseline justify-between gap-6 px-6 py-5 sm:px-10">
             <h2 className="u-grotesk text-[clamp(1.6rem,4vw,2.6rem)] font-medium leading-none tracking-[-0.04em]">
@@ -307,79 +275,27 @@ export default function Home() {
           </div>
 
           <div className="border-t border-black">
-            {zone.cards.map((card) => (
-              <Reveal
-                key={card.id}
-                className="u-reveal grid gap-x-10 gap-y-5 border-b border-[#dcdcdc] px-6 py-10 last:border-b-0 sm:px-10 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]"
-              >
-                <div>
-                  <h3 className="u-grotesk text-[clamp(1.5rem,3vw,2.1rem)] font-medium leading-[1.02] tracking-[-0.035em]">
-                    {card.title}
-                  </h3>
-                  <p className="u-grotesk mt-2 text-[0.88rem] text-[#3d3d3d]">{card.subtitle}</p>
-                  {card.meta && (
-                    <p className="u-grotesk mt-1 text-[0.76rem] text-[#8a8a8a]">{card.meta}</p>
-                  )}
-                </div>
-
-                <div>
-                  {card.body && (
-                    <p className="u-grotesk max-w-2xl text-[1rem] leading-relaxed">{card.body}</p>
-                  )}
-
-                  {card.bullets.length > 0 && (
-                    <ul className={`max-w-2xl space-y-2.5 ${card.body ? "mt-6" : ""}`}>
-                      {card.bullets.map((bullet) => (
-                        <li
-                          key={bullet}
-                          className="u-grotesk grid grid-cols-[1.1rem_minmax(0,1fr)] text-[0.93rem] leading-relaxed text-[#3d3d3d]"
-                        >
-                          <span aria-hidden className="pt-[0.55rem]">
-                            <span className="block h-px w-2.5 bg-black" />
-                          </span>
-                          <span>{bullet}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-
-                  {(card.tags?.length || card.links?.length) && (
-                    <div className="mt-7 flex flex-wrap items-center gap-2">
-                      {card.tags?.map((tag) => (
-                        <Tag key={tag}>{tag}</Tag>
-                      ))}
-                      {card.links?.map((link) => (
-                        <a
-                          key={link.label}
-                          href={withBase(link.href)}
-                          target="_blank"
-                          rel="noreferrer noopener"
-                          className="u-grotesk inline-block rounded-[3px] bg-black px-2.5 py-1 text-[0.7rem] leading-none text-white transition-opacity hover:opacity-80"
-                        >
-                          {link.label} ↗
-                        </a>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {card.shot && (
-                  <figure className="col-span-full mt-4 border border-black bg-black">
-                    <img
-                      src={withBase(card.shot)}
-                      alt={`${card.title} — screenshot of the live product`}
-                      width={1600}
-                      height={1000}
-                      loading="lazy"
-                      className="block w-full"
-                    />
-                  </figure>
-                )}
-              </Reveal>
+            {shown.map((card, index) => (
+              <ProjectCard key={card.id} card={card} zone={zone} index={index} />
             ))}
           </div>
-        </section>
-      ))}
+
+            {hidden > 0 && (
+              <div className="border-t border-black px-6 py-5 sm:px-10">
+                <Link
+                  to="/projects"
+                  className="u-grotesk inline-flex items-center gap-2 text-[0.86rem] transition-opacity hover:opacity-55"
+                >
+                  <span className="border-b border-black pb-0.5">
+                    see all {zone.cards.length} in the gallery
+                  </span>
+                  <span aria-hidden>→</span>
+                </Link>
+              </div>
+            )}
+          </section>
+        );
+      })}
 
       {/*
         The résumé, on the page.
