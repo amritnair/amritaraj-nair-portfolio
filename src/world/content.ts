@@ -172,6 +172,20 @@ export const ZONES: Zone[] = [
         links: [{ label: "clinicalhours.org", href: "https://clinicalhours.org" }],
       },
       {
+        id: "harbor",
+        title: "Harbor",
+        subtitle: "Disaster preparedness platform",
+        meta: "TidalTAMU 2026",
+        body: "Helps communities plan for, coordinate during and recover from emergencies. First place in the Google Gemini track.",
+        bullets: [
+          "AI-powered resource matching for disaster response",
+          "Community coordination and communication tooling",
+          "Live natural-disaster news and an interactive globe, built on Google Gemini",
+        ],
+        tags: ["React", "Gemini", "Supabase"],
+        links: [{ label: "harbordisaster.xyz", href: "https://harbordisaster.xyz" }],
+      },
+      {
         id: "shotsensei",
         title: "Shot Sensei",
         subtitle: "Co-Founder & Lead Developer",
@@ -186,8 +200,8 @@ export const ZONES: Zone[] = [
         tags: ["OpenCV", "YOLOv8", "Gemini", "ElevenLabs", "Supabase"],
         shot: "shots/shotsensei.jpg",
         links: [
+          { label: "Devpost", href: "https://devpost.com/software/a-d3b6nf" },
           { label: "playshotsensei.com", href: "https://playshotsensei.com" },
-          { label: "Demo video", href: "https://www.youtube.com/watch?v=v3SNs0O3G5g" },
         ],
       },
     ],

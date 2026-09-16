@@ -39,6 +39,7 @@ import {
   KICKER_BOOST_FILL,
   KICKER_RADIUS,
   KICKER_SURGE,
+  GROUND_PITCH_DAMP,
   LANDING_KEEP,
   driveForce,
 } from "./drive";
@@ -118,6 +119,7 @@ const visualForward = new THREE.Vector3();
 const camOffsetUp = new THREE.Vector3(0, CAM_HEIGHT, 0);
 const camLookUp = new THREE.Vector3(0, 1.2, 0);
 const carUp = new THREE.Vector3();
+const spinVector = new THREE.Vector3();
 
 type DriftState = { chain: number; held: number; lapsed: number };
 
@@ -392,7 +394,19 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
     // the circuit could be ground at but never completed.
     const spin = rb.angvel();
     if (grounded) {
-      rb.setAngvel({ x: spin.x, y: steer * turnRate * steerFactor * direction, z: spin.z }, true);
+      /*
+       * Bleed off the pitch rate while the wheels are down. Only the component
+       * about the car's own right axis is touched — yaw is the steering, and
+       * roll is locked by the body — so the car still pitches to follow a ramp,
+       * it just cannot be tumbled by one bump.
+       */
+      spinVector.set(spin.x, spin.y, spin.z);
+      const settle = 1 - Math.exp(-GROUND_PITCH_DAMP * delta);
+      spinVector.addScaledVector(right, -spinVector.dot(right) * settle);
+      rb.setAngvel(
+        { x: spinVector.x, y: steer * turnRate * steerFactor * direction, z: spinVector.z },
+        true,
+      );
     }
 
     /*

@@ -72,6 +72,19 @@ export const FALL_GRAVITY = 14;
 export const LANDING_KEEP = 0.35;
 
 /**
+ * How hard the car resists being pitched while its wheels are down.
+ *
+ * Roll is locked outright — a car that can roll ends up on its back — so
+ * every flip in this game is a pitch: a kerb, a joint or a landing tips the
+ * nose and the car goes over end-over-end. On the ground the car should
+ * follow the slope it is on and nothing else, so the pitch *rate* is bled off
+ * continuously. It is a rate damper, not a lock: the car still noses up a
+ * ramp and down the far side, it just stops a single bump from becoming a
+ * tumble. Per second, applied exponentially so it is frame-rate independent.
+ */
+export const GROUND_PITCH_DAMP = 7.5;
+
+/**
  * Kicker pads. Driving onto a kicker face fires a surge and pours into the
  * boost tank, so a ramp taken at cruising speed still launches properly.
  *

@@ -162,6 +162,14 @@ round, the car exports standing on its nose.
   the sky if raised.
 - **The car's uprightness is `up · worldUp`, not pitch.** A car on its side has
   an ordinary pitch angle.
+- **Every flip in this game is a pitch.** Roll is locked on the body
+  (`enabledRotations` Z false) because a car that can roll ends up on its
+  back, so a kerb or a joint tipping the nose is the only way over. On the
+  ground the pitch *rate* is bled off continuously (`GROUND_PITCH_DAMP`) — a
+  rate damper, not a lock, so the car still noses up a ramp and down the far
+  side. Anything that can launch the car is a flip risk in proportion to its
+  height: the ring's kerbs stood 0.75 above the deck and were a launch ramp
+  at the current top speed.
 - **Airborne means no control**: throttle, brakes, boost, grip and steering are
   all gated on the ground ray. Only the trick keys work in the air.
 - **What you hit must be what you see.** The barriers were 1.9 tall in physics

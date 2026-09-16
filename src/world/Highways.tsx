@@ -66,11 +66,14 @@ function RingSurface() {
         >
           {/* Deck slab. Its top face sits flush with the visual deck. */}
           <CuboidCollider args={[DECK_WIDTH / 2, 0.35, half]} position={[0, -0.35, 0]} />
+          {/* A low lip, not a wall. At the old height its top stood 0.75
+              above the deck, and clipping that at speed launches the car
+              rather than guiding it back. Still tall enough to feel. */}
           {[-1, 1].map((side) => (
             <CuboidCollider
               key={side}
-              args={[0.35, 0.55, half]}
-              position={[(side * DECK_WIDTH) / 2, 0.2, 0]}
+              args={[0.35, 0.33, half]}
+              position={[(side * DECK_WIDTH) / 2, -0.04, 0]}
             />
           ))}
         </group>

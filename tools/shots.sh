@@ -33,3 +33,4 @@ shoot () { # name url
 shoot thorp-home    "https://thorp-trade.vercel.app"
 shoot clinicalhours "https://clinicalhours.org"
 shoot shotsensei    "https://playshotsensei.com"
+shoot harbor        "https://harbordisaster.xyz"

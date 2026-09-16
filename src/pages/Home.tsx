@@ -51,6 +51,15 @@ const PHOTOS = [
     caption: "pulsematic, on the whiteboard",
     position: "72% 40%",
   },
+  {
+    src: "photos/demo.jpg",
+    // The patient record on the screen is synthetic demo data, confirmed by
+    // him — worth recording, because a legible clinical record on a public
+    // page is not something to ship on an assumption.
+    alt: "Pulsematic being demonstrated to the team at Matic",
+    caption: "demoing pulsematic",
+    position: "50% 46%",
+  },
 ];
 
 /** A hairline-boxed label. The reference's one recurring ornament. */
@@ -206,6 +215,7 @@ export default function Home() {
 
   const sections = [
     ...ZONES.map((z) => ({ id: z.id, label: z.sign.toLowerCase() })),
+    { id: "resume", label: "résumé" },
     { id: "play", label: "play" },
   ];
 
@@ -370,6 +380,51 @@ export default function Home() {
           </div>
         </section>
       ))}
+
+      {/*
+        The résumé, on the page.
+
+        Rendered to an image rather than dropped in an <iframe>: an embedded
+        PDF viewer is a scrollbar inside a scrollbar, it is grey plugin chrome
+        on some browsers and a download prompt on most phones, and it loads a
+        megabyte to show one page. This is that page as a picture, with the
+        real file one click away for anyone who wants to keep it.
+      */}
+      <section id="resume" className="scroll-mt-14 border-b border-black">
+        <div className="flex flex-wrap items-baseline justify-between gap-4 px-6 py-5 sm:px-10">
+          <h2 className="u-grotesk text-[clamp(1.6rem,4vw,2.6rem)] font-medium leading-none tracking-[-0.04em]">
+            résumé
+          </h2>
+          <div className="flex items-center gap-4">
+            <a
+              href={withBase("Amritaraj_Nair_Resume.pdf")}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="u-grotesk inline-block rounded-[3px] bg-black px-3.5 py-1.5 text-[0.78rem] text-white transition-opacity hover:opacity-80"
+            >
+              open pdf ↗
+            </a>
+            <a
+              href={withBase("Amritaraj_Nair_Resume.pdf")}
+              download
+              className="u-grotesk border-b border-black pb-0.5 text-[0.8rem] transition-opacity hover:opacity-55"
+            >
+              download
+            </a>
+          </div>
+        </div>
+
+        <Reveal className="u-reveal border-t border-black bg-[#f4f4f4] px-6 py-10 sm:px-10">
+          <img
+            src={withBase("resume-preview.jpg")}
+            alt="Amritaraj Nair's résumé"
+            width={1400}
+            height={1812}
+            loading="lazy"
+            className="mx-auto block w-full max-w-3xl border border-black bg-white"
+          />
+        </Reveal>
+      </section>
 
       {/* The world. The one place the page lets the colour in. */}
       <section id="play" className="scroll-mt-14 border-b border-black">
