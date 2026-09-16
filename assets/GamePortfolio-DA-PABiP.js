@@ -1,5 +1,5 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/World-D-6q8i5z.js","assets/index-D-QMSrvC.js","assets/index-xIDfUlEg.css"])))=>i.map(i=>d[i]);
-import { r as X, g as DJ, e as MI, j as p, T as hJ, s as AM, P as Bs, L as nD, _ as ZU, Z as ZE, a as PU, __tla as __tla_0 } from "./index-D-QMSrvC.js";
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/World-D3HW1Ddu.js","assets/index-DhJeMdLu.js","assets/index-2c_RdA5z.css"])))=>i.map(i=>d[i]);
+import { r as X, g as DJ, e as MI, j as p, T as hJ, s as AM, P as Bs, L as nD, _ as ZU, Z as ZE, a as PU, __tla as __tla_0 } from "./index-DhJeMdLu.js";
 let dQ, XN, TS, TC, pB, cs, bC, pQ, wi, mD, bA, hs, rg, fg, ci, ee, Xt, Ff, KC, DB, kg, aD, m, rB, dw, yA, Ht, Fs, VR, o4, Jt, Gi, Oi, GK, Rg, BN, za, NC, li, jg, XC, Vp, nI, h4, Ny, ie, $O, zO, sC, Op, wg, Qw, Tp, ji, Sb, s4, PB, Gh, L2, Wr, XD, pC, r4, x2, c4, w4, y4, ag, Xg, UI, HI, dB, oe, ZO, a4, Ky, PO, fQ, VO, OE, qQ, zs, WI, RS, vI, t4, _p, py, BI, XO, D4, Pg, xO, qu, JB, n4, l4, S4, G4, lD, qs, Aw, JN, $B, HQ, DD, bS, uB, HC, nB, dC, ww, kJ, UC, hB, js, Si, bx, pT, WR, $S, Io, e4;
 let __tla = Promise.all([
   (() => {
@@ -41484,7 +41484,7 @@ No matching component was found for:
               className: "pointer-events-auto rounded-xl border border-white/10 bg-[#0d0a24]/70 px-4 py-2.5 backdrop-blur",
               children: [
                 p.jsx(nD, {
-                  to: "/projects",
+                  to: "/",
                   className: "text-[0.78rem] font-bold tracking-wide text-white underline-offset-4 transition hover:underline",
                   title: "Open the written portfolio",
                   children: Bs.name
@@ -44058,7 +44058,7 @@ No matching component was found for:
       };
     }, []);
   }
-  const A4 = X.lazy(() => ZU(() => import("./World-D-6q8i5z.js"), __vite__mapDeps([0,1,2])));
+  const A4 = X.lazy(() => ZU(() => import("./World-D3HW1Ddu.js"), __vite__mapDeps([0,1,2])));
   function I4() {
     try {
       const B = document.createElement("canvas");
