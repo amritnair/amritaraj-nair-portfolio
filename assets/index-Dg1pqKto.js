@@ -24238,7 +24238,7 @@ Best regards`);
         ]
       })
     });
-  }, mj = b.lazy(() => DA(() => import("./GamePortfolio-DA-PABiP.js").then(async (m) => {
+  }, mj = b.lazy(() => DA(() => import("./GamePortfolio-CEsjDkT8.js").then(async (m) => {
     await m.__tla;
     return m;
   }).then((t) => t.b4), [])), pj = new oO(), gj = () => w.jsx("div", {
