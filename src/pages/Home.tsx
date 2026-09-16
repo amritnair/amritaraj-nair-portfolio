@@ -363,13 +363,20 @@ export default function Home() {
         </div>
 
         <Reveal className="u-reveal border-t border-[var(--ink)] bg-[var(--panel)] px-6 py-10 sm:px-10">
+          {/*
+            Rendered from the PDF's vectors at three times its native size,
+            then reduced to a palette. The first version came out of sips,
+            which rasterises a PDF at 72 DPI — a 612-pixel page that was then
+            stretched to fit and JPEG-compressed, which is triple the blur.
+            White background fixed, not themed: a résumé is a sheet of paper.
+          */}
           <img
-            src={withBase("resume-preview.jpg")}
+            src={withBase("resume-preview.png")}
             alt="Amritaraj Nair's résumé"
-            width={1400}
-            height={1812}
+            width={1891}
+            height={2448}
             loading="lazy"
-            className="mx-auto block w-full max-w-3xl border border-[var(--ink)] bg-[var(--paper)]"
+            className="mx-auto block w-full max-w-3xl border border-[var(--ink)] bg-white"
           />
         </Reveal>
       </section>

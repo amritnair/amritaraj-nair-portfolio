@@ -1,0 +1,60 @@
+# Every other day, bump each project's dependencies within their existing
+# version ranges, committed only if the build still passes. Otherwise it just
+# records the date in .last-refresh.
+# Needs secret REFRESH_TOKEN: fine-grained PAT, Contents read/write on these repos.
+name: refresh
+
+on:
+  schedule:
+    - cron: "0 9 */2 * *"
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        repo:
+          - amritaraj-nair-portfolio
+          - Thorp
+          - tradingjournal-lab
+          - signal-lab
+          - Dedalus-Labs-VM-Migration
+          - ImpactBundle
+          - Datify.AI
+          - AutoDrafter.AI
+          - cattle-pulse-sim
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: amritnair/${{ matrix.repo }}
+          token: ${{ secrets.REFRESH_TOKEN }}
+      - uses: actions/setup-node@v4
+        if: hashFiles('package-lock.json') != ''
+        with:
+          node-version: 22
+      - name: Update and verify
+        id: update
+        continue-on-error: true
+        run: |
+          if [ -f package-lock.json ]; then
+            npm update --package-lock-only
+            git diff --quiet || { npm ci && npm run build --if-present; }
+          elif [ -f Cargo.lock ]; then
+            cargo update
+            git diff --quiet || cargo build
+          fi
+      - name: Commit
+        run: |
+          git config user.name "$(git log -1 --format=%an)"
+          git config user.email "$(git log -1 --format=%ae)"
+          if [ "${{ steps.update.outcome }}" = success ] && ! git diff --quiet; then
+            git commit -am "Update dependencies"
+          else
+            git reset --hard -q
+            date -u +%F > .last-refresh
+            git add .last-refresh
+            git commit -m "Update last refresh date"
+          fi
+          git push
