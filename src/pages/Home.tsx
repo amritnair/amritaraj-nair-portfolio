@@ -24,6 +24,35 @@ const withBase = (href: string) =>
 const REEL = `${import.meta.env.BASE_URL}hero/reel`;
 const POSTER = `${import.meta.env.BASE_URL}hero/car.jpg`;
 
+/**
+ * The hero photographs, cycled.
+ *
+ * `position` is a CSS object-position rather than a crop of the file: the
+ * panel is tall on desktop and 4:3 on a phone, and a centre crop of the
+ * whiteboard shot puts him off the edge of the frame in both. Steering the
+ * crop in CSS keeps the originals intact.
+ */
+const PHOTOS = [
+  {
+    src: "photos/yc.jpg",
+    alt: "Amritaraj outside Y Combinator",
+    caption: "yc startup intern expo",
+    position: "50% 42%",
+  },
+  {
+    src: "photos/matic.jpg",
+    alt: "Amritaraj at the Matic office",
+    caption: "matic — summer 2026",
+    position: "38% 50%",
+  },
+  {
+    src: "photos/whiteboard.jpg",
+    alt: "Amritaraj in an architecture session at Matic",
+    caption: "pulsematic, on the whiteboard",
+    position: "72% 40%",
+  },
+];
+
 /** A hairline-boxed label. The reference's one recurring ornament. */
 function Tag({ children, tilt = 0 }: { children: React.ReactNode; tilt?: number }) {
   return (
@@ -33,6 +62,66 @@ function Tag({ children, tilt = 0 }: { children: React.ReactNode; tilt?: number 
     >
       {children}
     </span>
+  );
+}
+
+/**
+ * The hero photographs, one at a time.
+ *
+ * Crossfaded rather than slid, so nothing in the layout moves — the headline
+ * beside it is the thing to read, and a panel sliding in the corner of your
+ * eye is a competing animation. Holds on the first frame for anyone who has
+ * asked the system for less motion.
+ */
+function Slideshow() {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const id = window.setInterval(() => {
+      // Nothing advances while the tab is in the background: the interval
+      // still fires there, and coming back to a page mid-crossfade looks
+      // like a glitch rather than a slideshow.
+      if (!document.hidden) setIndex((i) => (i + 1) % PHOTOS.length);
+    }, 4200);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <div className="relative h-full w-full overflow-hidden bg-[#0b0b0b]">
+      {PHOTOS.map((photo, i) => (
+        <img
+          key={photo.src}
+          src={withBase(photo.src)}
+          alt={photo.alt}
+          loading={i === 0 ? "eager" : "lazy"}
+          className="absolute inset-0 h-full w-full object-cover"
+          style={{
+            objectPosition: photo.position,
+            opacity: i === index ? 1 : 0,
+            transition: "opacity 1.1s ease-in-out",
+          }}
+        />
+      ))}
+
+      <div className="absolute bottom-4 left-4 flex items-center gap-3">
+        <span className="u-grotesk inline-block rounded-[3px] border border-white/70 bg-black/45 px-2.5 py-1 text-[0.68rem] text-white backdrop-blur">
+          {PHOTOS[index].caption}
+        </span>
+        <span className="flex gap-1.5">
+          {PHOTOS.map((photo, i) => (
+            <button
+              key={photo.src}
+              type="button"
+              aria-label={photo.alt}
+              onClick={() => setIndex(i)}
+              className="h-1.5 w-1.5 rounded-full transition-colors"
+              style={{ background: i === index ? "#fff" : "rgba(255,255,255,0.38)" }}
+            />
+          ))}
+        </span>
+      </div>
+    </div>
   );
 }
 
@@ -155,24 +244,23 @@ export default function Home() {
       {/* Hero: moving image on the left, the claim on the right. */}
       <section id="top" className="grid border-b border-black lg:grid-cols-2">
         <div className="relative order-2 aspect-[4/3] overflow-hidden border-t border-black bg-black lg:order-1 lg:aspect-auto lg:min-h-[78vh] lg:border-r lg:border-t-0">
-          <Reel className="h-full w-full object-cover" eager />
-          <div className="absolute bottom-4 left-4">
-            <span className="u-grotesk inline-block rounded-[3px] border border-white/70 bg-black/40 px-2.5 py-1 text-[0.68rem] text-white backdrop-blur">
-              rendered in blender
-            </span>
-          </div>
+          <Slideshow />
         </div>
 
         <div className="order-1 flex flex-col justify-between p-6 sm:p-10 lg:order-2">
           <div>
             <Tag>student · builder</Tag>
-            <h1 className="u-grotesk mt-8 text-[clamp(2.6rem,7.2vw,5.6rem)] font-medium leading-[0.92] tracking-[-0.045em]">
-              i build ai
+            {/* The name, not the pitch. A stranger landing here should learn
+                whose site this is before they learn what he thinks of himself;
+                the claim still gets said, one size down. */}
+            <h1 className="u-grotesk mt-8 text-[clamp(2.9rem,8vw,6.2rem)] font-medium leading-[0.88] tracking-[-0.05em]">
+              amritaraj
               <br />
-              products that
-              <br />
-              ship
+              nair
             </h1>
+            <p className="u-grotesk mt-6 max-w-lg text-[clamp(1.05rem,2.2vw,1.5rem)] font-medium leading-tight tracking-[-0.02em] text-[#1a1a1a]">
+              I build AI products that ship.
+            </p>
           </div>
 
           <div className="mt-12 max-w-md">
@@ -292,8 +380,11 @@ export default function Home() {
           <Tag tilt={-1.5}>interactive</Tag>
         </div>
 
-        <Reveal className="u-reveal border-t border-black bg-black">
+        <Reveal className="u-reveal relative border-t border-black bg-black">
           <Reel className="aspect-[16/9] w-full object-cover" />
+          <span className="u-grotesk absolute bottom-4 left-4 inline-block rounded-[3px] border border-white/70 bg-black/45 px-2.5 py-1 text-[0.68rem] text-white backdrop-blur">
+            rendered in blender
+          </span>
         </Reveal>
 
         <div className="grid gap-8 px-6 py-10 sm:px-10 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:gap-10">
