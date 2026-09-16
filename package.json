@@ -9,7 +9,8 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "model:car": "'/Applications/Blender.app/Contents/MacOS/Blender' --background --python tools/car.py -- public/models/car.glb"
+    "model:car": "'/Applications/Blender.app/Contents/MacOS/Blender' --background --python tools/car.py -- public/models/car.glb",
+    "model:hero": "'/Applications/Blender.app/Contents/MacOS/Blender' --background --python tools/hero.py -- public/hero/car.jpg src/pages/heroAscii.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

@@ -48,19 +48,39 @@ fresh tab (`tabs_create` + `navigate`) before believing one.
       Vehicle.tsx   the car model: paint, body kits, wheels
       audio.ts      procedural WebAudio, no asset files
       ui/           Hud, Panel (in-world résumé), Garage (shop), CarPreview
-    src/pages/      AllProjects (written portfolio), Resume (PDF), NotFound
-    tools/car.py    Blender script for the car's shell. `npm run model:car`
-    public/models/  its output, committed — CI has no Blender
+    src/pages/      Home (the landing page), Resume (PDF), NotFound
+    tools/car.py    Blender: the car's shell. `npm run model:car`
+    tools/hero.py   Blender: the hero render + its ASCII. `npm run model:hero`
+    public/models/  public/hero/  their output, committed — CI has no Blender
 
-## The one asset
+## Routes
 
-Everything in this world is generated in code except the car's shell, which
-is lofted and bevelled in Blender by `tools/car.py`. Two things justify the
+`/` is the written portfolio and the front door. `/play` is the world, lazily
+loaded so most visitors never pay for three.js at all. `/projects` redirects
+to `/` because the portfolio used to live there. The game asked every visitor
+to learn to drive before they could read a line of the résumé; it does not
+any more.
+
+## The Blender assets
+
+Everything in the world is generated in code except two things, both made in
+Blender and both committed because the deploy runner has no Blender.
+
+`tools/car.py` lofts and bevels the car's shell. Two things justify the
 pipeline: a silhouette that tapers (a car built from boxes is a stack of
 rectangles) and bevelled edges (a hard 90° edge catches no light, so low-poly
 reads as flat shapes). The export carries **no materials** — paint comes from
 the garage — and the `.glb` is committed because the deploy runner has no
 Blender. Regenerate with `npm run model:car` after editing the script.
+
+`tools/hero.py` renders the landing page's hero image, and resamples the same
+render into the ASCII the terminal prints. Three things there were learned the
+hard way: area lights are in **watts**, so a few thousand of them lights a
+night scene like a film set; the ASCII needs **its own pass** with the ground
+hidden and the film transparent, because against a lit floor the car is a dark
+silhouette and a luminance ramp inverts it into a careful drawing of the two
+pools of light; and the ramp mapping must be **measured from the image**, not
+fixed, or a deliberately dark scene lands entirely on two characters.
 
 Blender is Z-up and the exporter converts to glTF's Y-up: a station's height
 goes in Z and its position down the car in **-Y**. Built the obvious way

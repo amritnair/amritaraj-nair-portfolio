@@ -2,15 +2,16 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { HashRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
-import AllProjects from "./pages/AllProjects";
+import Home from "./pages/Home";
 import Resume from "./pages/Resume";
 import NotFound from "./pages/NotFound";
 
-// Keeps three.js, drei and rapier out of the initial bundle — the text pages
-// load instantly, the world streams in behind its own loading screen.
+// Keeps three.js, drei and rapier out of the initial bundle. This matters
+// more now than it did: the landing page is the written portfolio, so most
+// visitors never load the world at all.
 const GamePortfolio = lazy(() => import("./pages/GamePortfolio"));
 
 const queryClient = new QueryClient();
@@ -30,15 +31,17 @@ const App = () => (
         {/* Use hash routing to avoid GitHub Pages 404/refresh issues */}
         <HashRouter>
           <Routes>
+            <Route path="/" element={<Home />} />
             <Route
-              path="/"
+              path="/play"
               element={
                 <Suspense fallback={<Booting />}>
                   <GamePortfolio />
                 </Suspense>
               }
             />
-            <Route path="/projects" element={<AllProjects />} />
+            {/* The portfolio used to live here; keep old links working. */}
+            <Route path="/projects" element={<Navigate to="/" replace />} />
             <Route path="/resume" element={<Resume />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

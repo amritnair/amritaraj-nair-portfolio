@@ -23,7 +23,7 @@ export default function Hud() {
           {/* The name is the way out: it leads to the conventional written
               portfolio for anyone who wants the facts without the driving. */}
           <Link
-            to="/projects"
+            to="/"
             className="text-[0.78rem] font-bold tracking-wide text-white underline-offset-4 transition hover:underline"
             title="Open the written portfolio"
           >
