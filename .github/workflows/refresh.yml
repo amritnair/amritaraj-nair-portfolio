@@ -59,7 +59,7 @@ jobs:
             git commit -am "Update dependencies"
           else
             git reset --hard -q
-            date -u +%F > .last-refresh
+            date -u +%FT%TZ > .last-refresh
             git add .last-refresh
             git commit -m "Update last refresh date"
           fi
