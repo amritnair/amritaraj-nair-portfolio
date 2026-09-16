@@ -41,8 +41,8 @@ jobs:
           fi
       - name: Commit
         run: |
-          git config user.name "$(git log -1 --format=%an)"
-          git config user.email "$(git log -1 --format=%ae)"
+          git config user.name amritnair
+          git config user.email 171728749+amritnair@users.noreply.github.com
           if [ "${{ steps.update.outcome }}" = success ] && ! git diff --quiet; then
             git commit -am "Update dependencies"
           else
