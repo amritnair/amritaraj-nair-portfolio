@@ -50,10 +50,19 @@ fresh tab (`tabs_create` + `navigate`) before believing one.
       ui/           Hud, Panel (in-world résumé), Garage (shop), CarPreview
     src/pages/      Home (the landing page), Resume (PDF), NotFound
     tools/car.py    Blender: the car's shell. `npm run model:car`
-    tools/hero.py   Blender: the hero render + its ASCII. `npm run model:hero`
+    tools/props.py  Blender: island trees and rocks. `npm run model:props`
+    tools/hero.py   Blender: the landing still. `npm run model:hero`
+    tools/reel.py   Blender frames + ffmpeg encode. `npm run model:reel`
     public/models/  public/hero/  their output, committed — CI has no Blender
 
 ## Routes
+
+**The landing page is black-on-white and editorial; the world is neon.** That
+contrast is deliberate — the previous landing page was dark, glowing and
+gradient-lettered, which is the house style of every generated portfolio on
+the internet. Restraint on the page is what makes the world read as a choice.
+`Home.tsx` claims the document background on mount, because the rest of the
+site is dark and an overscroll would otherwise show the world's colour.
 
 `/` is the written portfolio and the front door. `/play` is the world, lazily
 loaded so most visitors never pay for three.js at all. `/projects` redirects
@@ -73,14 +82,31 @@ reads as flat shapes). The export carries **no materials** — paint comes from
 the garage — and the `.glb` is committed because the deploy runner has no
 Blender. Regenerate with `npm run model:car` after editing the script.
 
-`tools/hero.py` renders the landing page's hero image, and resamples the same
-render into the ASCII the terminal prints. Three things there were learned the
-hard way: area lights are in **watts**, so a few thousand of them lights a
+`tools/props.py` builds the island's trees and rocks. Each tier carries a lit
+rim, because nothing in the world is lit by anything except things that glow —
+an unlit prop is a black cutout. A **join inherits the first part's origin**,
+so apply the transform afterwards or the tree exports with its base below zero.
+
+`tools/reel.py` renders the landing page's hero loop. Two things it has to
+work around: the Homebrew Blender build **has no FFmpeg support** (there is no
+`FFMPEG` member on `image_settings.file_format` at all), so it writes PNG
+frames and `npm run model:reel` encodes them with ffmpeg; and Blender 5 moved
+fcurves behind action slots and channelbags, so rather than reach in to set
+LINEAR interpolation it keyframes **every** frame, which makes interpolation
+irrelevant. `hero.py` and `car.py` guard their `main()` — `reel.py` imports
+hero, and an unguarded one renders the wrong thing on import.
+
+`tools/hero.py` renders the landing page's hero image. Three things there were
+learned the hard way: area lights are in **watts**, so a few thousand of them lights a
 night scene like a film set; the ASCII needs **its own pass** with the ground
 hidden and the film transparent, because against a lit floor the car is a dark
-silhouette and a luminance ramp inverts it into a careful drawing of the two
-pools of light; and the ramp mapping must be **measured from the image**, not
-fixed, or a deliberately dark scene lands entirely on two characters.
+silhouette and a luminance ramp inverts it; and a ramp mapping must be
+**measured from the image**, not fixed, or a deliberately dark scene lands
+entirely on two characters.
+
+**A muted autoplay is still refused often enough** — data saver, background
+tab, Low Power Mode — that any hero video needs an explicit `play()` on
+`canplay`, and a poster for when it is refused for good.
 
 Blender is Z-up and the exporter converts to glTF's Y-up: a station's height
 goes in Z and its position down the car in **-Y**. Built the obvious way

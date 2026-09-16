@@ -253,4 +253,5 @@ def main():
     print("WROTE", png, ascii_out)
 
 
-main()
+if __name__ == "__main__":
+    main()
