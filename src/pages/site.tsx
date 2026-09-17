@@ -266,7 +266,10 @@ function SiteScroll({ src, alt, eager }: { src: string; alt: string; eager?: boo
       if (distance <= 4) return; // image no taller than the frame — nothing to scroll
       anim.current = picture.animate(
         [{ transform: "translateY(0)" }, { transform: `translateY(${-distance}px)` }],
-        { duration: (distance / 46) * 1000, direction: "alternate", iterations: Infinity, easing: "ease-in-out" },
+        // Linear, not ease-in-out: over a 30–50s pass the ease-in ramp makes
+        // the first several seconds look motionless. Constant speed reads as a
+        // steady scroll that starts moving immediately.
+        { duration: (distance / 46) * 1000, direction: "alternate", iterations: Infinity, easing: "linear" },
       );
       sync();
     };
