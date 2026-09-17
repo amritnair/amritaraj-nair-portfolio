@@ -328,7 +328,11 @@ function Lanterns() {
         out.push({ position: [nx * d - nz * 7, 0, nz * d + nx * 7], lit: false });
       }
     });
-    return out;
+    // Nothing solid on the climb. The plaza ring puts a post every thirty
+    // degrees, and the one at 270° landed dead centre at the foot of the ramp
+    // — a lamp post in the only way up to the circuit, which became a thing
+    // to crash into the moment posts were given colliders.
+    return out.filter(({ position: [x, , z] }) => !onRampCorridor(x, z, 2));
   }, []);
 
   return (

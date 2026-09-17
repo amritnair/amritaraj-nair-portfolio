@@ -28,6 +28,24 @@ export const BOOST_SPEED = 58;
 export const BOOST_ACCELERATION = 132;
 
 export const TURN_RATE = 2.9;
+
+/**
+ * Steering smoothing, per second.
+ *
+ * Keys are on or off, and the yaw rate used to follow them exactly — full lock
+ * the instant A went down, dead straight the instant it came up. That is what
+ * made the car twitchy: every tap was a step change in heading. The input now
+ * eases toward the key, and eases back a little faster, so letting go of a
+ * turn straightens the car rather than snapping it.
+ */
+export const STEER_RESPONSE = 7;
+export const STEER_RETURN = 10;
+/**
+ * How much of the turn rate is kept at top speed. Full lock at forty units a
+ * second is a spin, not a corner; steering tapers as speed rises so the same
+ * key press is a lane change on the straight and a hairpin at walking pace.
+ */
+export const HIGH_SPEED_STEER = 0.55;
 /** Multiplier on turn rate with the handbrake down. */
 export const DRIFT_TURN_GAIN = 1.45;
 export const GRIP = 0.9;

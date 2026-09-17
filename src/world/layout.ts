@@ -25,19 +25,29 @@ export const DECK_WIDTH = 14;
  * nothing to get better at. This table gives it long sweepers, two tight
  * tucks, a climb and a dive.
  */
+/**
+ * One height for the whole loop.
+ *
+ * It used to climb to 33 and dive to 22, which on paper made the lap more
+ * interesting and in the hands of an actual player meant the car was always
+ * pitching over a crest or into a dip at forty units a second. The shape
+ * still comes from the radius — it is not a circle — but the road is level.
+ */
+const CIRCUIT_HEIGHT = 27;
+
 const CIRCUIT_NODES: { radius: number; height: number }[] = [
-  { radius: 154, height: 24 }, //   0° — start/finish straight
-  { radius: 174, height: 26 }, //  30° — opens out...
-  { radius: 162, height: 30 }, //  60° — ...and tightens: a long ess on the climb
-  { radius: 150, height: 33 }, //  90° — highest point
-  { radius: 132, height: 30 }, // 120° — tuck in over the island's edge
-  { radius: 148, height: 26 }, // 150°
-  { radius: 170, height: 22 }, // 180° — lowest, out west
-  { radius: 166, height: 22 }, // 210° — long flat-out sweeper
-  { radius: 142, height: 25 }, // 240°
-  { radius: 130, height: 28 }, // 270° — tightest corner, where the climb lands
-  { radius: 164, height: 31 }, // 300° — flicks out...
-  { radius: 148, height: 27 }, // 330° — ...and settles before the line
+  { radius: 154, height: CIRCUIT_HEIGHT }, //   0° — start/finish straight
+  { radius: 174, height: CIRCUIT_HEIGHT }, //  30° — opens out...
+  { radius: 162, height: CIRCUIT_HEIGHT }, //  60° — ...and tightens: a long ess
+  { radius: 150, height: CIRCUIT_HEIGHT }, //  90°
+  { radius: 132, height: CIRCUIT_HEIGHT }, // 120° — tuck in over the island's edge
+  { radius: 148, height: CIRCUIT_HEIGHT }, // 150°
+  { radius: 170, height: CIRCUIT_HEIGHT }, // 180° — out west
+  { radius: 166, height: CIRCUIT_HEIGHT }, // 210° — long flat-out sweeper
+  { radius: 142, height: CIRCUIT_HEIGHT }, // 240°
+  { radius: 130, height: CIRCUIT_HEIGHT }, // 270° — tightest corner, where the climb lands
+  { radius: 164, height: CIRCUIT_HEIGHT }, // 300° — flicks out...
+  { radius: 148, height: CIRCUIT_HEIGHT }, // 330° — ...and settles before the line
 ];
 
 /** Catmull-Rom through four control values. */
@@ -165,7 +175,7 @@ export function kickerPads() {
     const rx = fz / len;
     const rz = -fx / len;
     const side = i % 2 ? 1 : -1;
-    const offset = 1.9; // must match KICKER_OFFSET in Circuit.tsx
+    const offset = 3.45; // must match KICKER_OFFSET in Circuit.tsx
     return { x: p.x + rx * side * offset, z: p.z + rz * side * offset };
   });
 }
@@ -214,9 +224,18 @@ export type PathFrame = {
 
 export const CIRCUIT_WIDTH = 15;
 export const CIRCUIT_HALF = CIRCUIT_WIDTH / 2;
-/** Roll per unit of curvature, capped so the banking never becomes a wall. */
-const BANK_GAIN = 5.2;
-const BANK_LIMIT = 0.34;
+/**
+ * Banking, which is off.
+ *
+ * The roads used to lean into their corners by up to twenty degrees. That is
+ * right for a real car and wrong for this one: the car's roll axis is locked,
+ * so it cannot lean to match the deck. On a banked road it sat on one edge of
+ * its collider with the solver pushing it level every frame, which is most of
+ * what "not smooth" was. Kept as named constants, at zero, so the frame code
+ * that consumes them stays honest about what it would do if turned back on.
+ */
+const BANK_GAIN = 0;
+const BANK_LIMIT = 0;
 /** Frames around the loop. Dense: it is both the mesh and the collision. */
 export const CIRCUIT_SEGMENTS = 180;
 

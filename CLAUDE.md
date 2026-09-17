@@ -167,9 +167,13 @@ round, the car exports standing on its nose.
   kink that doubles back on itself. Phantom endpoints by *reflection*; a
   repeated endpoint gives the curve zero speed as it arrives and bunches the
   last samples on top of each other.
-- **Curvature drives bank, so smooth it first**, over a fixed length of road
-  rather than a fixed number of frames — otherwise a densely sampled ramp
-  keeps every ripple the sampling put in and the road wobbles like a ribbon.
+- **Roads are flat: no banking, and the circuit is one height (27).** Roll is
+  locked on the car body, so it physically cannot lean to match a banked
+  deck — it sat on one edge of its collider with the solver fighting it every
+  frame, which was most of what "not smooth" meant. `BANK_GAIN`/`BANK_LIMIT`
+  are kept at zero rather than deleted. If banking ever comes back, curvature
+  must be smoothed over a fixed length of road first, or a densely sampled
+  ramp wobbles like a ribbon — and the roll lock has to go with it.
 - **A road joins another road tangentially or not at all.** The climb used to
   end perpendicular on the circuit's centreline: flat ramp, banked deck, a
   two-metre step met side-on. It now arrives alongside the inner edge, built
@@ -194,6 +198,20 @@ round, the car exports standing on its nose.
   side. Anything that can launch the car is a flip risk in proportion to its
   height: the ring's kerbs stood 0.75 above the deck and were a launch ramp
   at the current top speed.
+- **Anything tuned "per frame" must be scaled by `delta`.** Grip removed 90%
+  of sideways speed per *rendered* frame, so on a 120Hz MacBook it gripped
+  twice as hard as tuned: on rails, then snapping loose. Convert with
+  `1 - (1 - k) ** (delta * 60)`. The preview cannot show this — it does not
+  render at 120Hz.
+- **Recovery must never depend on the ground ray.** The ray is short and
+  straight down from the car's middle; on its roof, on its side over a kerb,
+  or wedged nose-up, the middle sits above its reach, `grounded` reads false,
+  and X silently did nothing. Recovery keys off speed instead — a car on its
+  back is slow, a car mid-jump is not. Take the heading from `forward` laid
+  flat, never from a YXZ Euler: upside down that yaw reads half a turn out.
+- **Keyboard steering needs easing.** Raw on/off keys driving the yaw rate
+  make every tap a step change in heading. `STEER_RESPONSE`/`STEER_RETURN`
+  ease it, and `HIGH_SPEED_STEER` tapers lock at speed.
 - **Airborne means no control**: throttle, brakes, boost, grip and steering are
   all gated on the ground ray. Only the trick keys work in the air.
 - **What you hit must be what you see.** The barriers were 1.9 tall in physics

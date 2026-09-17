@@ -650,10 +650,15 @@ function Pylons({ frames }: { frames: Frame[] }) {
 
 const KICKER_HALF_WIDTH = 3.6;
 /**
- * How far off the centreline a kicker sits. Enough that the racing line past
- * it is still clean, not so far that it fires you at the barrier.
+ * How far off the centreline a kicker sits: its outer edge meets the barrier,
+ * which leaves a clear, flat lane the other side of it.
+ *
+ * They were near the middle, so there was no line past one that did not go
+ * over it — every lap was seven metres of air five times, whether you wanted
+ * the jump or not. Against the wall they are a choice. The catch fencing
+ * alongside each one is what makes a kicker this close to the barrier safe.
  */
-const KICKER_OFFSET = 1.9;
+const KICKER_OFFSET = 3.45;
 /**
  * Sized from the flight time, not by eye. Gravity here is 30, so a shallow
  * kicker barely unweights the car: at 13 long with a 3.2 lip the launch angle

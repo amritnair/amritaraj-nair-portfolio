@@ -30,6 +30,9 @@ import {
   MAX_SPEED,
   REVERSE_ACCELERATION,
   REVERSE_THRESHOLD,
+  STEER_RESPONSE,
+  STEER_RETURN,
+  HIGH_SPEED_STEER,
   TURN_RATE,
   AIR_ALIGN,
   AIR_ALIGN_DELAY,
@@ -217,6 +220,8 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
   const { world, rapier } = useRapier();
   const air = useRef<AirState>({ airborne: false, time: 0, spin: 0, lastYaw: 0 });
   const skyGround = useRef(CATCH_MEMORY);
+  const steerSmooth = useRef(0);
+  const flipCooldown = useRef(0);
   const falling = useRef(0);
   const body = useRef<RapierRigidBody>(null);
   const chassis = useRef<THREE.Group>(null);
@@ -364,7 +369,14 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
     // skating. Tyres only grip what they are touching.
     if (grounded) {
       const gripLoss = input.brake ? GRIP * DRIFT_GRIP : GRIP;
-      impulse.copy(right).multiplyScalar(-alongRight * gripLoss * mass);
+      /*
+       * Scaled to the frame. GRIP is "fraction of sideways speed removed per
+       * sixtieth of a second", and it used to be applied per rendered frame
+       * instead — so on a 120Hz display the tyres gripped twice as hard as
+       * tuned. The car carved on rails and then let go all at once.
+       */
+      const perFrame = 1 - Math.pow(1 - gripLoss, delta * 60);
+      impulse.copy(right).multiplyScalar(-alongRight * perFrame * mass);
       rb.applyImpulse(impulse, true);
     }
 
@@ -378,8 +390,14 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
     }
 
     // Steering scales with speed, and flips when reversing — like a real car.
-    const steer = input.left - input.right;
+    const steerTarget = input.left - input.right;
+    const steerRate = steerTarget === 0 ? STEER_RETURN : STEER_RESPONSE;
+    steerSmooth.current +=
+      (steerTarget - steerSmooth.current) * (1 - Math.exp(-steerRate * delta));
+    const steer = steerSmooth.current;
     const speedFactor = Math.min(Math.abs(alongForward) / 6, 1);
+    const speedTame =
+      1 - (1 - HIGH_SPEED_STEER) * Math.min(Math.abs(alongForward) / MAX_SPEED, 1);
     // ...but keep some authority while the throttle is down even at a standstill.
     // Purely speed-scaled steering means nosing into a tree locks you there:
     // forward is blocked, so speed stays zero, so you can never turn away.
@@ -404,7 +422,7 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
       const settle = 1 - Math.exp(-GROUND_PITCH_DAMP * delta);
       spinVector.addScaledVector(right, -spinVector.dot(right) * settle);
       rb.setAngvel(
-        { x: spinVector.x, y: steer * turnRate * steerFactor * direction, z: spinVector.z },
+        { x: spinVector.x, y: steer * turnRate * steerFactor * speedTame * direction, z: spinVector.z },
         true,
       );
     }
@@ -579,29 +597,55 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
      * above the road, so a bad landing costs momentum rather than the run.
      */
     const flip = () => {
-      const heading = scratchEuler.current.setFromQuaternion(quaternion, "YXZ").y;
+      /*
+       * Heading from the car's forward vector laid flat, not from an Euler
+       * decomposition. Upside down, the YXZ yaw of the body reads half a turn
+       * out, so the old version set the car back on its wheels facing the way
+       * it had come. Standing on its nose the forward vector is nearly
+       * vertical and has no heading at all, so fall back to how it is moving,
+       * then to the last heading the HUD knew.
+       */
+      let hx = forward.x;
+      let hz = forward.z;
+      if (hx * hx + hz * hz < 0.02) {
+        hx = velocity.x;
+        hz = velocity.z;
+      }
+      const heading =
+        hx * hx + hz * hz < 0.0001 ? telemetry.heading : Math.atan2(hx, hz);
       const level = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, heading, 0, "YXZ"));
       rb.setRotation({ x: level.x, y: level.y, z: level.z, w: level.w }, true);
-      rb.setTranslation(
-        { x: carPosition.x, y: carPosition.y + 0.8, z: carPosition.z },
-        true,
-      );
+      rb.setTranslation({ x: carPosition.x, y: carPosition.y + 1.2, z: carPosition.z }, true);
       rb.setAngvel({ x: 0, y: 0, z: 0 }, true);
+      // Stopped, too: carrying the slide that flipped you into the recovery
+      // just flips you again.
+      rb.setLinvel({ x: 0, y: 0, z: 0 }, true);
       beached.current = 0;
+      flipCooldown.current = 0.6;
     };
 
-    if (grounded && !isUpright) {
+    flipCooldown.current = Math.max(0, flipCooldown.current - delta);
+    const moving = velocity.length();
+    const stuck = Math.abs(alongForward) < 2 && Math.abs(pitch) > BEACHED_PITCH;
+
+    /*
+     * None of this asks whether the car is on the ground.
+     *
+     * It used to, and that is why X did nothing when you needed it. The
+     * ground test is a short ray straight down from the middle of the car;
+     * on its roof, on its side across a kerb, or wedged nose-up against a
+     * tree, the middle of the car sits higher than the ray reaches, the test
+     * says "airborne", and every recovery path was switched off. Being slow
+     * is the honest signal instead — a car tumbling through a jump is fast,
+     * and a car lying on its back is not.
+     */
+    if (input.recover && flipCooldown.current === 0 && (!isUpright || stuck || moving < 8)) {
+      flip();
+    } else if ((!isUpright || stuck) && moving < 3) {
       beached.current += delta;
-      if (input.recover || beached.current > AUTO_RIGHT) flip();
-    } else if (grounded && Math.abs(alongForward) < 2 && Math.abs(pitch) > BEACHED_PITCH) {
-      // Upright enough, but nosed into something and going nowhere.
-      beached.current += delta;
-      if (input.recover || beached.current > WRECKED_GRACE + 1) flip();
+      if (beached.current > (isUpright ? WRECKED_GRACE + 1 : AUTO_RIGHT)) flip();
     } else {
       beached.current = 0;
-      // X is available any time you are on the ground and stopped, even when
-      // the game thinks you are fine — the player's judgement wins.
-      if (grounded && input.recover && Math.abs(alongForward) < 4) flip();
     }
 
 
