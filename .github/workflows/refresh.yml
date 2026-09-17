@@ -64,3 +64,30 @@ jobs:
             git commit -m "Update last refresh date"
           fi
           git push
+
+  # If any repo's refresh failed — most likely a push rejected by an expired
+  # REFRESH_TOKEN — open or comment on a tracking issue. Deliberately uses the
+  # automatic GITHUB_TOKEN, not REFRESH_TOKEN, so the alert still fires when that
+  # token is the thing that broke. You watch this repo, so the issue emails you.
+  # Skipped (coin-flip) days succeed and never reach here.
+  alert:
+    needs: refresh
+    if: ${{ failure() }}
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Open or update the alert issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          title="Refresh workflow failing"
+          body="A scheduled refresh run failed — most likely REFRESH_TOKEN expired. $RUN_URL"
+          existing=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
+            --search "$title in:title" --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --repo "$GITHUB_REPOSITORY" --body "$body"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body "$body"
+          fi
