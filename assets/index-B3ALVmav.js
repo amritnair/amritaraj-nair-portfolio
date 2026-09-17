@@ -18581,7 +18581,7 @@ Error generating stack: ` + i.message + `
           duration: y / 46 * 1e3,
           direction: "alternate",
           iterations: 1 / 0,
-          easing: "ease-in-out"
+          easing: "linear"
         }), c());
       };
       o.complete ? f() : o.addEventListener("load", f, {
@@ -24526,7 +24526,7 @@ Best regards`);
         ]
       })
     });
-  }, O4 = b.lazy(() => BA(() => import("./GamePortfolio-Bi7hPkVG.js").then(async (m) => {
+  }, O4 = b.lazy(() => BA(() => import("./GamePortfolio-CipwzW8r.js").then(async (m) => {
     await m.__tla;
     return m;
   }).then((t) => t.b6), [])), D4 = new hO(), N4 = () => x.jsx("div", {
