@@ -18161,8 +18161,7 @@ Error generating stack: ` + i.message + `
           tags: [
             "iOS",
             "TypeScript",
-            "PostgreSQL",
-            "Serverless"
+            "PostgreSQL"
           ],
           shot: "shots/thorp-home.jpg",
           links: [
@@ -24527,7 +24526,7 @@ Best regards`);
         ]
       })
     });
-  }, O4 = b.lazy(() => BA(() => import("./GamePortfolio-AzKAITDD.js").then(async (m) => {
+  }, O4 = b.lazy(() => BA(() => import("./GamePortfolio-B_hO23kl.js").then(async (m) => {
     await m.__tla;
     return m;
   }).then((t) => t.b6), [])), D4 = new hO(), N4 = () => x.jsx("div", {
