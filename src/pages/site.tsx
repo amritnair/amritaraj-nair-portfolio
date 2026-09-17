@@ -224,8 +224,11 @@ function CardVideo({ base, poster, eager }: { base: string; poster?: string; eag
       onCanPlay={nudge}
       onLoadedData={nudge}
     >
-      <source src={`${withBase(base)}.webm`} type="video/webm" />
+      {/* mp4/h264 first: Safari and iOS often won't fall through from a VP9
+          webm to the mp4 and just render blank. h264 plays everywhere, and
+          here the mp4 is the smaller file anyway. */}
       <source src={`${withBase(base)}.mp4`} type="video/mp4" />
+      <source src={`${withBase(base)}.webm`} type="video/webm" />
     </video>
   );
 }

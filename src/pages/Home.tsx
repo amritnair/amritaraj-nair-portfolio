@@ -159,8 +159,9 @@ function Reel({ className, eager }: { className?: string; eager?: boolean }) {
       onCanPlay={nudge}
       onLoadedData={nudge}
     >
-      <source src={`${REEL}.webm`} type="video/webm" />
+      {/* mp4/h264 first — Safari and iOS may not fall through from VP9 webm. */}
       <source src={`${REEL}.mp4`} type="video/mp4" />
+      <source src={`${REEL}.webm`} type="video/webm" />
     </video>
   );
 }
