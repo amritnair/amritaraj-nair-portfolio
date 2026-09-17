@@ -30,7 +30,24 @@ shoot () { # name url
   echo "$1 $(stat -f%z "$OUT/$1.jpg") bytes"
 }
 
-shoot thorp-home    "https://thorp-trade.vercel.app"
-shoot clinicalhours "https://clinicalhours.org"
-shoot shotsensei    "https://playshotsensei.com"
+# thorp-home.jpg and clinicalhours.jpg are NOT captured here any more — the
+# written page auto-scrolls their *full-page* screenshots, and clinicalhours
+# only reveals its content on scroll, which a one-shot viewport grab misses.
+# Those two are captured full-page with reduced-motion emulation (playwright,
+# channel=chrome) and downscaled to 1000px wide. Regenerate them with:
+#   pip install playwright && python3 - <<'PY'
+#   from playwright.sync_api import sync_playwright
+#   S={"thorp-home":"https://thorp-trade.vercel.app","clinicalhours":"https://clinicalhours.org"}
+#   with sync_playwright() as p:
+#     b=p.chromium.launch(channel="chrome"); c=b.new_context(device_scale_factor=2,reduced_motion="reduce",viewport={"width":1440,"height":900})
+#     for n,u in S.items():
+#       pg=c.new_page(); pg.goto(u,wait_until="networkidle")
+#       pg.evaluate("()=>new Promise(r=>{let y=0;const s=()=>{scrollTo(0,y);y+=500;if(y<document.body.scrollHeight)setTimeout(s,120);else{scrollTo(0,0);setTimeout(r,700)}};s()})")
+#       pg.screenshot(path=f"/tmp/{n}.png",full_page=True)
+#     b.close()
+#   PY
+#   for n in thorp-home clinicalhours; do ffmpeg -y -i /tmp/$n.png -vf scale=1000:-1 -q:v 5 public/shots/$n.jpg; done
+#
+# Shot Sensei shows its gameplay clip (shots/shotsensei.{mp4,webm}), trimmed
+# from the Devpost demo, so its site is not captured either.
 shoot harbor        "https://harbordisaster.xyz"

@@ -25,6 +25,14 @@ export type Card = {
    * The 3D world ignores this; only the written page uses it.
    */
   shot?: string;
+  /**
+   * A muted, looping background clip for the card — a base path under `public/`
+   * with no extension; `.webm` and `.mp4` are appended. Takes the media slot
+   * over `shot`. Used only by the written page.
+   */
+  video?: string;
+  /** Poster still for `video`, shown until it plays and under reduced motion. */
+  poster?: string;
 };
 
 export type Zone = {
@@ -205,6 +213,8 @@ export const ZONES: Zone[] = [
         ],
         tags: ["OpenCV", "YOLOv8", "Gemini", "ElevenLabs", "Supabase"],
         shot: "shots/shotsensei.jpg",
+        video: "shots/shotsensei",
+        poster: "shots/shotsensei-poster.jpg",
         links: [
           { label: "Devpost", href: "https://devpost.com/software/a-d3b6nf" },
           { label: "playshotsensei.com", href: "https://playshotsensei.com" },

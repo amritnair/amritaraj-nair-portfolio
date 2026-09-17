@@ -146,19 +146,168 @@ export function ProjectCard({ card, zone, index }: { card: Card; zone: Zone; ind
         )}
       </div>
 
-      {card.shot && (
-        <figure className="col-span-full mt-4 border border-[var(--ink)] bg-black">
-          <img
-            src={withBase(card.shot)}
-            alt={`${card.title} — screenshot of the live product`}
-            width={1600}
-            height={1000}
-            loading={index === 0 ? "eager" : "lazy"}
-            className="block w-full"
-          />
-        </figure>
-      )}
+      <ProjectMedia card={card} index={index} />
     </Reveal>
+  );
+}
+
+/**
+ * The card's media: a browser-framed "demo" of the live product. Shot Sensei
+ * plays its muted gameplay clip; every other site slowly auto-scrolls its own
+ * full-page screenshot, the way you would if you were reading it. Both sit in
+ * the same chrome so the section reads as a row of live demos rather than
+ * stills. Nothing moves under `prefers-reduced-motion`.
+ */
+function ProjectMedia({ card, index }: { card: Card; index: number }) {
+  if (!card.video && !card.shot) return null;
+  // The frame's address bar: the first link that looks like a bare domain.
+  const label = card.links?.find((l) => /^[\w-]+(\.[\w-]+)+$/.test(l.label))?.label;
+
+  return (
+    <figure className="col-span-full mt-4">
+      <Frame label={label}>
+        {card.video ? (
+          <CardVideo base={card.video} poster={card.poster ?? card.shot} eager={index === 0} />
+        ) : (
+          <SiteScroll src={withBase(card.shot!)} alt={`${card.title}, the live site`} eager={index === 0} />
+        )}
+      </Frame>
+    </figure>
+  );
+}
+
+/** A minimal browser window around the media, monochrome to suit the page. */
+function Frame({ label, children }: { label?: string; children: React.ReactNode }) {
+  return (
+    <div className="overflow-hidden rounded-[4px] border border-[var(--ink)] bg-black">
+      <div className="flex items-center gap-2 border-b border-white/10 bg-[#0e0e0e] px-3 py-2">
+        <span className="flex gap-1.5" aria-hidden>
+          <span className="h-2.5 w-2.5 rounded-full bg-white/25" />
+          <span className="h-2.5 w-2.5 rounded-full bg-white/25" />
+          <span className="h-2.5 w-2.5 rounded-full bg-white/25" />
+        </span>
+        {label && (
+          <span className="mx-auto max-w-[75%] truncate rounded-[3px] bg-white/[0.08] px-2 py-0.5 text-center text-[0.62rem] text-white/60">
+            {label}
+          </span>
+        )}
+      </div>
+      <div className="relative aspect-[16/10] w-full overflow-hidden bg-black">{children}</div>
+    </div>
+  );
+}
+
+/**
+ * The looping demo clip. `autoplay muted playsinline` is meant to be enough,
+ * but a muted autoplay is refused often enough — data saver, a background tab
+ * at load, Low Power Mode — that the reliable version asks again once the data
+ * is there. The poster covers the case where it is refused for good.
+ */
+function CardVideo({ base, poster, eager }: { base: string; poster?: string; eager?: boolean }) {
+  const ref = useRef<HTMLVideoElement>(null);
+  const nudge = () => {
+    const video = ref.current;
+    if (video?.paused) void video.play().catch(() => {});
+  };
+  useEffect(nudge, []);
+
+  return (
+    <video
+      ref={ref}
+      className="absolute inset-0 h-full w-full object-cover"
+      poster={poster ? withBase(poster) : undefined}
+      autoPlay
+      muted
+      loop
+      playsInline
+      preload={eager ? "auto" : "metadata"}
+      onCanPlay={nudge}
+      onLoadedData={nudge}
+    >
+      <source src={`${withBase(base)}.webm`} type="video/webm" />
+      <source src={`${withBase(base)}.mp4`} type="video/mp4" />
+    </video>
+  );
+}
+
+/**
+ * A tall full-page screenshot that scrolls itself top-to-bottom and back,
+ * like a hands-off tour of the site. Driven by the Web Animations API rather
+ * than a per-frame React loop, paused while off-screen and on hover, and left
+ * still (showing the hero) when the visitor has asked for less motion.
+ */
+function SiteScroll({ src, alt, eager }: { src: string; alt: string; eager?: boolean }) {
+  const img = useRef<HTMLImageElement>(null);
+  const anim = useRef<Animation | null>(null);
+  const inView = useRef(false);
+  const hovering = useRef(false);
+
+  useEffect(() => {
+    const picture = img.current;
+    const box = picture?.parentElement; // the Frame's clipping viewport
+    if (!box || !picture) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const running = () => inView.current && !hovering.current;
+    const sync = () => {
+      if (!anim.current) return;
+      if (running()) anim.current.play();
+      else anim.current.pause();
+    };
+
+    const build = () => {
+      if (!picture.complete || !picture.naturalWidth) return;
+      const distance = picture.clientHeight - box.clientHeight; // px it can travel
+      anim.current?.cancel();
+      anim.current = null;
+      if (distance <= 4) return; // image no taller than the frame — nothing to scroll
+      anim.current = picture.animate(
+        [{ transform: "translateY(0)" }, { transform: `translateY(${-distance}px)` }],
+        { duration: (distance / 46) * 1000, direction: "alternate", iterations: Infinity, easing: "ease-in-out" },
+      );
+      sync();
+    };
+
+    if (picture.complete) build();
+    else picture.addEventListener("load", build, { once: true });
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        inView.current = entry.isIntersecting;
+        sync();
+      },
+      { threshold: 0.05 },
+    );
+    io.observe(box);
+
+    const ro = new ResizeObserver(build);
+    ro.observe(box);
+
+    return () => {
+      io.disconnect();
+      ro.disconnect();
+      anim.current?.cancel();
+      picture.removeEventListener("load", build);
+    };
+  }, [src]);
+
+  return (
+    <img
+      ref={img}
+      src={src}
+      alt={alt}
+      loading={eager ? "eager" : "lazy"}
+      draggable={false}
+      onMouseEnter={() => {
+        hovering.current = true;
+        anim.current?.pause();
+      }}
+      onMouseLeave={() => {
+        hovering.current = false;
+        if (inView.current) anim.current?.play();
+      }}
+      className="absolute inset-x-0 top-0 w-full"
+    />
   );
 }
 
