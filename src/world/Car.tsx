@@ -27,6 +27,8 @@ import {
   FOV_BOOST_GAIN,
   FOV_SPEED_GAIN,
   GRIP,
+  GRIP_REDIRECT,
+  yawToFace,
   MAX_SPEED,
   REVERSE_ACCELERATION,
   REVERSE_THRESHOLD,
@@ -49,7 +51,7 @@ import {
 import { cameraTuning } from "./camera";
 import { record } from "./ghostLap";
 import { createTrickState, updateTricks } from "./tricks";
-import { circuitPoint, kickerPads, nearestSkyRoad } from "./layout";
+import { CIRCUIT_HEIGHT, ISLAND_RADIUS, circuitPoint, kickerPads, nearestSkyRoad, skyRoadTurn } from "./layout";
 
 /** Just inside the plaza ring, nose pointed at the title. */
 export const SPAWN: [number, number, number] = [0, 1.6, 11];
@@ -86,24 +88,21 @@ const AUTO_RIGHT = 2.5;
 /*
  * The catch. Barriers stop you leaving the circuit sideways and catch fencing
  * covers the jumps, but "impossible to fall off" should not rest on geometry
- * alone: a hard enough landing on the lip of a wall can still put you over it,
- * and dropping thirty metres into the sea ends a run for a mistake that lasted
- * a tenth of a second.
+ * alone: a hard enough landing on the lip of a wall can still put you over it.
  *
- * So if the car was on a road in the sky and is now in free fall below every
- * one of them, it is set back down on the nearest piece of road, facing the
- * way that road goes. Deliberately narrow: you have to be falling, not
- * driving, and below the ring road, which is itself a legitimate place to
- * land. Driving down the ramp under power never trips it.
+ * So if the car was on the circuit or the climb recently and is now down at
+ * sea level *out over the water*, it is set back on the nearest piece of road,
+ * facing the way that road goes. Keyed on position, not on a period of free
+ * fall: with the circuit at seven metres a fall off it lasts about six tenths
+ * of a second, shorter than the old fall threshold, so the catch never fired.
+ * Over the island it never applies — landing on the island is just driving.
  */
-/** Seconds of having been on a sky road within which the catch still applies. */
+/** Seconds of having been on a raised road within which the catch applies. */
 const CATCH_MEMORY = 5;
-/** Height below which there is no road left to land on. */
-const CATCH_FLOOR = 11;
-/** Free fall before the catch decides this is a fall and not a jump. */
-const CATCH_FALL = 0.85;
-/** Sky roads all sit above this; the ring and the island are below it. */
-const SKY_ROAD = 18;
+/** Below this, out over the sea, there is no road — only water. */
+const CATCH_FLOOR = 2.5;
+/** Grounded above this is on the circuit or the top of the climb. */
+const SKY_ROAD = CIRCUIT_HEIGHT - 2;
 
 // Scratch objects — allocating inside useFrame would churn the GC every frame.
 const forward = new THREE.Vector3();
@@ -222,7 +221,6 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
   const skyGround = useRef(CATCH_MEMORY);
   const steerSmooth = useRef(0);
   const flipCooldown = useRef(0);
-  const falling = useRef(0);
   const body = useRef<RapierRigidBody>(null);
   const chassis = useRef<THREE.Group>(null);
   const rig = useVehicleRig();
@@ -359,7 +357,7 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
        * Only ever applied under power, and only uphill, so gravity still pulls
        * you down the far side.
        */
-      const climb = -forward.y;
+      const climb = forward.y; // nose up is +y: the old -y pushed downhill and nothing uphill
       const assist = throttle > 0 && climb > 0 ? climb * 30 : 0;
       impulse.copy(forward).multiplyScalar((power + assist) * mass * delta);
       rb.applyImpulse(impulse, true);
@@ -378,6 +376,14 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
       const perFrame = 1 - Math.pow(1 - gripLoss, delta * 60);
       impulse.copy(right).multiplyScalar(-alongRight * perFrame * mass);
       rb.applyImpulse(impulse, true);
+      // ...and hand most of it back along the nose, so a correction redirects
+      // momentum rather than deleting it (see GRIP_REDIRECT).
+      if (!input.brake && Math.abs(alongForward) < limit) {
+        const regained =
+          Math.abs(alongRight) * perFrame * GRIP_REDIRECT * (alongForward < 0 ? -1 : 1);
+        impulse.copy(forward).multiplyScalar(regained * mass);
+        rb.applyImpulse(impulse, true);
+      }
     }
 
     // Rolling resistance and handbrake. Braking *on* the throttle is a drift,
@@ -421,8 +427,10 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
       spinVector.set(spin.x, spin.y, spin.z);
       const settle = 1 - Math.exp(-GROUND_PITCH_DAMP * delta);
       spinVector.addScaledVector(right, -spinVector.dot(right) * settle);
+      const v = rb.linvel();
+      const follow = skyRoadTurn(carPosition.x, carPosition.y, carPosition.z, v.x, v.z);
       rb.setAngvel(
-        { x: spinVector.x, y: steer * turnRate * steerFactor * speedTame * direction, z: spinVector.z },
+        { x: spinVector.x, y: steer * turnRate * steerFactor * speedTame * direction + follow, z: spinVector.z },
         true,
       );
     }
@@ -433,17 +441,16 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
      */
     if (grounded && carPosition.y > SKY_ROAD) skyGround.current = 0;
     else skyGround.current += delta;
-    if (!grounded && linvel.y < 0) falling.current += delta;
-    else falling.current = 0;
 
     if (
       skyGround.current < CATCH_MEMORY &&
-      falling.current > CATCH_FALL &&
-      carPosition.y < CATCH_FLOOR
+      carPosition.y < CATCH_FLOOR &&
+      Math.hypot(carPosition.x, carPosition.z) > ISLAND_RADIUS + 3
     ) {
       const { frame } = nearestSkyRoad(carPosition.x, carPosition.z);
-      const heading = Math.atan2(frame.forward.x, frame.forward.z);
-      const level = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, heading, 0, "YXZ"));
+      const level = new THREE.Quaternion().setFromEuler(
+        new THREE.Euler(0, yawToFace(frame.forward.x, frame.forward.z), 0, "YXZ"),
+      );
       rb.setRotation({ x: level.x, y: level.y, z: level.z, w: level.w }, true);
       rb.setTranslation(
         { x: frame.position.x, y: frame.position.y + 1.6, z: frame.position.z },
@@ -455,7 +462,6 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
       rb.setLinvel({ x: frame.forward.x * kept, y: 0, z: frame.forward.z * kept }, true);
       rb.setAngvel({ x: 0, y: 0, z: 0 }, true);
       skyGround.current = 0;
-      falling.current = 0;
       telemetry.caught = performance.now();
     } else if (input.reset || carPosition.y < -14) reset();
 
@@ -611,9 +617,12 @@ export default function Car({ onMove }: { onMove?: (p: THREE.Vector3) => void })
         hx = velocity.x;
         hz = velocity.z;
       }
-      const heading =
-        hx * hx + hz * hz < 0.0001 ? telemetry.heading : Math.atan2(hx, hz);
-      const level = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, heading, 0, "YXZ"));
+      if (hx * hx + hz * hz < 0.0001) {
+        // telemetry.heading is the nose's direction angle, not a body yaw.
+        hx = Math.sin(telemetry.heading);
+        hz = Math.cos(telemetry.heading);
+      }
+      const level = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, yawToFace(hx, hz), 0, "YXZ"));
       rb.setRotation({ x: level.x, y: level.y, z: level.z, w: level.w }, true);
       rb.setTranslation({ x: carPosition.x, y: carPosition.y + 1.2, z: carPosition.z }, true);
       rb.setAngvel({ x: 0, y: 0, z: 0 }, true);

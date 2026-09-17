@@ -26,14 +26,16 @@ export const DECK_WIDTH = 14;
  * tucks, a climb and a dive.
  */
 /**
- * One height for the whole loop.
+ * One height for the whole loop, and a low one.
  *
- * It used to climb to 33 and dive to 22, which on paper made the lap more
- * interesting and in the hands of an actual player meant the car was always
- * pitching over a crest or into a dip at forty units a second. The shape
- * still comes from the radius — it is not a circle — but the road is level.
+ * It used to climb to 33 and dive to 22, and later sat level at 27. Every
+ * metre of height is a metre the climb has to gain, and the climb had to gain
+ * it while also crossing over the ring road, which forced it steep and forced
+ * its turn onto the circuit tight. At 7 the circuit sits below the ring's deck,
+ * so the climb passes beneath the ring instead of over it and has room to be
+ * straight and gentle. Still well clear of the sea and the island.
  */
-const CIRCUIT_HEIGHT = 27;
+export const CIRCUIT_HEIGHT = 7;
 
 const CIRCUIT_NODES: { radius: number; height: number }[] = [
   { radius: 154, height: CIRCUIT_HEIGHT }, //   0° — start/finish straight
@@ -363,7 +365,7 @@ export function circuitFrames(count = CIRCUIT_SEGMENTS): PathFrame[] {
  * ------------------------------------------------------------------ */
 
 /** One lane wide: the climb is a slip road, not a second racetrack. */
-export const RAMP_WIDTH = 12;
+export const RAMP_WIDTH = 14;
 export const RAMP_HALF = RAMP_WIDTH / 2;
 
 /**
@@ -380,56 +382,65 @@ export const RAMP_HALF = RAMP_WIDTH / 2;
  * barrier between the two is open for that whole stretch, which is what makes
  * it a merge instead of a junction.
  */
-const MERGE_TO_TURN = 0.75;
-const MERGE_FROM = CIRCUIT_RAMP_ANGLE + MERGE_TO_TURN;
-const MERGE_TO = CIRCUIT_RAMP_ANGLE + 1.15;
+const mergeFromAngle = (plan: RampPlan) => CIRCUIT_RAMP_ANGLE + plan.mergeFrom;
+const mergeToAngle = (plan: RampPlan) => CIRCUIT_RAMP_ANGLE + plan.mergeFrom + plan.mergeLength;
 
 /** True for a point on the loop where the inner barrier has to be open. */
 export function inMergeGap(angle: number) {
   const a = ((angle % TAU) + TAU) % TAU;
-  return a > MERGE_FROM - 0.05 && a < MERGE_TO;
+  return a > mergeFromAngle(RAMP_PLAN) - 0.05 && a < mergeToAngle(RAMP_PLAN);
 }
 
 /**
- * Control points for the climb — as an inset from the merge lane, not as a
- * shape of its own.
+ * The climb, as a plan rather than a list of control points.
  *
- * `turn` is how far around the circuit the point sits, measured from the
- * ramp's bearing; `inset` is how many metres inside the lane it lies; `height`
- * is its own. Written this way the climb follows the circuit wherever the
- * circuit wanders, and the number that decides whether the join feels right —
- * how fast the ramp closes on the lane — is the number you are authoring.
+ * Rebuilt from a drive test, not from a drawing. The last version curved all
+ * the way up — it was turning the whole time it was climbing — and a player on
+ * a keyboard, with keys that are either on or off, cannot hold a partial lock
+ * through a continuous bend. They weave, the car slews, and a slewing car loses
+ * its speed. The test watched exactly that: dead straight at 33 units a second
+ * up the first stretch, then oscillating the moment the road began to curve,
+ * and three times all but stopped before reaching the top.
  *
- * It leaves the island dead south, the way the car spawns facing, climbs
- * straight while it crosses over the ring road, then spends the rest of its
- * length on one long right-hander that lines it up with the traffic.
+ * So the shape now separates the two jobs. It climbs dead straight, where
+ * there is nothing to steer, and only once it is level does it turn — one wide
+ * constant-radius arc, flat — before easing alongside the circuit. Turning
+ * from "heading out" to "running alongside" costs outward room roughly equal
+ * to the radius, which is why the climb is short and early: it leaves the turn
+ * sixty metres of radius instead of the twenty the old layout could spare.
  */
-const CLIMB_NODES: { turn: number; radius: number; height: number }[] = [
-  { turn: 0.0, radius: 16, height: 0 },
-  { turn: 0.0, radius: 42, height: 3.4 },
-  { turn: 0.03, radius: 68, height: 10.2 },
-  { turn: 0.1, radius: 92, height: 17.6 },
-  { turn: 0.2, radius: 112, height: 22.0 },
-  { turn: 0.33, radius: 128, height: 24.8 },
-  { turn: 0.4, radius: 133, height: 26.2 },
-];
+export type RampPlan = {
+  /** Where the climb begins and where it reaches full height, as radii. */
+  climbFrom: number;
+  climbTo: number;
+  /** Radius at which the level turn begins. */
+  turnFrom: number;
+  /** The turn: one flat arc of this radius, through this many radians. */
+  turnRadius: number;
+  turnSweep: number;
+  /** Where the merge lane begins and how long it runs, in circuit radians. */
+  mergeFrom: number;
+  mergeLength: number;
+  /** Nodes used to ease from the arc onto the lane. */
+  approach: number;
+};
 
 /**
- * How the last fifty metres close on the lane: a gap that shrinks as the
- * square of the distance left, so the ramp stops converging before it
- * arrives instead of still crossing sideways when it gets there.
- *
- * Radius is the wrong handle for this stretch — the circuit wanders in and
- * out by thirty metres, so a fixed radius drifts towards it and away from it
- * for reasons that have nothing to do with the ramp. It is equally the wrong
- * handle to *drop*: at the bottom of the climb the lane is a hundred metres
- * away and a degree of error in its direction throws the start clear across
- * the island. Each is used over the stretch where it is the number that
- * actually matters.
+ * Chosen by a search over these numbers (see tools/ramp-search.ts), scored on
+ * the tightest turn a player meets and the room kept from the circuit barrier
+ * — not tuned by eye, which is how the last three versions of this ramp were
+ * made and why none of them drove well.
  */
-const MERGE_APPROACH = 9;
-const MERGE_APPROACH_FROM = 0.4;
-const MERGE_APPROACH_GAP = 12;
+export const RAMP_PLAN: RampPlan = {
+  climbFrom: 14,
+  climbTo: 64,
+  turnFrom: 68,
+  turnRadius: 54,
+  turnSweep: (128 * Math.PI) / 180,
+  mergeFrom: 0.94,
+  mergeLength: 0.34,
+  approach: 4,
+};
 
 const dist = (a: Vec3, b: Vec3) => Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z);
 const mix = (a: Vec3, b: Vec3, t: number): Vec3 => ({
@@ -523,11 +534,11 @@ const add = (a: Vec3, b: Vec3, k: number): Vec3 => ({
  * at the same height and the same lean. Nothing here is approximated, which
  * is the point — an approximation is a lip.
  */
-function mergeLane(circuit: PathFrame[]): PathFrame[] {
+function mergeLane(circuit: PathFrame[], plan: RampPlan = RAMP_PLAN): PathFrame[] {
   const count = circuit.length - 1;
   const index = (angle: number) => Math.round((angle / TAU) * count);
   const out: PathFrame[] = [];
-  for (let i = index(MERGE_FROM); i <= index(MERGE_TO); i += 1) {
+  for (let i = index(mergeFromAngle(plan)); i <= index(mergeToAngle(plan)); i += 1) {
     const f = circuit[i % count];
     out.push({
       ...f,
@@ -560,73 +571,86 @@ export function mergeLaneFrames() {
  * along it. Position, heading and lean are all continuous across the join,
  * which is the only definition of "no bump" that survives contact with a car.
  */
-export function rampFrames(): PathFrame[] {
-  if (rampCache) return rampCache;
-
+/** Builds the climb for a given plan. Pure: the search calls it thousands of times. */
+export function buildRamp(plan: RampPlan): { frames: PathFrame[]; laneFrames: number } {
   const circuit = circuitFrames();
-  const lane = mergeLane(circuit);
+  const lane = mergeLane(circuit, plan);
   const entry = lane[0];
-
   const count = circuit.length - 1;
+
   /**
    * A point on the lane's line, pushed `inset` metres further inside it.
-   *
-   * Interpolated between frames rather than snapped to the nearest one: the
-   * circuit is sampled every two degrees, which is five metres of road, and
-   * rounding to that put a five-metre stagger into control points that were
-   * only ever three metres apart. The curve through them wobbled, and the
-   * wobble came out as a kink in the last corner of the climb.
+   * Interpolated between circuit frames rather than snapped to the nearest,
+   * which would put a five-metre stagger into points a few metres apart.
    */
-  const laneAt = (angle: number, inset: number, height?: number) => {
+  const laneAt = (angle: number, inset: number) => {
     const raw = ((angle / TAU) * count) % count;
     const i = Math.floor((raw + count) % count);
     const t = raw - Math.floor(raw);
     const a = circuit[i];
     const b = circuit[(i + 1) % count];
     const reach = -(CIRCUIT_HALF + RAMP_HALF + inset);
-    const pa = add(a.position, a.right, reach);
-    const pb = add(b.position, b.right, reach);
-    const p = mix(pa, pb, t);
-    return height === undefined ? p : { ...p, y: height };
+    return mix(add(a.position, a.right, reach), add(b.position, b.right, reach), t);
   };
 
-  const nodes: Vec3[] = CLIMB_NODES.map(({ turn, radius, height }) => {
-    const a = CIRCUIT_RAMP_ANGLE + turn;
-    return { x: Math.cos(a) * radius, y: height, z: Math.sin(a) * radius };
-  });
-  const base = CLIMB_NODES[CLIMB_NODES.length - 1];
-  for (let k = 1; k <= MERGE_APPROACH; k += 1) {
-    const u = k / (MERGE_APPROACH + 1);
-    const turn = lerp(MERGE_APPROACH_FROM, MERGE_TO_TURN, u);
-    const gap = MERGE_APPROACH_GAP * (1 - u) * (1 - u);
-    const height = lerp(base.height, entry.position.y, smooth(u));
-    nodes.push(laneAt(CIRCUIT_RAMP_ANGLE + turn, gap, height));
+  const out = { x: Math.cos(CIRCUIT_RAMP_ANGLE), z: Math.sin(CIRCUIT_RAMP_ANGLE) };
+  // Perpendicular to "out", on the side the traffic goes round the circuit.
+  const side = { x: -out.z, z: out.x };
+
+  // 1. The climb: dead straight, rising on a smoothstep, so both the foot and
+  //    the crest are level and neither is a kink for the car's box to catch on.
+  const centre: Vec3[] = [];
+  for (let r = plan.climbFrom; r < plan.turnFrom; r += 2.4) {
+    const u = clamp((r - plan.climbFrom) / (plan.climbTo - plan.climbFrom), 0, 1);
+    centre.push({ x: out.x * r, y: CIRCUIT_HEIGHT * smooth(u), z: out.z * r });
   }
-  nodes.push(entry.position);
 
-  const climb = relax(crCurve(nodes, 2.4), 14);
+  // 2. The turn: one flat arc of constant radius. A player holds one steady
+  //    amount of lock the whole way round instead of chasing a tightening bend.
+  const pivot = {
+    x: out.x * plan.turnFrom + side.x * plan.turnRadius,
+    z: out.z * plan.turnFrom + side.z * plan.turnRadius,
+  };
+  const arcSteps = Math.ceil((plan.turnRadius * plan.turnSweep) / 2.4);
+  for (let k = 0; k <= arcSteps; k += 1) {
+    const phi = (k / arcSteps) * plan.turnSweep;
+    const c = Math.cos(phi);
+    const sn = Math.sin(phi);
+    centre.push({
+      x: pivot.x - side.x * plan.turnRadius * c + out.x * plan.turnRadius * sn,
+      y: CIRCUIT_HEIGHT,
+      z: pivot.z - side.z * plan.turnRadius * c + out.z * plan.turnRadius * sn,
+    });
+  }
 
-  /*
-   * Lean. The ascent banks by its own curvature like any other road, but over
-   * the last stretch it eases into the circuit's lean instead, so that the
-   * final frame of the climb and the first frame of the lane agree exactly.
-   * Measured in metres from the top rather than in frames: the blend has to
-   * finish where the roads meet, not near it.
-   */
-  const toEnd: number[] = new Array(climb.length).fill(0);
-  for (let i = climb.length - 2; i >= 0; i -= 1) toEnd[i] = toEnd[i + 1] + dist(climb[i], climb[i + 1]);
-  const BLEND = 55;
-  const ascent = framesFrom(climb, false, (i, natural) => {
-    const t = smooth(1 - toEnd[i] / BLEND);
-    return t <= 0 ? null : lerp(natural, entry.roll, t);
-  }, 30);
+  // 3. Ease from the end of the arc onto the lane. The arc finishes a few
+  //    metres inside the lane and already heading the way it does, so this
+  //    only has to close a small gap, and closes it as the square of the
+  //    distance left so it has stopped moving sideways by the time it arrives.
+  const arcEnd = centre[centre.length - 1];
+  const bearing = Math.atan2(arcEnd.z, arcEnd.x);
+  const startTurn = (((bearing - CIRCUIT_RAMP_ANGLE) % TAU) + TAU) % TAU;
+  const laneStart = laneAt(CIRCUIT_RAMP_ANGLE + startTurn, 0);
+  const gap0 = Math.max(0, Math.hypot(laneStart.x, laneStart.z) - Math.hypot(arcEnd.x, arcEnd.z));
+  const tail: Vec3[] = [centre[centre.length - 2], arcEnd];
+  for (let k = 1; k <= plan.approach; k += 1) {
+    const u = k / (plan.approach + 1);
+    const p = laneAt(CIRCUIT_RAMP_ANGLE + lerp(startTurn, plan.mergeFrom, u), gap0 * (1 - u) * (1 - u));
+    tail.push({ x: p.x, y: CIRCUIT_HEIGHT, z: p.z });
+  }
+  tail.push(entry.position);
+  const eased = relax(crCurve(tail, 2.4), 16).slice(2);
 
-  // Drop the ascent's last frame: it sits a metre short of the lane's first,
-  // and two frames that close together have their heading decided by the
-  // rounding of the sample before them, which shows up as a crease across the
-  // road exactly where you least want to find one.
-  laneCount = lane.length;
-  rampCache = [...ascent.slice(0, -1), ...lane];
+  const ascent = framesFrom([...centre, ...eased], false);
+  // Drop the last ascent frame: it sits a metre short of the lane's first.
+  return { frames: [...ascent.slice(0, -1), ...lane], laneFrames: lane.length };
+}
+
+export function rampFrames(): PathFrame[] {
+  if (rampCache) return rampCache;
+  const built = buildRamp(RAMP_PLAN);
+  laneCount = built.laneFrames;
+  rampCache = built.frames;
   return rampCache;
 }
 
@@ -678,4 +702,36 @@ export function nearestSkyRoad(x: number, z: number) {
     }
   }
   return { frame: best as PathFrame, distance: Math.sqrt(bestDistance) };
+}
+
+const curvatures = new WeakMap<PathFrame, number>();
+let curvatureReady = false;
+
+/**
+ * How fast the road turns under a car doing 1 u/s along it, in rad/s about +Y
+ * (the sign `angvel.y` uses). Zero on straights and anywhere off a sky road.
+ *
+ * Steering follows the road with this added, so hands-off holds the curve and
+ * the keys only correct. Without it the climb's arc needed ~1 rad/s at top
+ * speed: steering soft enough for a tapped key couldn't hold it, and steering
+ * sharp enough to hold it made every tap a swerve — the drive test's keyboard
+ * driver either rode the outer wall or weaved into it, whatever the tuning.
+ */
+export function skyRoadTurn(x: number, y: number, z: number, vx: number, vz: number) {
+  if (!curvatureReady) {
+    for (const road of [circuitFrames(), rampFrames()]) {
+      const closed = road === circuitFrames();
+      for (let i = 0; i < road.length; i += 1) {
+        const a = road[closed ? (i - 1 + road.length) % road.length : Math.max(i - 1, 0)];
+        const b = road[closed ? (i + 1) % road.length : Math.min(i + 1, road.length - 1)];
+        const length = Math.hypot(b.position.x - a.position.x, b.position.z - a.position.z);
+        const turn = a.forward.z * b.forward.x - a.forward.x * b.forward.z;
+        curvatures.set(road[i], length > 0 ? turn / length : 0);
+      }
+    }
+    curvatureReady = true;
+  }
+  const { frame, distance } = nearestSkyRoad(x, z);
+  if (distance > CIRCUIT_WIDTH || Math.abs(y - frame.position.y) > 3) return 0;
+  return (curvatures.get(frame) ?? 0) * (vx * frame.forward.x + vz * frame.forward.z);
 }

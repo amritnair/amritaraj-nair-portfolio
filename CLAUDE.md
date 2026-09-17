@@ -30,6 +30,14 @@ the fall rather than waiting for one.
 navigation, so stale HMR errors from a mid-edit state look live. Confirm in a
 fresh tab (`tabs_create` + `navigate`) before believing one.
 
+**Physics is checked headless, not in the preview.** `npm run test:drive`
+builds the real road colliders (`src/world/roads.ts`, shared with the game) in
+Node rapier, mirrors Car.tsx's forces, and drives the climb with an ideal
+driver and a keyboard driver (200 ms late, keys all-or-nothing). If you change
+a force in Car.tsx, change it in `tools/drive-test.ts` too. `VERBOSE=1 HZ=10`
+prints a trace; `HANDS_OFF=1` steers nothing. `npm run search:ramp` scores
+`RAMP_PLAN` candidates (radius, barrier clearance, grade, ring clearance).
+
 **Deploy is `git push`.** Then watch both workflows: the build, and the separate
 `pages build and deployment`.
 
@@ -239,6 +247,24 @@ round, the car exports standing on its nose.
   all positioned parametrically, and each needs an explicit test against the
   ramp's footprint — a kicker in the mouth of the slip road, or a pylon down
   through it, is a launch ramp or a column where a lane should be.
+
+- **Gravity is -30, the circuit is at `CIRCUIT_HEIGHT` 7, roads are flat.**
+  The climb is `RAMP_PLAN`: straight ascent, flat constant-radius arc, eased
+  approach onto a lane beside the circuit's inner edge.
+- **A car's nose is local -Z, so a body yaw facing (x, z) is
+  `atan2(x, z) + π`** — `yawToFace` in drive.ts. Without the π the flip and
+  the catch set you down backwards.
+- **Barriers are frictionless.** With road friction, grazing one at 50 u/s
+  stopped the car dead.
+- **A lane closes from its far edge only.** Closing it about its centreline
+  opened a slot between it and the circuit, where the circuit has no wall.
+  And a circuit wall piece is left out only if *both* its ends run beside the
+  lane.
+- **Sky roads steer themselves round their own curves** (`skyRoadTurn`). The
+  arc needs ~1 rad/s at top speed; without the assist no steering tuning let a
+  keyboard player both hold it and tap without swerving.
+- **Uphill assist is `forward.y`** (nose up is +y). It was `-forward.y` and
+  pushed downhill.
 
 ## Controls
 

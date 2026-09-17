@@ -1,4 +1,4 @@
-import { circuitPoint } from "./layout";
+import { CIRCUIT_HEIGHT, circuitPoint } from "./layout";
 import { telemetry } from "./store";
 import { startRecording } from "./ghostLap";
 
@@ -71,10 +71,10 @@ export function updateRace(x: number, z: number, delta: number, sink: Sink) {
     // Dropping off the circuit abandons the lap, rather than leaving a timer
     // running for the rest of the session. The loop is a ring around the
     // island, so "off it" means back over the middle.
-    // Falling off counts as abandoning too: the circuit never drops below 22,
-    // so anything under 16 is the ring road, the island or the sea.
+    // Falling off counts as abandoning too: anything well below the circuit's
+    // deck is the island or the sea.
     const fromCentre = Math.hypot(x, z);
-    if (fromCentre < 100 || telemetry.y < 16) {
+    if (fromCentre < 100 || telemetry.y < CIRCUIT_HEIGHT - 3) {
       state.running = false;
       state.checkpoint = 0;
       state.time = 0;

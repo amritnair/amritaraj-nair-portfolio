@@ -27,6 +27,19 @@ import {
   type PathFrame,
 } from "./layout";
 import BlockText from "./BlockText";
+import {
+  CATCH_BLEND,
+  CATCH_HEIGHT,
+  CATCH_RUN,
+  ROAD_FRICTION,
+  WALL_FRICTION,
+  WALL_HEIGHT,
+  circuitHulls,
+  circuitWallHeights,
+  onMergeLane,
+  rampHulls,
+  rampWidths,
+} from "./roads";
 import { CHECKPOINTS, gateAt, resetRace, updateRace } from "./race";
 import { telemetry, useWorld, worldStore } from "./store";
 
@@ -45,29 +58,6 @@ import { telemetry, useWorld, worldStore } from "./store";
 
 const WIDTH = CIRCUIT_HALF * 2;
 
-/**
- * Barrier height, and the only number that decides whether you can leave the
- * track sideways. It used to be 1.9 on the collider and 0.9 on the thing you
- * could see, which is the worst of both: high enough to stop you, low enough
- * to look like a kerb you could ride over, so every save felt like hitting
- * something invisible. Now one number drives both.
- */
-const WALL_HEIGHT = 4.6;
-
-/**
- * Catch fencing: the barrier is much taller for the length of road a kicker
- * throws you down.
- *
- * A kicker's lip stands seven metres above the deck, so anything launched off
- * one clears an ordinary barrier with room to spare — walling the whole loop
- * to that height would put the track in a tube and hide the island it is
- * hung over. Real circuits do exactly this instead: normal barrier
- * everywhere, catch fencing where the cars actually get air.
- */
-const CATCH_HEIGHT = 13;
-/** Frames of catch fencing after a kicker, and the blend in and out of it. */
-const CATCH_RUN = 16;
-const CATCH_BLEND = 5;
 /** The solid part at the bottom. Above this the barrier is a light screen. */
 const KERB_HEIGHT = 0.6;
 
@@ -211,7 +201,7 @@ function Deck({ frames }: { frames: Frame[] }) {
     [frames],
   );
 
-  const heights = useMemo(() => wallHeights(frames), [frames]);
+  const heights = useMemo(() => circuitWallHeights(frames), [frames]);
   const rails = useMemo(
     () => barrierGeometry(frames, HALF, openInner(frames), undefined, heights),
     [frames, heights],
@@ -242,34 +232,6 @@ function Deck({ frames }: { frames: Frame[] }) {
  * the merge opening. The climb arrives alongside this edge and runs there, so
  * a rail across that stretch would be a rail across the slip road.
  */
-/**
- * Barrier height frame by frame: the standing height everywhere, rising to
- * catch fencing across each kicker and the road it throws you down.
- */
-function wallHeights(frames: Frame[]) {
-  // Keyed by the frame itself, not by its index. The barrier is swept in runs
-  // that are slices of the loop — and one of them wraps past the start line —
-  // so an index into a run says nothing about where on the circuit it is.
-  const steps = frames.length - 1;
-  const out = new Map<Frame, number>(frames.map((f) => [f, WALL_HEIGHT]));
-  for (const angle of KICKER_ANGLES) {
-    const start = Math.round((angle / (Math.PI * 2)) * steps);
-    for (let k = -CATCH_BLEND; k <= CATCH_RUN + CATCH_BLEND; k += 1) {
-      const t =
-        k < 0
-          ? 1 + k / CATCH_BLEND
-          : k > CATCH_RUN
-            ? 1 - (k - CATCH_RUN) / CATCH_BLEND
-            : 1;
-      const ease = t * t * (3 - 2 * t);
-      const frame = frames[(((start + k) % steps) + steps) % steps];
-      const height = WALL_HEIGHT + (CATCH_HEIGHT - WALL_HEIGHT) * ease;
-      out.set(frame, Math.max(out.get(frame) ?? WALL_HEIGHT, height));
-    }
-  }
-  return (f: Frame) => out.get(f) ?? WALL_HEIGHT;
-}
-
 function openInner(frames: Frame[]) {
   const steps = frames.length - 1;
   const kept: Frame[] = [];
@@ -468,38 +430,6 @@ function Markings({ frames }: { frames: Frame[] }) {
   );
 }
 
-/**
- * Corner points of a slice of road between two frames, as a flat array for a
- * convex hull. `l0`/`l1` are lateral offsets from the centreline, `v0`/`v1`
- * heights above it, both in the banked frame.
- */
-function slab(
-  a: Frame,
-  b: Frame,
-  l0: number,
-  l1: number,
-  v0: number,
-  v1: number,
-  ends?: [number, number],
-) {
-  const out = new Float32Array(24);
-  let i = 0;
-  for (const [n, f] of [a, b].entries()) {
-    const m0 = ends ? (n ? ends[0] : l0) : l0;
-    const m1 = ends ? (n ? ends[1] : l1) : l1;
-    for (const [l, v] of [
-      [m0, v0],
-      [m1, v0],
-      [m1, v1],
-      [m0, v1],
-    ]) {
-      out[i++] = f.position.x + f.right.x * l + f.up.x * v;
-      out[i++] = f.position.y + f.right.y * l + f.up.y * v;
-      out[i++] = f.position.z + f.right.z * l + f.up.z * v;
-    }
-  }
-  return out;
-}
 
 /**
  * Physics for the loop.
@@ -516,56 +446,16 @@ function slab(
  * spacing between lips.
  */
 function Surface({ frames }: { frames: Frame[] }) {
-  const heights = useMemo(() => wallHeights(frames), [frames]);
-  const pieces = useMemo(() => {
-    const out: { road: Float32Array; walls: { side: number; points: Float32Array }[] }[] = [];
-    /*
-     * One hull per frame. The ends are exact points on the curve either way,
-     * so the surface is continuous at any density — but each hull is a flat
-     * chord between its ends, and the curve bulges above that chord in
-     * between. At every other frame the chords span 11 units and that bulge
-     * is over 10cm on the tight corners: a dip you feel at speed. Halving the
-     * chord quarters the sag.
-     */
-    for (let i = 0; i + 1 < frames.length; i += 1) {
-      const a = frames[i];
-      const b = frames[i + 1];
-      const angle = (i / (frames.length - 1)) * Math.PI * 2;
-      // Barriers stay coarse — you only ever scrape them, so a chord's worth
-      // of sag on a wall is invisible and they are half the collider count.
-      const walls: { side: number; points: Float32Array }[] = [];
-      if (i % 3 === 0 && i + 3 < frames.length) {
-        const far = frames[i + 3];
-        for (const side of [-1, 1]) {
-          if (side < 0 && inMergeGap(angle)) continue;
-          walls.push({
-            side,
-            points: slab(
-              a,
-              far,
-              side * HALF - 0.45,
-              side * HALF + 0.45,
-              Math.max(heights(a), heights(far)),
-              0,
-            ),
-          });
-        }
-      }
-      // Deep below the surface so a hard landing has something to hit.
-      out.push({ road: slab(a, b, -HALF, HALF, 0, -3.5), walls });
-    }
-    return out;
-  }, [frames, heights]);
+  const hulls = useMemo(() => circuitHulls(frames), [frames]);
 
   return (
     <RigidBody type="fixed" colliders={false} friction={1}>
-      {pieces.map((piece, i) => (
-        <group key={i}>
-          <ConvexHullCollider args={[piece.road]} />
-          {piece.walls.map((wall) => (
-            <ConvexHullCollider key={wall.side} args={[wall.points]} />
-          ))}
-        </group>
+      {hulls.map((hull, i) => (
+        <ConvexHullCollider
+          key={i}
+          args={[hull.points]}
+          friction={hull.wall ? WALL_FRICTION : ROAD_FRICTION}
+        />
       ))}
     </RigidBody>
   );
@@ -794,16 +684,7 @@ function ClimbRamp({ frames }: { frames: Frame[] }) {
    * swings out to meet the track's, and running out of lane means being
    * eased across rather than hitting the corner of a wall.
    */
-  const widths = useMemo(() => {
-    const lane = mergeLaneFrames();
-    const close = Math.min(lane - 1, 7);
-    return frames.map((_, i) => {
-      const left = frames.length - 1 - i;
-      if (left >= close) return RAMP_HALF;
-      const t = left / close;
-      return 0.45 + (RAMP_HALF - 0.45) * t * t;
-    });
-  }, [frames]);
+  const widths = useMemo(() => rampWidths(frames.length), [frames]);
 
   const widthOf = useMemo(() => {
     const map = new Map(frames.map((f, i) => [f, widths[i]]));
@@ -815,8 +696,8 @@ function ClimbRamp({ frames }: { frames: Frame[] }) {
       sweep(
         (i) => [
           [-widths[i], 0],
-          [widths[i], 0],
-          [widths[i], -0.5],
+          [RAMP_HALF, 0],
+          [RAMP_HALF, -0.5],
           [-widths[i], -0.5],
         ],
         frames,
@@ -877,7 +758,7 @@ function ClimbRamp({ frames }: { frames: Frame[] }) {
           <Instance key={i} position={d.position} quaternion={d.quaternion} />
         ))}
       </Instances>
-      <RampSurface frames={frames} widths={widths} />
+      <RampSurface frames={frames} />
       <RampLegs frames={frames} />
     </group>
   );
@@ -885,48 +766,19 @@ function ClimbRamp({ frames }: { frames: Frame[] }) {
 
 const DASH_GEOMETRY = new THREE.BoxGeometry(3.4, 0.08, 1.1);
 
-/**
- * True once a ramp frame has reached the merge lane — that is, once its outer
- * edge is sitting on the circuit's inner edge rather than short of it.
- */
-function onLane(frames: Frame[], i: number) {
-  return i >= frames.length - mergeLaneFrames();
-}
 
 /** Physics for the climb: the same hulls the circuit uses, same rules. */
-function RampSurface({ frames, widths }: { frames: Frame[]; widths: number[] }) {
-  const pieces = useMemo(() => {
-    const out: { road: Float32Array; walls: Float32Array[] }[] = [];
-    for (let i = 0; i + 1 < frames.length; i += 1) {
-      const a = frames[i];
-      const b = frames[i + 1];
-      const wa = widths[i];
-      const wb = widths[i + 1];
-      const walls: Float32Array[] = [];
-      if (i % 2 === 0 && i + 2 < frames.length) {
-        const far = frames[i + 2];
-        const wf = widths[i + 2];
-        // Inner side always; outer side only below the merge lane.
-        walls.push(
-          slab(a, far, -wa - 0.45, -wa + 0.45, WALL_HEIGHT, 0, [-wf - 0.45, -wf + 0.45]),
-        );
-        if (!onLane(frames, i))
-          walls.push(slab(a, far, wa - 0.45, wa + 0.45, WALL_HEIGHT, 0, [wf - 0.45, wf + 0.45]));
-      }
-      out.push({ road: slab(a, b, -wa, wa, 0, -2.6, [-wb, wb]), walls });
-    }
-    return out;
-  }, [frames, widths]);
+function RampSurface({ frames }: { frames: Frame[] }) {
+  const hulls = useMemo(() => rampHulls(frames), [frames]);
 
   return (
     <RigidBody type="fixed" colliders={false} friction={1}>
-      {pieces.map((piece, i) => (
-        <group key={i}>
-          <ConvexHullCollider args={[piece.road]} />
-          {piece.walls.map((points, w) => (
-            <ConvexHullCollider key={w} args={[points]} />
-          ))}
-        </group>
+      {hulls.map((hull, i) => (
+        <ConvexHullCollider
+          key={i}
+          args={[hull.points]}
+          friction={hull.wall ? WALL_FRICTION : ROAD_FRICTION}
+        />
       ))}
     </RigidBody>
   );

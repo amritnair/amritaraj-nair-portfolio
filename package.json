@@ -13,7 +13,9 @@
     "model:hero": "'/Applications/Blender.app/Contents/MacOS/Blender' --background --python tools/hero.py -- public/hero/car.jpg /tmp/heroAscii.ts",
     "model:props": "'/Applications/Blender.app/Contents/MacOS/Blender' --background --python tools/props.py -- public/models/props.glb",
     "model:reel": "'/Applications/Blender.app/Contents/MacOS/Blender' --background --python tools/reel.py -- /tmp/reel-frames && ffmpeg -y -loglevel error -framerate 24 -i /tmp/reel-frames/f%04d.png -c:v libx264 -pix_fmt yuv420p -crf 26 -movflags +faststart -an public/hero/reel.mp4 && ffmpeg -y -loglevel error -framerate 24 -i /tmp/reel-frames/f%04d.png -c:v libvpx-vp9 -pix_fmt yuv420p -crf 38 -b:v 0 -an public/hero/reel.webm",
-    "shots": "bash tools/shots.sh"
+    "shots": "bash tools/shots.sh",
+    "test:drive": "esbuild tools/drive-test.ts --bundle --platform=node --format=esm --outfile=node_modules/.cache/drive-test.mjs --log-level=error && node node_modules/.cache/drive-test.mjs",
+    "search:ramp": "esbuild tools/ramp-search.ts --bundle --platform=node --format=esm --outfile=node_modules/.cache/ramp-search.mjs --log-level=error && node node_modules/.cache/ramp-search.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

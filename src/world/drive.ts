@@ -7,12 +7,12 @@
  */
 
 /** Peak forward force at a standstill. Falls off towards top speed. */
-export const ACCELERATION = 84;
+export const ACCELERATION = 108;
 /** Force still available at the speed limiter — keeps the top end from feeling dead. */
 export const ACCELERATION_FLOOR = 0.22;
-export const REVERSE_ACCELERATION = 44;
+export const REVERSE_ACCELERATION = 52;
 /** Deceleration when you ask for reverse while still rolling forwards. */
-export const BRAKE_FORCE = 74;
+export const BRAKE_FORCE = 92;
 /** Speed below which "reverse" means reverse rather than brake. */
 export const REVERSE_THRESHOLD = 1.6;
 
@@ -23,9 +23,9 @@ export const REVERSE_THRESHOLD = 1.6;
  * across — took half a minute to cross. Everything else in this file is scaled
  * to keep the same shape of power band at the higher ceiling.
  */
-export const MAX_SPEED = 40;
-export const BOOST_SPEED = 58;
-export const BOOST_ACCELERATION = 132;
+export const MAX_SPEED = 52;
+export const BOOST_SPEED = 74;
+export const BOOST_ACCELERATION = 168;
 
 export const TURN_RATE = 2.9;
 
@@ -45,12 +45,24 @@ export const STEER_RETURN = 10;
  * second is a spin, not a corner; steering tapers as speed rises so the same
  * key press is a lane change on the straight and a hairpin at walking pace.
  */
-export const HIGH_SPEED_STEER = 0.55;
+export const HIGH_SPEED_STEER = 0.45;
 /** Multiplier on turn rate with the handbrake down. */
 export const DRIFT_TURN_GAIN = 1.45;
 export const GRIP = 0.9;
 /** Fraction of grip left while drifting — the whole trick lives in this number. */
 export const DRIFT_GRIP = 0.22;
+
+/**
+ * How much of the sideways speed grip removes is handed back along the nose.
+ *
+ * Grip used to delete sideways speed outright, so every steering correction
+ * threw momentum away: a seventeen-degree correction at thirty-four units a
+ * second cost ten of them. The drive test watched it stall the car three times
+ * on one climb, and it is most of why the car felt slow everywhere — not the
+ * top speed, the bleed. Turning now redirects momentum instead of destroying
+ * it. Never while drifting, since a slide is supposed to scrub speed.
+ */
+export const GRIP_REDIRECT = 0.85;
 
 /** Boost tank, in units. Everything below is per second. */
 export const BOOST_MAX = 100;
@@ -116,6 +128,17 @@ export const KICKER_SURGE = 85;
 export const KICKER_RADIUS = 7.5;
 export const KICKER_BOOST_FILL = 55;
 
+/**
+ * The body yaw that points the car's nose along a direction on the ground.
+ *
+ * The nose is local -Z, so it is atan2 of the direction *plus half a turn*.
+ * Written once, here, because it was written three times and got wrong twice:
+ * the catch and the flip both used the plain atan2 and set the car down
+ * facing the way it had come. The respawn got it right. Lives here, with
+ * no React around it, so the drive test can check it.
+ */
+export const yawToFace = (x: number, z: number) => Math.atan2(x, z) + Math.PI;
+
 /** Camera framing. Field of view widens with speed to sell it. */
 export const FOV_SPEED_GAIN = 19;
 export const FOV_BOOST_GAIN = 11;
@@ -132,3 +155,6 @@ export function driveForce(speed: number, limit: number, boosting: boolean) {
   const falloff = ACCELERATION_FLOOR + (1 - ACCELERATION_FLOOR) * (1 - t * t);
   return (boosting ? BOOST_ACCELERATION : ACCELERATION) * falloff;
 }
+
+/** The climb's half-width, re-exported for the drive test's wall-scrape count. */
+export { RAMP_HALF as RAMP_HALF_FOR_TEST } from "./layout";
