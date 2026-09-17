@@ -24390,7 +24390,7 @@ Best regards`);
         ]
       })
     });
-  }, A4 = b.lazy(() => BA(() => import("./GamePortfolio-BfSVivpc.js").then(async (m) => {
+  }, A4 = b.lazy(() => BA(() => import("./GamePortfolio-DQY0Ptk5.js").then(async (m) => {
     await m.__tla;
     return m;
   }).then((t) => t.b4), [])), C4 = new hO(), M4 = () => S.jsx("div", {
