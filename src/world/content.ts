@@ -164,7 +164,7 @@ export const ZONES: Zone[] = [
           "Shipped a visual strategy builder with Python export and a from-scratch SVG charting engine",
           "Built the social layer — posts, follows, paper-trading P&L — on PostgreSQL",
         ],
-        tags: ["iOS", "TypeScript", "PostgreSQL", "Serverless"],
+        tags: ["iOS", "TypeScript", "PostgreSQL"],
         shot: "shots/thorp-home.jpg",
         links: [{ label: "thorp-trade.vercel.app", href: "https://thorp-trade.vercel.app" }],
       },
