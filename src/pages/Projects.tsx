@@ -56,7 +56,7 @@ export default function Projects() {
           gallery
         </h1>
         <p className="u-grotesk mt-6 max-w-lg text-[0.98rem] leading-relaxed text-[var(--ink-2)]">
-          Every piece of work on this site, archived entries included — {total} in all.
+          Every piece of work on this site, archived entries included, {total} in all.
           The front page carries the ones worth leading with.
         </p>
       </section>

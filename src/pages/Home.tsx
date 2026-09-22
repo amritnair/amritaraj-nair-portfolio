@@ -269,9 +269,9 @@ export default function Home() {
           <div className="mt-12 max-w-md">
             <p className="u-grotesk text-[0.98rem] leading-relaxed text-[var(--ink-2)]">
               Computer Science Honors at Texas A&amp;M, minor in Mathematics. I build AI
-              products that ship — healthcare AI at Matic, engineering at ClinicalHours as
-              CTO, and Thorp, which I build solo. Three of the four reached real users this
-              year.
+              products that ship: healthcare AI at Matic, engineering at ClinicalHours as
+              CTO, and Thorp, which I build solo. Every one of them is live for real users
+              this year.
             </p>
             <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3">
               {PROFILE.links.map((link) => (
@@ -433,7 +433,7 @@ export default function Home() {
             <p className="u-grotesk max-w-2xl text-[1rem] leading-relaxed text-[var(--ink-2)]">
               An island with four districts you drive into to read, a race circuit hung
               above them and a garage you spend points in. Built with React Three Fiber
-              and Rapier; the car is modelled in Blender. It runs in the browser — no
+              and Rapier; the car is modelled in Blender. It runs in the browser. No
               install, no download.
             </p>
             <div className="mt-7 flex flex-wrap items-center gap-3">

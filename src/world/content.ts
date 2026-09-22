@@ -157,7 +157,7 @@ export const ZONES: Zone[] = [
         title: "Thorp",
         subtitle: "Founder & Solo Developer",
         meta: "Mar 2026 – Present",
-        body: "The TikTok of finance for next-gen traders — an iOS and web app that turns finance news into a swipeable short-form feed. Invited by YC partner Ryan Choi to the YC Startup Intern Expo.",
+        body: "The TikTok of finance for next-gen traders. An iOS and web app that turns finance news into a swipeable short-form feed. Invited by YC partner Ryan Choi to the YC Startup Intern Expo.",
         bullets: [
           "Built a fault-tolerant distributed layer across 5 providers on stateless serverless workers, making market data 10× faster (1.72s → 0.17s p50) with 50× fewer API calls",
           "Engineered a backtesting engine — 9 indicators, expectancy, drawdown — that exposes overfitting",
@@ -225,7 +225,7 @@ export const ZONES: Zone[] = [
         title: "Prophecy",
         subtitle: "Lead Developer · HackMIT 2026 Track Finalist",
         meta: "Sep 2026",
-        body: "An MCP-powered developer tool that maps a codebase's dependencies and hands AI coding agents the exact context — and the blast radius — before they touch anything.",
+        body: "An MCP-powered developer tool that maps a codebase's dependencies and hands AI coding agents the exact context, and the blast radius, before they touch anything.",
         bullets: [
           "Maps codebase dependencies to find a change's blast radius and deliver targeted context to AI coding agents",
           "Built collaborative agent workflows so multiple AI assistants share file-level findings, track overlapping work, and skip redundant exploration",
