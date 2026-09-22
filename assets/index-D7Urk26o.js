@@ -18253,6 +18253,31 @@ Error generating stack: ` + i.message + `
               href: "https://playshotsensei.com"
             }
           ]
+        },
+        {
+          id: "prophecy",
+          title: "Prophecy",
+          subtitle: "Lead Developer \xB7 HackMIT 2026 Track Finalist",
+          meta: "Sep 2026",
+          body: "An MCP-powered developer tool that maps a codebase's dependencies and hands AI coding agents the exact context \u2014 and the blast radius \u2014 before they touch anything.",
+          bullets: [
+            "Maps codebase dependencies to find a change's blast radius and deliver targeted context to AI coding agents",
+            "Built collaborative agent workflows so multiple AI assistants share file-level findings, track overlapping work, and skip redundant exploration",
+            "Automated change-risk analysis over the dependency graph and concurrent agent sessions to surface breaking changes before a commit"
+          ],
+          tags: [
+            "MCP",
+            "AI agents",
+            "Dependency graphs",
+            "Developer tools"
+          ],
+          shot: "shots/prophecy.jpg",
+          links: [
+            {
+              label: "amritnair.github.io/prophecy",
+              href: "https://amritnair.github.io/prophecy/"
+            }
+          ]
         }
       ]
     },
@@ -24560,7 +24585,7 @@ Best regards`);
         ]
       })
     });
-  }, O4 = b.lazy(() => BA(() => import("./GamePortfolio-BXUI9Ix0.js").then(async (m) => {
+  }, O4 = b.lazy(() => BA(() => import("./GamePortfolio-DD4CV4k5.js").then(async (m) => {
     await m.__tla;
     return m;
   }).then((t) => t.b6), [])), D4 = new hO(), N4 = () => x.jsx("div", {
