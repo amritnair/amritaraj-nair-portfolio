@@ -67,6 +67,30 @@ const PHOTOS = [
     caption: "demoing pulsematic",
     position: "50% 46%",
   },
+  {
+    src: "photos/research.jpg",
+    alt: "Amritaraj with his cattle-nutrition research poster at Texas A&M",
+    caption: "research poster, texas a&m",
+    position: "32% 28%",
+  },
+  {
+    src: "photos/tidal.jpg",
+    alt: "Amritaraj and teammates with the TidalTAMU mascot",
+    caption: "tidaltamu 2026",
+    position: "50% 42%",
+  },
+  {
+    src: "photos/shotsensei.jpg",
+    alt: "Amritaraj demoing ShotSensei with a pickleball paddle",
+    caption: "shotsensei, demo day",
+    position: "55% 38%",
+  },
+  {
+    src: "photos/hackathon.jpg",
+    alt: "Amritaraj and teammates at Hook'em Hacks 2026",
+    caption: "hook'em hacks 2026",
+    position: "50% 40%",
+  },
 ];
 
 /**
