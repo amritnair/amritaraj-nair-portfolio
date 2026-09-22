@@ -18151,7 +18151,7 @@ Error generating stack: ` + i.message + `
           title: "Thorp",
           subtitle: "Founder & Solo Developer",
           meta: "Mar 2026 \u2013 Present",
-          body: "The TikTok of finance for next-gen traders \u2014 an iOS and web app that turns finance news into a swipeable short-form feed. Invited by YC partner Ryan Choi to the YC Startup Intern Expo.",
+          body: "The TikTok of finance for next-gen traders. An iOS and web app that turns finance news into a swipeable short-form feed. Invited by YC partner Ryan Choi to the YC Startup Intern Expo.",
           bullets: [
             "Built a fault-tolerant distributed layer across 5 providers on stateless serverless workers, making market data 10\xD7 faster (1.72s \u2192 0.17s p50) with 50\xD7 fewer API calls",
             "Engineered a backtesting engine \u2014 9 indicators, expectancy, drawdown \u2014 that exposes overfitting",
@@ -18259,7 +18259,7 @@ Error generating stack: ` + i.message + `
           title: "Prophecy",
           subtitle: "Lead Developer \xB7 HackMIT 2026 Track Finalist",
           meta: "Sep 2026",
-          body: "An MCP-powered developer tool that maps a codebase's dependencies and hands AI coding agents the exact context \u2014 and the blast radius \u2014 before they touch anything.",
+          body: "An MCP-powered developer tool that maps a codebase's dependencies and hands AI coding agents the exact context, and the blast radius, before they touch anything.",
           bullets: [
             "Maps codebase dependencies to find a change's blast radius and deliver targeted context to AI coding agents",
             "Built collaborative agent workflows so multiple AI assistants share file-level findings, track overlapping work, and skip redundant exploration",
@@ -18984,7 +18984,7 @@ Error generating stack: ` + i.message + `
                   children: [
                     x.jsx("p", {
                       className: "u-grotesk text-[0.98rem] leading-relaxed text-[var(--ink-2)]",
-                      children: "Computer Science Honors at Texas A&M, minor in Mathematics. I build AI products that ship \u2014 healthcare AI at Matic, engineering at ClinicalHours as CTO, and Thorp, which I build solo. Three of the four reached real users this year."
+                      children: "Computer Science Honors at Texas A&M, minor in Mathematics. I build AI products that ship: healthcare AI at Matic, engineering at ClinicalHours as CTO, and Thorp, which I build solo. Every one of them is live for real users this year."
                     }),
                     x.jsx("div", {
                       className: "mt-7 flex flex-wrap items-center gap-x-6 gap-y-3",
@@ -19172,7 +19172,7 @@ Error generating stack: ` + i.message + `
                   children: [
                     x.jsx("p", {
                       className: "u-grotesk max-w-2xl text-[1rem] leading-relaxed text-[var(--ink-2)]",
-                      children: "An island with four districts you drive into to read, a race circuit hung above them and a garage you spend points in. Built with React Three Fiber and Rapier; the car is modelled in Blender. It runs in the browser \u2014 no install, no download."
+                      children: "An island with four districts you drive into to read, a race circuit hung above them and a garage you spend points in. Built with React Three Fiber and Rapier; the car is modelled in Blender. It runs in the browser. No install, no download."
                     }),
                     x.jsxs("div", {
                       className: "mt-7 flex flex-wrap items-center gap-3",
@@ -19300,7 +19300,7 @@ Error generating stack: ` + i.message + `
             x.jsxs("p", {
               className: "u-grotesk mt-6 max-w-lg text-[0.98rem] leading-relaxed text-[var(--ink-2)]",
               children: [
-                "Every piece of work on this site, archived entries included \u2014 ",
+                "Every piece of work on this site, archived entries included, ",
                 t,
                 " in all. The front page carries the ones worth leading with."
               ]
@@ -24586,7 +24586,7 @@ Best regards`);
         ]
       })
     });
-  }, O4 = b.lazy(() => BA(() => import("./GamePortfolio-CjbXQZ2Z.js").then(async (m) => {
+  }, O4 = b.lazy(() => BA(() => import("./GamePortfolio-SvjzF_fw.js").then(async (m) => {
     await m.__tla;
     return m;
   }).then((t) => t.b6), [])), D4 = new hO(), N4 = () => x.jsx("div", {
