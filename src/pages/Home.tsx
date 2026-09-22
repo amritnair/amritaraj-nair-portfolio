@@ -268,9 +268,10 @@ export default function Home() {
 
           <div className="mt-12 max-w-md">
             <p className="u-grotesk text-[0.98rem] leading-relaxed text-[var(--ink-2)]">
-              Computer Science Honors at Texas A&amp;M, minor in Mathematics. I work on
-              healthcare AI at Matic, run engineering at ClinicalHours, and build Thorp
-              solo. Three of the four shipped to real users this year.
+              Computer Science Honors at Texas A&amp;M, minor in Mathematics. I build AI
+              products that ship — healthcare AI at Matic, engineering at ClinicalHours as
+              CTO, and Thorp, which I build solo. Three of the four reached real users this
+              year.
             </p>
             <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3">
               {PROFILE.links.map((link) => (

@@ -255,6 +255,7 @@ export const ZONES: Zone[] = [
           "YC Startup Intern Expo — recruited by a YC partner",
           "UT Austin Hook'em Hacks 2026 Winner — Most Startup Ready + Multimodal Track",
           "TidalTAMU Google Gemini Track — 1st Place, 2026",
+          "HackMIT 2026 — Track Finalist",
           "Outstanding Undergraduate Researcher Award",
           "President's Endowed Scholar",
         ],
