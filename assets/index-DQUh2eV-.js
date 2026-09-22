@@ -18531,12 +18531,21 @@ Error generating stack: ` + i.message + `
     });
   }
   function vD({ base: t, poster: e, eager: n }) {
-    const i = b.useRef(null), a = () => {
-      const s = i.current;
-      (s == null ? void 0 : s.paused) && s.play().catch(() => {
+    const i = b.useRef(null), a = b.useRef(false), s = () => {
+      const r = i.current;
+      (r == null ? void 0 : r.paused) && a.current && !document.hidden && r.play().catch(() => {
       });
     };
-    return b.useEffect(a, []), x.jsxs("video", {
+    return b.useEffect(() => {
+      const r = i.current;
+      if (!r) return;
+      const o = new IntersectionObserver(([l]) => {
+        a.current = l.isIntersecting, s();
+      });
+      return o.observe(r), document.addEventListener("visibilitychange", s), () => {
+        o.disconnect(), document.removeEventListener("visibilitychange", s);
+      };
+    }, []), x.jsxs("video", {
       ref: i,
       className: "absolute inset-0 h-full w-full object-cover",
       poster: e ? Me(e) : void 0,
@@ -18545,8 +18554,9 @@ Error generating stack: ` + i.message + `
       loop: true,
       playsInline: true,
       preload: n ? "auto" : "metadata",
-      onCanPlay: a,
-      onLoadedData: a,
+      onCanPlay: s,
+      onLoadedData: s,
+      onPause: s,
       children: [
         x.jsx("source", {
           src: `${Me(t)}.mp4`,
@@ -24526,7 +24536,7 @@ Best regards`);
         ]
       })
     });
-  }, O4 = b.lazy(() => BA(() => import("./GamePortfolio-CipwzW8r.js").then(async (m) => {
+  }, O4 = b.lazy(() => BA(() => import("./GamePortfolio-DE3B1gOV.js").then(async (m) => {
     await m.__tla;
     return m;
   }).then((t) => t.b6), [])), D4 = new hO(), N4 = () => x.jsx("div", {

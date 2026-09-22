@@ -1,5 +1,5 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/World-Dn6reXBv.js","assets/index-B3ALVmav.js","assets/index-u4eiTEtr.css"])))=>i.map(i=>d[i]);
-import { r as X, g as lJ, e as MI, j as p, T as SJ, s as CM, P as Qs, L as rD, _ as WU, Z as _E, a as VU, __tla as __tla_0 } from "./index-B3ALVmav.js";
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/World-BJOxwphj.js","assets/index-DQUh2eV-.js","assets/index-u4eiTEtr.css"])))=>i.map(i=>d[i]);
+import { r as X, g as lJ, e as MI, j as p, T as SJ, s as CM, P as Qs, L as rD, _ as WU, Z as _E, a as VU, __tla as __tla_0 } from "./index-DQUh2eV-.js";
 let uQ, Ap, vS, bC, FB, ys, OC, dQ, Gi, xD, bA, ws, rg, fg, Si, ee, $t, uf, KC, hB, kg, DD, m, DB, Rw, yA, xt, Rs, $R, k4, ut, Mi, _i, UK, Rg, EN, $a, NC, wi, jg, Uh, BI, Pg, OO, zC, Xp, nI, ie, g2, I2, sC, wg, tw, vp, Vi, Gb, r4, jB, Mh, x2, Vr, $D, pC, c4, O2, w4, s2, ag, Xg, UI, HI, JB, se, WO, h4, Fy, VO, qQ, $O, _t, Ae, In, WI, A2, l4, Zp, S4, Jy, qS, vI, mC, n4, nD, Hu, M4, a4, uB, D4, y4, G4, U4, wD, xs, Cw, fN, Ai, xQ, cD, _S, RB, xC, aB, dC, kw, KJ, UC, cB, zs, yi, _x, JT, zR, gw, Co, s4;
 let __tla = Promise.all([
   (() => {
@@ -44022,7 +44022,7 @@ No matching component was found for:
       };
     }, []);
   }
-  const C4 = X.lazy(() => WU(() => import("./World-Dn6reXBv.js"), __vite__mapDeps([0,1,2])));
+  const C4 = X.lazy(() => WU(() => import("./World-BJOxwphj.js"), __vite__mapDeps([0,1,2])));
   function B4() {
     try {
       const B = document.createElement("canvas");
