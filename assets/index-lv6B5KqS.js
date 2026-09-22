@@ -18780,8 +18780,8 @@ Error generating stack: ` + i.message + `
     },
     {
       src: "photos/hackathon.jpg",
-      alt: "Amritaraj and teammates at Hook'em Hacks 2026",
-      caption: "hook'em hacks 2026",
+      alt: "Amritaraj and teammates at HackMIT",
+      caption: "hackmit",
       position: "50% 40%"
     }
   ];
@@ -24560,7 +24560,7 @@ Best regards`);
         ]
       })
     });
-  }, O4 = b.lazy(() => BA(() => import("./GamePortfolio-DNFpWHyk.js").then(async (m) => {
+  }, O4 = b.lazy(() => BA(() => import("./GamePortfolio-BXUI9Ix0.js").then(async (m) => {
     await m.__tla;
     return m;
   }).then((t) => t.b6), [])), D4 = new hO(), N4 = () => x.jsx("div", {
