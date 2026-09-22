@@ -87,8 +87,8 @@ const PHOTOS = [
   },
   {
     src: "photos/hackathon.jpg",
-    alt: "Amritaraj and teammates at Hook'em Hacks 2026",
-    caption: "hook'em hacks 2026",
+    alt: "Amritaraj and teammates at HackMIT",
+    caption: "hackmit",
     position: "50% 40%",
   },
 ];
