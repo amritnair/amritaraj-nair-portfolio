@@ -205,11 +205,29 @@ function Frame({ label, children }: { label?: string; children: React.ReactNode 
  */
 function CardVideo({ base, poster, eager }: { base: string; poster?: string; eager?: boolean }) {
   const ref = useRef<HTMLVideoElement>(null);
+  const onScreen = useRef(false);
+  // Browsers pause off-screen or backgrounded clips to save power and don't
+  // always resume them, which reads as a frozen card. There are no controls,
+  // so resume any pause — but only while the card is actually on screen, or
+  // onPause and the browser's own off-screen pause chase each other forever.
   const nudge = () => {
     const video = ref.current;
-    if (video?.paused) void video.play().catch(() => {});
+    if (video?.paused && onScreen.current && !document.hidden) void video.play().catch(() => {});
   };
-  useEffect(nudge, []);
+  useEffect(() => {
+    const video = ref.current;
+    if (!video) return;
+    const io = new IntersectionObserver(([entry]) => {
+      onScreen.current = entry.isIntersecting;
+      nudge();
+    });
+    io.observe(video);
+    document.addEventListener("visibilitychange", nudge);
+    return () => {
+      io.disconnect();
+      document.removeEventListener("visibilitychange", nudge);
+    };
+  }, []);
 
   return (
     <video
@@ -223,6 +241,7 @@ function CardVideo({ base, poster, eager }: { base: string; poster?: string; eag
       preload={eager ? "auto" : "metadata"}
       onCanPlay={nudge}
       onLoadedData={nudge}
+      onPause={nudge}
     >
       {/* mp4/h264 first: Safari and iOS often won't fall through from a VP9
           webm to the mp4 and just render blank. h264 plays everywhere, and
