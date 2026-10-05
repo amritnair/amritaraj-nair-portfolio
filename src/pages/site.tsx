@@ -1,6 +1,42 @@
 import { useEffect, useRef, useState } from "react";
 import type { Card, Zone } from "@/world/content";
 
+/** Sets the tab title for the current route and restores it on unmount. */
+export function useDocumentTitle(title: string) {
+  useEffect(() => {
+    const previous = document.title;
+    document.title = title;
+    return () => {
+      document.title = previous;
+    };
+  }, [title]);
+}
+
+/**
+ * The first focusable thing on the page: lets keyboard and screen-reader users
+ * jump past the header nav to the content. A button, not an `href="#top"`,
+ * because the site is on a HashRouter where that would navigate to /top.
+ */
+export function SkipLink() {
+  const skip = () => {
+    scrollToSection("top");
+    const main = document.getElementById("top");
+    if (main) {
+      main.setAttribute("tabindex", "-1");
+      main.focus({ preventScroll: true });
+    }
+  };
+  return (
+    <button
+      type="button"
+      onClick={skip}
+      className="sr-only rounded-[3px] bg-[var(--ink)] px-4 py-2 text-[var(--paper)] focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100]"
+    >
+      Skip to content
+    </button>
+  );
+}
+
 /**
  * The pieces the written pages share: the landing page and the project
  * gallery render the same cards, so the card lives here rather than in both.
@@ -198,57 +234,120 @@ function Frame({ label, children }: { label?: string; children: React.ReactNode 
 }
 
 /**
- * The looping demo clip. `autoplay muted playsinline` is meant to be enough,
- * but a muted autoplay is refused often enough — data saver, a background tab
- * at load, Low Power Mode — that the reliable version asks again once the data
- * is there. The poster covers the case where it is refused for good.
+ * Drives a muted background loop. Three jobs:
+ *  - Honour prefers-reduced-motion: don't autoplay, leave the poster showing,
+ *    and let the viewer start it with the control if they want.
+ *  - Keep it reliable: a muted autoplay is refused often enough (data saver, a
+ *    background tab at load, Low Power Mode) that it has to be retried once the
+ *    data is there — and browsers pause off-screen clips without resuming them.
+ *    Resume only while on screen, visible, and not paused by the viewer.
+ *  - Expose paused + toggle so the UI can offer a pause control (autoplaying
+ *    motion longer than 5s must be stoppable).
  */
-function CardVideo({ base, poster, eager }: { base: string; poster?: string; eager?: boolean }) {
+export function useVideoLoop() {
   const ref = useRef<HTMLVideoElement>(null);
+  const [reduced] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
+  const [paused, setPaused] = useState(true);
   const onScreen = useRef(false);
-  // Browsers pause off-screen or backgrounded clips to save power and don't
-  // always resume them, which reads as a frozen card. There are no controls,
-  // so resume any pause — but only while the card is actually on screen, or
-  // onPause and the browser's own off-screen pause chase each other forever.
-  const nudge = () => {
+  // Reduced motion counts as the viewer having chosen "paused" up front.
+  const choseToPause = useRef(reduced);
+
+  const resume = () => {
     const video = ref.current;
-    if (video?.paused && onScreen.current && !document.hidden) void video.play().catch(() => {});
+    if (video?.paused && onScreen.current && !document.hidden && !choseToPause.current) {
+      void video.play().catch(() => {});
+    }
   };
+
+  const toggle = () => {
+    const video = ref.current;
+    if (!video) return;
+    if (video.paused) {
+      choseToPause.current = false;
+      void video.play().catch(() => {});
+    } else {
+      choseToPause.current = true;
+      video.pause();
+    }
+  };
+
   useEffect(() => {
     const video = ref.current;
     if (!video) return;
+    const sync = () => setPaused(video.paused);
+    sync();
     const io = new IntersectionObserver(([entry]) => {
       onScreen.current = entry.isIntersecting;
-      nudge();
+      resume();
     });
     io.observe(video);
-    document.addEventListener("visibilitychange", nudge);
+    video.addEventListener("play", sync);
+    video.addEventListener("pause", sync);
+    video.addEventListener("canplay", resume);
+    video.addEventListener("loadeddata", resume);
+    document.addEventListener("visibilitychange", resume);
     return () => {
       io.disconnect();
-      document.removeEventListener("visibilitychange", nudge);
+      video.removeEventListener("play", sync);
+      video.removeEventListener("pause", sync);
+      video.removeEventListener("canplay", resume);
+      video.removeEventListener("loadeddata", resume);
+      document.removeEventListener("visibilitychange", resume);
     };
   }, []);
 
+  return { ref, reduced, paused, toggle };
+}
+
+/** The pause/play control for a background loop. 32px, so it clears 24px. */
+export function PlayToggle({ paused, onToggle }: { paused: boolean; onToggle: () => void }) {
   return (
-    <video
-      ref={ref}
-      className="absolute inset-0 h-full w-full object-cover"
-      poster={poster ? withBase(poster) : undefined}
-      autoPlay
-      muted
-      loop
-      playsInline
-      preload={eager ? "auto" : "metadata"}
-      onCanPlay={nudge}
-      onLoadedData={nudge}
-      onPause={nudge}
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-label={paused ? "Play video" : "Pause video"}
+      className="absolute bottom-2 right-2 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-white/25 bg-black/55 text-white backdrop-blur transition hover:bg-black/80"
     >
-      {/* mp4/h264 first: Safari and iOS often won't fall through from a VP9
-          webm to the mp4 and just render blank. h264 plays everywhere, and
-          here the mp4 is the smaller file anyway. */}
-      <source src={`${withBase(base)}.mp4`} type="video/mp4" />
-      <source src={`${withBase(base)}.webm`} type="video/webm" />
-    </video>
+      <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden fill="currentColor">
+        {paused ? (
+          <path d="M2 1l8 5-8 5z" />
+        ) : (
+          <>
+            <rect x="2" y="1.5" width="3" height="9" />
+            <rect x="7" y="1.5" width="3" height="9" />
+          </>
+        )}
+      </svg>
+    </button>
+  );
+}
+
+function CardVideo({ base, poster, eager }: { base: string; poster?: string; eager?: boolean }) {
+  const { ref, reduced, paused, toggle } = useVideoLoop();
+  return (
+    <>
+      <video
+        ref={ref}
+        className="absolute inset-0 h-full w-full object-cover"
+        poster={poster ? withBase(poster) : undefined}
+        autoPlay={!reduced}
+        muted
+        loop
+        playsInline
+        preload={eager ? "auto" : "metadata"}
+      >
+        {/* mp4/h264 first: Safari and iOS often won't fall through from a VP9
+            webm to the mp4 and just render blank. h264 plays everywhere, and
+            here the mp4 is the smaller file anyway. */}
+        <source src={`${withBase(base)}.mp4`} type="video/mp4" />
+        <source src={`${withBase(base)}.webm`} type="video/webm" />
+      </video>
+      <PlayToggle paused={paused} onToggle={toggle} />
+    </>
   );
 }
 

@@ -3,13 +3,17 @@ import { Link } from "react-router-dom";
 import { PROFILE, UPCOMING, ZONES } from "@/world/content";
 import {
   ContributionCalendar,
+  PlayToggle,
   ProjectCard,
   Reveal,
+  SkipLink,
   Tag,
   ThemeToggle,
   scrollToSection,
   useContributions,
+  useDocumentTitle,
   usePaperBackground,
+  useVideoLoop,
   withBase,
 } from "./site";
 import SNAPSHOT from "./contributions.json";
@@ -143,9 +147,13 @@ function Slideshow() {
               type="button"
               aria-label={photo.alt}
               onClick={() => setIndex(i)}
-              className="h-1.5 w-1.5 rounded-full transition-colors"
-              style={{ background: i === index ? "#fff" : "rgba(255,255,255,0.38)" }}
-            />
+              className="flex h-6 w-6 items-center justify-center"
+            >
+              <span
+                className="h-1.5 w-1.5 rounded-full transition-colors"
+                style={{ background: i === index ? "#fff" : "rgba(255,255,255,0.38)" }}
+              />
+            </button>
           ))}
         </span>
       </div>
@@ -161,37 +169,32 @@ function Slideshow() {
  * where it is refused for good.
  */
 function Reel({ className, eager }: { className?: string; eager?: boolean }) {
-  const ref = useRef<HTMLVideoElement>(null);
-
-  const nudge = () => {
-    const video = ref.current;
-    if (video?.paused) void video.play().catch(() => {});
-  };
-
-  useEffect(nudge, []);
+  const { ref, reduced, paused, toggle } = useVideoLoop();
 
   return (
-    <video
-      ref={ref}
-      className={className}
-      poster={POSTER}
-      autoPlay
-      muted
-      loop
-      playsInline
-      preload={eager ? "auto" : "metadata"}
-      onCanPlay={nudge}
-      onLoadedData={nudge}
-    >
-      {/* mp4/h264 first — Safari and iOS may not fall through from VP9 webm. */}
-      <source src={`${REEL}.mp4`} type="video/mp4" />
-      <source src={`${REEL}.webm`} type="video/webm" />
-    </video>
+    <div className={`relative ${className ?? ""}`}>
+      <video
+        ref={ref}
+        className="absolute inset-0 h-full w-full object-cover"
+        poster={POSTER}
+        autoPlay={!reduced}
+        muted
+        loop
+        playsInline
+        preload={eager ? "auto" : "metadata"}
+      >
+        {/* mp4/h264 first — Safari and iOS may not fall through from VP9 webm. */}
+        <source src={`${REEL}.mp4`} type="video/mp4" />
+        <source src={`${REEL}.webm`} type="video/webm" />
+      </video>
+      <PlayToggle paused={paused} onToggle={toggle} />
+    </div>
   );
 }
 
 export default function Home() {
   usePaperBackground();
+  useDocumentTitle("amritnair.io");
   const github = useContributions(SNAPSHOT);
 
   const sections = [
@@ -202,6 +205,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-[var(--paper)] text-[var(--ink)] antialiased">
+      <SkipLink />
       <style>{`
         .u-grotesk { font-family: Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif; }
         @media (prefers-reduced-motion: reduce) { .u-reveal { transition: none !important } }
